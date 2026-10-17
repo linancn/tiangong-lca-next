@@ -172,6 +172,8 @@ jest.mock('../../config/defaultSettings', () => ({
   default: {
     navTheme: 'light',
     colorPrimary: '#1677ff',
+    layout: 'mix',
+    splitMenus: true,
   },
   defaultAppTitle: 'Tiangong LCA',
   getLocalizedAppTitle: (...args: any[]) => mockGetLocalizedAppTitle(...args),
@@ -809,6 +811,25 @@ describe('app runtime config', () => {
       ).toBeUndefined();
     },
   );
+
+  it.each([
+    { settings: { layout: 'mix', splitMenus: true }, splitMenus: true },
+    { settings: { layout: 'mix', splitMenus: false }, splitMenus: false },
+    { settings: { layout: 'mix' }, splitMenus: true },
+    { settings: { layout: 'side', splitMenus: true }, splitMenus: false },
+    { settings: { layout: 'top', splitMenus: true }, splitMenus: false },
+    { settings: { splitMenus: false }, splitMenus: false },
+    { settings: {}, splitMenus: true },
+    { settings: undefined, splitMenus: true },
+  ])('enables split menus only for an enabled mixed layout: %p', ({ settings, splitMenus }) => {
+    const { layout } = require('@/app');
+    const runtimeLayout = layout({
+      initialState: { currentUser: { name: 'Alice' }, settings },
+      setInitialState: jest.fn(),
+    });
+
+    expect(runtimeLayout.splitMenus).toBe(splitMenus);
+  });
 
   it('layout redirects on page change, transforms menu data, and wraps menu items with links', () => {
     const { layout } = require('@/app');

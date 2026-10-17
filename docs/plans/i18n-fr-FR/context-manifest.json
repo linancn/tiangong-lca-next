@@ -152,7 +152,7 @@
           "viewState": "redirect-to-welcome",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "d3bb4b2beb3c05e143a5e8f7fcd165b970d25a72763d3d6faa86f5ea93838586",
-          "focusedTestDigest": "c141cf2267019d7589c2811fad6ef2e5da534efad6db73f2703599a643e77a45",
+          "focusedTestDigest": "4e69bf7a85e128f441855c607639ea8d40c59081b49418d4bf06d306666d8569",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "d4754f0ac91aaabda0250ca6a0977f131654b0900d1b14b36a4c840aa42f6825",
           "derivedMessageCount": 50,
@@ -179,7 +179,7 @@
           "viewState": "overview",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "e29bcb2782fb94ffce3b33288d2342cc4bd66d1a1f231d07553b7ea07e242c6e",
-          "focusedTestDigest": "021045fa7e406584c07e7d2126c9084ccd090d9786622650664d9fb9ecf0f237",
+          "focusedTestDigest": "91cc9ced9fcaf76c74f5c44deb653adf2f921b54d9412dba853250d34ffa4224",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "811949b6e0dccca1b6aa510e63afebb8839888cf24907b1dc2bae6a1755bf3d3",
           "derivedMessageCount": 51,
@@ -206,7 +206,7 @@
           "viewState": "carbon-footprint-guide",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "e29bcb2782fb94ffce3b33288d2342cc4bd66d1a1f231d07553b7ea07e242c6e",
-          "focusedTestDigest": "f4e4af4d7ff28854c404937e87ea80edbd927027656749e2440611f281ccb5ac",
+          "focusedTestDigest": "29b1b72360863b76080c43d4e1c68781ccfed83b4f0ea2296e3661d85db991b6",
           "plannedBrowserAssertionCount": 3,
           "plannedBrowserAssertionDigest": "7dce46b0e253c9000c52c96a89b772057bc78fbf5d13a1db1094e52d13b71be3",
           "derivedMessageCount": 83,
@@ -324,7 +324,7 @@
           "viewState": "national-carbon-dashboard",
           "requiredEvidenceScope": "access-boundary-observed",
           "sourceDigest": "8e96f75edc919d0f92f68745dff356ed4cf1ac7d7156eb4ca1851d4f6fd632a7",
-          "focusedTestDigest": "7cd1879b174574c54fca83860acffdaac6dfcdb7f5c434b96d5a8f9f8ccca98a",
+          "focusedTestDigest": "0de36876cf510566da8b4fdfdacad3f34d2db97d5e74018ddc4d873503e55758",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "95b95698b9168443cacad5913312e98989fb251f09feee48fbaf5f7203c57587",
           "derivedMessageCount": 313,
@@ -392,7 +392,7 @@
           "viewState": "not-found",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "a1dba184f2d1717e7343b46c387ebe915e72e25774967b284a58390354a4bb53",
-          "focusedTestDigest": "ba3abe268d2694f6b643b4b67661dabe10efc4192179199c2cc502f25a6e84e7",
+          "focusedTestDigest": "ffaaa38d5545f23ef86f4f773df0c48c721cb23e58870674e8b52d1722d0c93b",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "b8ea1e9c64fab4ac0f3adc277885552796c3a6f8f15c10a81ade409284f6cb99",
           "derivedMessageCount": 12,
@@ -1226,7 +1226,7 @@
           "viewState": "build-preview-publication-tabs",
           "requiredEvidenceScope": "access-boundary-observed",
           "sourceDigest": "65fa08bb7580e72e27ad0586abfea9bcbe2d7920a9cbebc5620c35397eff9180",
-          "focusedTestDigest": "04da212f35ba5f3e440b6f9f65246c5a7f0540088ff6d532e4aa1d2bed0bbffd",
+          "focusedTestDigest": "e31b97e6d7bc0d148f4a596f75bedbd8e54f346e1e88eefd0760df144a5058b5",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "bab91c736a148188c3778bd30db083f6ac1af6408c3505f399dfdebf9d510ccc",
           "derivedMessageCount": 138,
@@ -1298,7 +1298,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "bad7f376048ccc7835ecd8f4f8320da9c75b049ef5314bc2dc11425d0f3aa9ab",
+      "rowEvidenceDigest": "02ef652e67dc5a36117aebb9646a19046a8f706e6b5890fb0fccff1dbd90ff70",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1322,5 +1322,5 @@
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "dff8534c76fe9b1f2a9431abe9bc0463d98c57d6bf286853285a72d4294bfec0"
+  "contextDigest": "bf1c5f8d47457df939f8444fcd1896903fd378ea450230c812e835dadae41000"
 }

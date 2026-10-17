@@ -124,6 +124,28 @@ describe('buildDataNavigation', () => {
     expect(buildDataNavigation(input, { ...options, search: '?tid=' })[0]).toEqual(input[0]);
     expect(buildDataNavigation(input, { ...options, search: '?tid=' })).toHaveLength(2);
   });
+
+  it('retains pathless native child metadata while filtering pathless roots in team context', () => {
+    const nativeChild = { key: 'native-divider', type: 'divider' };
+    const root = scopeMenu('tgdata');
+    root.children!.push(nativeChild);
+    const outputMenus = buildDataNavigation([root, { key: 'unrelated-root' }], {
+      ...options,
+      search: '?tid=team-1',
+    });
+    expect(outputMenus).toHaveLength(1);
+    const [output] = outputMenus;
+    expect(output.children?.find((child) => child.key === nativeChild.key)).toEqual(nativeChild);
+    expect(output.children?.find((child) => child.key === nativeChild.key)).not.toBe(nativeChild);
+    expect(output.children?.[0].path).toBe('/tgdata/models?tid=team-1');
+  });
+
+  it('removes an empty previously shaped supporting group without inventing a destination', () => {
+    const root = scopeMenu('tgdata');
+    root.children = [root.children![0], { key: 'data-navigation:tgdata:supporting' }];
+    const [output] = buildDataNavigation([root], options);
+    expect(output.children).toEqual([root.children[0]]);
+  });
 });
 
 describe('resolveDataScopeLink', () => {
@@ -170,6 +192,12 @@ describe('resolveDataScopeLink', () => {
     const roots = transformed();
     roots[1].children = [];
     expect(resolveDataScopeLink({ path: '/codata' }, '/mydata/flows', '', roots)).toBe('/codata');
+  });
+
+  it('keeps a native scope-only destination when child menu data is absent', () => {
+    expect(
+      resolveDataScopeLink({ path: '/codata' }, '/mydata/flows', '', [{ path: '/codata' }]),
+    ).toBe('/codata');
   });
 
   it.each(['/welcome', '/account', '/mydata/unsupported', '/mydata/flows/unknown'])(
