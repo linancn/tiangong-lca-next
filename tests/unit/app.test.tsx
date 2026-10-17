@@ -227,6 +227,7 @@ jest.mock('@ant-design/icons', () => ({
   DatabaseOutlined: () => <span data-testid='database-icon'>database-icon</span>,
   LinkOutlined: () => <span data-testid='link-icon'>link-icon</span>,
   MenuOutlined: () => <span data-testid='menu-icon'>menu-icon</span>,
+  ProjectOutlined: () => <span data-testid='read-icon'>read-icon</span>,
 }));
 
 jest.mock('antd', () => ({
@@ -743,34 +744,136 @@ describe('app runtime config', () => {
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
   });
 
-  it.each([false, true])(
-    'wraps only the Atlas menu beneath ProLayout in global mode %s',
-    (isDarkMode) => {
-      mockBrand = 'atlas';
-      const { layout } = require('@/app');
-      const { BrandMenuTheme } = require('@/contexts/BrandMenuTheme');
-      const nativeMenu = <div>Native menu</div>;
-      const runtimeLayout = layout({
-        initialState: {
-          currentUser: { name: 'Alice' },
-          isDarkMode,
-          settings: { navTheme: isDarkMode ? 'realDark' : 'light', menuProps: { theme: 'dark' } },
-        },
-        setInitialState: jest.fn(),
-      });
-      const wrappedMenu = runtimeLayout.menuContentRender({}, nativeMenu);
-      expect(wrappedMenu.type).toBe(BrandMenuTheme);
-      expect(wrappedMenu.props.isDarkMode).toBe(isDarkMode);
-      expect(wrappedMenu.props.children).toBe(nativeMenu);
-      expect(runtimeLayout.navTheme).toBe(isDarkMode ? 'realDark' : 'light');
-      expect(runtimeLayout.menuProps).toEqual({ theme: 'dark' });
+  it.each([
+    { brand: 'atlas', isDarkMode: false },
+    { brand: 'atlas', isDarkMode: true },
+    { brand: 'tiangong', isDarkMode: false },
+    { brand: 'tiangong', isDarkMode: true },
+  ])('retains the native menu and each brand theme boundary: %p', ({ brand, isDarkMode }) => {
+    mockBrand = brand;
+    const { layout } = require('@/app');
+    const { Fragment } = require('react');
+    const { BrandMenuTheme } = require('@/contexts/BrandMenuTheme');
+    const nativeMenu = <div>Native menu</div>;
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { name: 'Alice' },
+        isDarkMode,
+        settings: { navTheme: isDarkMode ? 'realDark' : 'light', menuProps: { theme: 'dark' } },
+      },
+      setInitialState: jest.fn(),
+    });
+    const wrappedMenu = runtimeLayout.menuContentRender({}, nativeMenu);
 
-      mockBrand = 'tiangong';
-      expect(
-        layout({ initialState: {}, setInitialState: jest.fn() }).menuContentRender,
-      ).toBeUndefined();
+    expect(wrappedMenu.type).toBe(brand === 'atlas' ? BrandMenuTheme : Fragment);
+    expect(wrappedMenu.key).toBe('full-menu');
+    expect(wrappedMenu.props.isDarkMode).toBe(brand === 'atlas' ? isDarkMode : undefined);
+    expect(wrappedMenu.props.children).toBe(nativeMenu);
+    expect(runtimeLayout.navTheme).toBe(isDarkMode ? 'realDark' : 'light');
+    expect(runtimeLayout.menuProps).toEqual({ theme: 'dark' });
+  });
+
+  it.each(['atlas', 'tiangong'])(
+    'resets native submenu state only when the desktop data scope changes for %s',
+    (brand) => {
+      mockBrand = brand;
+      const { layout } = require('@/app');
+      const React = require('react');
+      class NativeMenuProbe extends React.Component {
+        state = { open: false };
+        render() {
+          return (
+            <button onClick={() => this.setState({ open: !this.state.open })} type='button'>
+              {this.state.open ? 'Native submenu open' : 'Native submenu closed'}
+            </button>
+          );
+        }
+      }
+      const runtimeLayout = layout({ initialState: {}, setInitialState: jest.fn() });
+      const nativeMenu = <NativeMenuProbe />;
+      const props = { layout: 'mix', splitMenus: true, isMobile: false };
+      const menu = (scope, path) =>
+        runtimeLayout.menuContentRender(
+          {
+            ...props,
+            location: { pathname: `/${scope}/${path}` },
+            menuData: [{ key: `/${scope}/models` }, { key: `/${scope}/processes` }],
+          },
+          nativeMenu,
+        );
+      const { rerender } = render(menu('tgdata', 'models'));
+      fireEvent.click(screen.getByRole('button', { name: 'Native submenu closed' }));
+      rerender(menu('tgdata', 'processes'));
+      expect(screen.getByRole('button', { name: 'Native submenu open' })).toBeInTheDocument();
+      rerender(menu('codata', 'models'));
+      expect(screen.getByRole('button', { name: 'Native submenu closed' })).toBeInTheDocument();
     },
   );
+
+  it.each([
+    {
+      props: {
+        layout: 'mix',
+        splitMenus: true,
+        isMobile: false,
+        menuData: [{ key: '/tgdata/models' }],
+      },
+      key: '/tgdata/models',
+    },
+    { props: { layout: 'mix', splitMenus: true, isMobile: false }, key: 'empty-data-scope' },
+    {
+      props: { layout: 'mix', splitMenus: true, isMobile: false, menuData: [] },
+      key: 'empty-data-scope',
+    },
+    {
+      props: { layout: 'mix', splitMenus: true, isMobile: false, menuData: [{}] },
+      key: 'empty-data-scope',
+    },
+    {
+      props: { layout: 'mix', splitMenus: true, isMobile: true, menuData: [{ key: '/tgdata' }] },
+      key: 'full-menu',
+    },
+    { props: { layout: 'mix', splitMenus: false, isMobile: false }, key: 'full-menu' },
+    { props: { layout: 'side', splitMenus: true, isMobile: false }, key: 'full-menu' },
+    { props: { layout: 'top', splitMenus: true, isMobile: false }, key: 'full-menu' },
+  ])(
+    'keeps full/mobile menu identity stable and handles an empty split scope: %p',
+    ({ props, key }) => {
+      const { layout } = require('@/app');
+      const runtimeLayout = layout({ initialState: {}, setInitialState: jest.fn() });
+      const nativeMenu = <div>Native menu</div>;
+      const wrappedMenu = runtimeLayout.menuContentRender(props, nativeMenu);
+
+      expect(wrappedMenu.key).toBe(key);
+      expect(wrappedMenu.props.children).toBe(nativeMenu);
+    },
+  );
+
+  it.each([undefined, {}, { settings: {} }, { settings: { menu: {} } }])(
+    'opens native supporting submenus by default when prior menu settings are absent: %p',
+    (initialState) => {
+      const { layout } = require('@/app');
+      const runtimeLayout = layout({ initialState, setInitialState: jest.fn() });
+
+      expect(runtimeLayout.menu).toMatchObject({ defaultOpenAll: true, autoClose: false });
+    },
+  );
+
+  it('keeps existing native menu settings while opening supporting data and retaining open scopes', () => {
+    const { layout } = require('@/app');
+    const request = jest.fn();
+    const params = { language: 'en-US' };
+    const menu = { locale: false, request, params, defaultOpenAll: false, autoClose: true };
+    const runtimeLayout = layout({
+      initialState: { settings: { menu } },
+      setInitialState: jest.fn(),
+    });
+
+    expect(runtimeLayout.menu).toEqual({ ...menu, defaultOpenAll: true, autoClose: false });
+    expect(runtimeLayout.menu.request).toBe(request);
+    expect(runtimeLayout.menu.params).toBe(params);
+    expect(menu).toMatchObject({ defaultOpenAll: false, autoClose: true });
+  });
 
   it.each([false, true])(
     'preserves the native Atlas header provider and menu while applying menu tokens in dark mode %s',
@@ -1000,10 +1103,10 @@ describe('app runtime config', () => {
         'models',
         'processes',
         'flows',
-        'sources',
-        'contacts',
         'flowproperties',
         'unitgroups',
+        'sources',
+        'contacts',
       ].map((kind) => ({ path: `/${scope}/${kind}` })),
     }));
     const menu = runtimeLayout.menuDataRender([...input, { path: '/data-processing' }]);
@@ -1013,7 +1116,7 @@ describe('app runtime config', () => {
       const supporting = scope.children.find((child) => child.key?.endsWith(':supporting'));
       expect(supporting).not.toHaveProperty('path');
       expect(supporting.children.map((child) => child.path)).toEqual(
-        ['sources', 'contacts', 'flowproperties', 'unitgroups'].map(
+        ['flowproperties', 'unitgroups', 'sources', 'contacts'].map(
           (kind) => `${scope.path}/${kind}?tid=team%2B1`,
         ),
       );

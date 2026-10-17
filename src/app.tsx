@@ -2,6 +2,7 @@ import { brandProfile } from '../config/brandProfile';
 import { BrandMenuTheme, renderBrandHeaderMenu } from '@/contexts/BrandMenuTheme';
 import { buildDataNavigation, resolveDataScopeLink } from '@/components/DataNavigation/navigation';
 import { renderDataNavigationHeader } from '@/components/DataNavigation/header';
+import { renderDataNavigationText } from '@/components/DataNavigation/menuText';
 import './components/BrandPresentation/style.less';
 import {
   AvatarDropdown,
@@ -45,10 +46,16 @@ import { reloadBrowserPage } from '@/utils/browserNavigation';
 import { readBrowserStorage, writeBrowserStorage } from '@/services/general/browserStorage';
 import { AntdAppApiRegistrar } from '@/contexts/AntdAppContext';
 import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
-import { DashboardOutlined, DatabaseOutlined, LinkOutlined, MenuOutlined } from '@ant-design/icons';
+import {
+  DashboardOutlined,
+  DatabaseOutlined,
+  LinkOutlined,
+  MenuOutlined,
+  ProjectOutlined,
+} from '@ant-design/icons';
 import type { MenuDataItem, Settings as LayoutSettings } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig, RuntimeAntdConfig } from '@umijs/max';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
 import ClassificationCacheMonitor from './components/ClassificationCacheMonitor';
@@ -439,7 +446,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           id: 'menu.supportingData',
           defaultMessage: 'Supporting Data',
         }),
-        supportingIcon: <DatabaseOutlined />,
+        supportingIcon: <ProjectOutlined />,
         search: history.location.search,
       });
       return navigationMenuData;
@@ -467,12 +474,23 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       (initialState?.settings?.layout ?? defaultSettings.layout) === 'mix' &&
       (initialState?.settings?.splitMenus ?? defaultSettings.splitMenus),
     headerRender: renderDataNavigationHeader,
-    menuContentRender:
-      brandProfile.id === 'atlas'
-        ? (_props, defaultDom) => (
-            <BrandMenuTheme isDarkMode={!!initialState?.isDarkMode}>{defaultDom}</BrandMenuTheme>
-          )
-        : undefined,
+    menuTextRender: renderDataNavigationText,
+    menu: { ...initialState?.settings?.menu, defaultOpenAll: true, autoClose: false },
+    menuContentRender: (props, defaultDom) => {
+      // Seed native expansion when entering another split scope; ordinary object
+      // navigation keeps the same Menu instance and the user's open/closed state.
+      const menuKey =
+        props.layout === 'mix' && props.splitMenus && !props.isMobile
+          ? (props.menuData?.[0]?.key ?? 'empty-data-scope')
+          : 'full-menu';
+      return brandProfile.id === 'atlas' ? (
+        <BrandMenuTheme key={menuKey} isDarkMode={!!initialState?.isDarkMode}>
+          {defaultDom}
+        </BrandMenuTheme>
+      ) : (
+        <Fragment key={menuKey}>{defaultDom}</Fragment>
+      );
+    },
     headerContentRender:
       brandProfile.id === 'atlas'
         ? (_props, defaultDom) => renderBrandHeaderMenu(defaultDom, !!initialState?.isDarkMode)

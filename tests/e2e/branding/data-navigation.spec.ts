@@ -7,7 +7,13 @@ import { LOCALE_REGISTRY } from '../../../src/services/general/localeRegistry';
 const brand = process.env.E2E_BRAND;
 const message = (id: string) => getLocaleMessage('en-US', id);
 const scopes = ['tgdata', 'codata', 'mydata', 'tedata'] as const;
-const supportingKinds = ['sources', 'contacts', 'flowproperties', 'unitgroups'] as const;
+const supportingKinds = ['flowproperties', 'unitgroups', 'sources', 'contacts'] as const;
+const supportingIcons = {
+  sources: 'paper-clip',
+  contacts: 'team',
+  flowproperties: 'control',
+  unitgroups: 'retweet',
+};
 
 test.skip(
   !brand || process.env.E2E_QUALIFICATION !== 'true',
@@ -53,6 +59,26 @@ function supportingGroup(menu: Locator) {
 
 function scopeLink(menu: Locator, scope: (typeof scopes)[number]) {
   return menu.locator(`a[href="#/${scope}"], a[href^="#/${scope}/"], a[href^="#/${scope}?"]`);
+}
+
+async function expectOriginalSupportingIcons(menu: Locator, scope: string) {
+  const orderedLinks = menu.locator(
+    supportingKinds.map((kind) => `a[href^="#/${scope}/${kind}"]`).join(', '),
+  );
+  await expect(orderedLinks).toHaveCount(4);
+  for (const [index, kind] of supportingKinds.entries()) {
+    await expect(orderedLinks.nth(index)).toHaveAttribute(
+      'href',
+      new RegExp(`^#/${scope}/${kind}(?:\\?|$)`),
+    );
+  }
+  for (const kind of supportingKinds) {
+    const link = menu.locator(`a[href^="#/${scope}/${kind}"]`);
+    await expect(link).toBeVisible();
+    const icon = link.locator(`svg[data-icon="${supportingIcons[kind]}"]`);
+    await expect(icon).toHaveCount(1);
+    await expect(icon).toBeVisible();
+  }
 }
 
 async function clickTopScope(page: Page, scope: (typeof scopes)[number]) {
@@ -248,10 +274,13 @@ for (const width of [1440, 1024]) {
     const group = supportingGroup(sideMenu(page));
     await expect(group).toBeVisible();
     await expect(group.locator('a')).toHaveCount(0);
+    await expect(group.locator('svg[data-icon="project"]')).toHaveCount(1);
+    await expect(group.locator('svg[data-icon="project"]')).toBeVisible();
     await expect(sideMenu(page).locator('.ant-menu-submenu')).toHaveCount(1);
     for (const kind of supportingKinds) {
       await expect(sideMenu(page).locator(`a[href="#/tedata/${kind}"]`)).toBeVisible();
     }
+    await expectOriginalSupportingIcons(sideMenu(page), 'tedata');
     await clickTopScope(page, 'tgdata');
     await expectRoute(page, '/tgdata/contacts');
     await expectSelectedObject(page, '/tgdata/contacts');
@@ -283,6 +312,44 @@ for (const width of [1440, 1024]) {
   });
 }
 
+test(`${brand} supporting icons remain visible in the native collapsed popup`, async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await installNavigationFixture(page);
+  await signInViaUi(page);
+  await page.goto('/#/tgdata/processes');
+  const group = supportingGroup(sideMenu(page));
+  // The group starts open, but a user can close it and navigate a core object.
+  await expectOriginalSupportingIcons(sideMenu(page), 'tgdata');
+  await group.click();
+  await expect(sideMenu(page).locator('a[href="#/tgdata/flowproperties"]')).toBeHidden();
+  await sideMenu(page).locator('a[href="#/tgdata/flows"]').click();
+  await expectRoute(page, '/tgdata/flows');
+  await expect(sideMenu(page).locator('a[href="#/tgdata/flowproperties"]')).toBeHidden();
+  await clickTopScope(page, 'codata');
+  await expectRoute(page, '/codata/flows');
+  await expectOriginalSupportingIcons(sideMenu(page), 'codata');
+  await clickTopScope(page, 'tgdata');
+  await expectRoute(page, '/tgdata/flows');
+  await expectOriginalSupportingIcons(sideMenu(page), 'tgdata');
+  const collapse = sideMenu(page).getByRole('button', {
+    name: message('app.setting.navigationmode'),
+    exact: true,
+  });
+  await collapse.click();
+  await expect(collapse).toHaveAttribute('aria-expanded', 'false');
+  await expect(group.locator('svg[data-icon="project"]')).toHaveCount(1);
+  await expect(group.locator('svg[data-icon="project"]')).toBeVisible();
+  await group.hover();
+  const popup = page.locator('.ant-menu-submenu-popup:visible');
+  await expectOriginalSupportingIcons(popup, 'tgdata');
+  await popup.locator('a[href="#/tgdata/sources"]').click();
+  await expectRoute(page, '/tgdata/sources');
+  await collapse.click();
+  await expect(collapse).toHaveAttribute('aria-expanded', 'true');
+  await expectOriginalSupportingIcons(sideMenu(page), 'tgdata');
+  await noPageOverflow(page);
+});
+
 test(`${brand} mobile native drawer keeps all scopes and supporting data keyboard reachable`, async ({
   page,
 }, testInfo) => {
@@ -310,13 +377,19 @@ test(`${brand} mobile native drawer keeps all scopes and supporting data keyboar
     .locator('.ant-menu-submenu-title')
     .filter({ hasText: message('menu.mydata') })
     .first();
-  await personal.focus();
-  await personal.press('Enter');
   const personalSources = drawer.locator('a[href="#/mydata/sources"]');
+  if (!(await personalSources.isVisible())) {
+    await personal.focus();
+    await personal.press('Enter');
+  }
   if (!(await personalSources.isVisible())) {
     const personalGroup = personal.locator('..');
     await supportingGroup(personalGroup).click();
   }
+  await expectOriginalSupportingIcons(drawer, 'mydata');
+  const personalGroup = personal.locator('..');
+  await expect(supportingGroup(personalGroup).locator('svg[data-icon="project"]')).toHaveCount(1);
+  await expect(supportingGroup(personalGroup).locator('svg[data-icon="project"]')).toBeVisible();
   await personalSources.focus();
   await personalSources.press('Enter');
   await expectRoute(page, '/mydata/sources');

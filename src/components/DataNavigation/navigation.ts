@@ -69,11 +69,10 @@ export function buildDataNavigation(
       const ungrouped = children.flatMap((child) =>
         child.key === supportingKey ? (child.children ?? []) : [child],
       );
-      const supporting = supportingKinds.flatMap((kind) =>
-        ungrouped.filter(
-          (child) => child.path && splitDestination(child.path).pathname === `/${scope}/${kind}`,
-        ),
-      );
+      const supporting = ungrouped.filter((child) => {
+        const pathname = child.path && splitDestination(child.path).pathname;
+        return supportingKinds.some((kind) => pathname === `/${scope}/${kind}`);
+      });
       const grouped = supporting.some(isAvailable)
         ? [
             ...ungrouped.filter((child) => !supporting.includes(child)),

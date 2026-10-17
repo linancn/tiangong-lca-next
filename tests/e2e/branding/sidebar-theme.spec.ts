@@ -270,7 +270,6 @@ for (const mode of ['light', 'dark'] as const) {
       await avatar.blur();
       // Supporting data is the sole submenu below the active scope on desktop.
       const supporting = supportingGroup(sidebar);
-      await supporting.click();
       await expect(sidebar.locator('a[href="#/tgdata/sources"]')).toBeVisible();
       await expect(sidebar.locator('.ant-menu-sub.ant-menu-inline')).toHaveCSS(
         'background-color',

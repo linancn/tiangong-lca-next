@@ -26,6 +26,18 @@ const freezeMenu = (items: MenuDataItem[]): MenuDataItem[] => {
 };
 
 describe('buildDataNavigation', () => {
+  it('preserves the supplied supporting-record order instead of imposing a kind order', () => {
+    const root = scopeMenu('tgdata');
+    root.children = [...root.children!].reverse();
+    const input = freezeMenu([root]);
+    const [output] = buildDataNavigation(input, options);
+    expect(output.children?.[3].children?.map((child) => child.path)).toEqual([
+      '/tgdata/contacts',
+      '/tgdata/sources',
+      '/tgdata/unitgroups',
+      '/tgdata/flowproperties',
+    ]);
+  });
   it('keeps native scope identities and core objects while adding a pathless supporting submenu', () => {
     const input = freezeMenu([scopeMenu('mydata')]);
     const [root] = buildDataNavigation(input, { ...options, supportingIcon: 'supporting-icon' });
@@ -45,10 +57,10 @@ describe('buildDataNavigation', () => {
     });
     expect(supporting).not.toHaveProperty('path');
     expect(supporting?.children?.map((child) => child.path)).toEqual([
-      '/mydata/sources',
-      '/mydata/contacts',
       '/mydata/flowproperties',
       '/mydata/unitgroups',
+      '/mydata/sources',
+      '/mydata/contacts',
     ]);
     expect(input[0].children).toHaveLength(7);
   });
@@ -64,8 +76,8 @@ describe('buildDataNavigation', () => {
 
     expect(output[1]).toBe(example);
     expect(output[2]).toBe(other);
-    expect(output[0].children?.[3].children?.[0]).toEqual(root.children![5]);
-    expect(output[0].children?.[3].children?.[1]).toEqual(root.children![6]);
+    expect(output[0].children?.[3].children?.[2]).toEqual(root.children![5]);
+    expect(output[0].children?.[3].children?.[3]).toEqual(root.children![6]);
   });
 
   it('does not add an empty visible supporting submenu when all supporting objects are unavailable', () => {
@@ -112,7 +124,7 @@ describe('buildDataNavigation', () => {
     expect(output.map((item) => item.path)).toEqual(['/tgdata', '/codata']);
     const supporting = output[0].children![3];
     expect(supporting).not.toHaveProperty('path');
-    expect(supporting.children![0].path).toBe(
+    expect(supporting.children![2].path).toBe(
       '/tgdata/sources?view=table&tid=team%2B%26%2F+%E4%B8%AD#citations',
     );
     expect(output[0].children![0].path).toContain('?tid=');

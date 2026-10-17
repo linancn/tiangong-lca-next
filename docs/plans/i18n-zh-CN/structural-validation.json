@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "70bef03a8ef98636a80f764a1b948bcbde52cc6cfca6c35751df59e2f7246bb0",
+    "auditedInputDigest": "2672eb20fd4241dba4ff8e9b5afb2020082af7a251a49ab1a0a4a00868d4a24b",
     "validatedMessageCount": 3581,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1686,
     "highRiskMessageDigest": "2baa5a329de915902dd52bc5f1c5a0d5b1f43e61a78c5ae1484d5ce0a2617644",
     "catalogDigest": "fad81209343ac267ec765c1050acfe745499030b5bd9432f43173d89a9fb906c",
-    "dossierDigest": "c14317932b9bf79899b1b1f6404193c9b1f2ada88ee484d23eb376e7c5a5e1ea",
+    "dossierDigest": "f7a47e3e1729ed79f806d3f6989984b64e05d259e6465f0a2c5e6fe5be433f0e",
     "typedContentDossierDigest": "cea189a77b03f66042197c8383d684813c09e3a0356684d325e62eaf73af4c99",
-    "routeEvidenceDigest": "bba53dc4a6fb5bd8178dd829c6cd46a2c7beb4afe4171b2973c426f557bfc28e",
+    "routeEvidenceDigest": "0867bcedfcc860dfe2553425253796522d48f9a266997c9d679f1988985422c4",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "427cdbe18c8b3384b67e65e8a720d64a45db3b660ee010aa2ae4a257622c9779",
         "highRiskMessageCount": 1686,
         "highRiskMessageDigest": "2baa5a329de915902dd52bc5f1c5a0d5b1f43e61a78c5ae1484d5ce0a2617644",
-        "dossierDigest": "c14317932b9bf79899b1b1f6404193c9b1f2ada88ee484d23eb376e7c5a5e1ea",
+        "dossierDigest": "f7a47e3e1729ed79f806d3f6989984b64e05d259e6465f0a2c5e6fe5be433f0e",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "e5c15018d13ab1e675655c5a653f877bcec5c21b589c6643b6ad7bf27e17c062"
+  "validationDigest": "52d8aa909bb1069afa9e2263ba2263f89bb39f4098a0561f58bd5f25e77a1fc9"
 }
