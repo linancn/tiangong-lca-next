@@ -44,9 +44,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-16
-lastReviewedCommit: c273b5b09fe80d1a9b5c37b648ddc55b7ed425e9
-lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
+lastReviewedAt: 2026-10-17
+lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
+lastReviewedNote: 'Platform #1293: reviewed navigation helper immutability, permission/URL-state cases, native Menu provider tests and closed-simulator browser interaction proof against existing reusable patterns; no pattern-contract change is required.'
 ---
 
 # Testing Patterns Reference

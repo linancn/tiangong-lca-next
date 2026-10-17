@@ -38,6 +38,7 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     } = require('../../../config/defaultSettings');
 
     expect(settings.layout).toBe('mix');
+    expect(settings.splitMenus).toBe(true);
     expect(settings.title).toBe(defaultAppTitle);
     expect(defaultLoginSubtitle).toBe("World's Largest Open LCA Data Platform");
   });
@@ -46,7 +47,8 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     process.env.APP_BRAND = 'atlas';
     const settings = require('../../../config/defaultSettings').default;
     expect(settings).toMatchObject({
-      layout: 'side',
+      layout: 'mix',
+      splitMenus: true,
       navTheme: 'light',
       menuProps: { theme: 'dark' },
       token: { sider: { colorMenuBackground: '#001529' } },
@@ -66,6 +68,7 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     const settings = require('../../../config/defaultSettings').default;
 
     expect(settings.layout).toBe('top');
+    expect(settings.splitMenus).toBe(false);
   });
 
   it('falls back to default layout when APP_LAYOUT is unsupported', () => {
@@ -74,6 +77,7 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     const settings = require('../../../config/defaultSettings').default;
 
     expect(settings.layout).toBe('mix');
+    expect(settings.splitMenus).toBe(true);
   });
 
   it('resolves localized app title env values by locale', () => {

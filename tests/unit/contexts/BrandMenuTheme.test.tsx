@@ -1,7 +1,7 @@
-import { BrandMenuTheme } from '@/contexts/BrandMenuTheme';
+import { BrandMenuTheme, renderBrandHeaderMenu } from '@/contexts/BrandMenuTheme';
 import { act, render, screen } from '@testing-library/react';
 import { ConfigProvider, Menu, theme } from 'antd';
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 import { brandProfile, resolveBrandProfile } from '../../../config/brandProfile';
 
 const ThemeProbe = ({ id }: { id: string }) => {
@@ -126,3 +126,47 @@ it('uses the build-selected profile when none is passed explicitly', () => {
   );
   expect(readTheme('default-menu').menu).toEqual(brandProfile.theme.light.components?.Menu ?? {});
 });
+
+it.each([false, true])(
+  'places the header token boundary inside the native provider in mode %s',
+  (isDarkMode) => {
+    const nativeMenu = <ThemeProbe id='native-header-menu' />;
+    const nativeProvider = (
+      <ConfigProvider
+        theme={{ components: { Menu: { darkPopupBg: '#ffffff', itemBorderRadius: 9 } } }}
+      >
+        {nativeMenu}
+      </ConfigProvider>
+    );
+    const result = renderBrandHeaderMenu(nativeProvider, isDarkMode) as React.ReactElement<any>;
+    expect(result.type).toBe(ConfigProvider);
+    expect(result.props.theme).toBe(nativeProvider.props.theme);
+    expect(result.props.children.type).toBe(BrandMenuTheme);
+    expect(result.props.children.props.children).toBe(nativeMenu);
+    expect(result.props.children.props.isDarkMode).toBe(isDarkMode);
+    // Use an explicit Atlas profile to exercise the actual nested Menu context,
+    // independently of the test runner's build-selected TianGong default.
+    render(
+      React.cloneElement(
+        result,
+        undefined,
+        React.cloneElement(result.props.children, {
+          selectedProfile: resolveBrandProfile('atlas'),
+        }),
+      ),
+    );
+    expect(readTheme('native-header-menu').menu).toMatchObject({
+      darkPopupBg: '#001529',
+      darkSubMenuItemBg: '#000c17',
+      itemBorderRadius: 9,
+    });
+    expect(nativeProvider.props.children).toBe(nativeMenu);
+  },
+);
+
+it.each([null, false, 'Native header', <div key='other'>Native custom header</div>])(
+  'preserves a header slot that is not the native provider',
+  (node) => {
+    expect(renderBrandHeaderMenu(node, false)).toBe(node);
+  },
+);

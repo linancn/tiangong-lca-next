@@ -210,7 +210,11 @@ jest.mock('@/contexts/AntdThemeSync', () => ({
 
 jest.mock('@umijs/max', () => ({
   __esModule: true,
-  Link: ({ to, children }: any) => <a href={to}>{children}</a>,
+  Link: ({ to, children, ...props }: any) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
   getIntl: () => mockGetIntl(),
   history: mockHistory,
 }));
@@ -835,12 +839,7 @@ describe('app runtime config', () => {
           path: '/tgdata',
         },
       ]),
-    ).toEqual([
-      {
-        path: '/tgdata',
-        children: undefined,
-      },
-    ]);
+    ).toEqual([{ path: '/tgdata' }]);
 
     expect(
       runtimeLayout.menuDataRender?.([
@@ -853,19 +852,197 @@ describe('app runtime config', () => {
 
     mockHistory.location.search = '';
     const originalMenu = [{ path: '/mydata', children: [{ path: '/mydata/contacts' }] }];
-    expect(authenticatedRuntimeLayout.menuDataRender?.(originalMenu)).toEqual(originalMenu);
+    const [personalMenu] = authenticatedRuntimeLayout.menuDataRender?.(originalMenu);
+    expect(personalMenu.path).toBe('/mydata');
+    expect(personalMenu.children[0]).toMatchObject({
+      key: 'data-navigation:mydata:supporting',
+      children: [{ path: '/mydata/contacts' }],
+    });
+    expect(personalMenu.children[0]).not.toHaveProperty('path');
+    expect(originalMenu[0].children).toEqual([{ path: '/mydata/contacts' }]);
 
+    const nativeMenuItem = <span>Native team menu item</span>;
     const renderedMenuItem = authenticatedRuntimeLayout.menuItemRender?.(
       { path: '/team', icon: <span>icon</span>, name: 'Team' },
-      <span>fallback</span>,
+      nativeMenuItem,
     );
 
     expect(renderedMenuItem.props.to).toBe('/team');
-    expect(renderedMenuItem.props.children[1].props.children).toBe('Team');
+    expect(renderedMenuItem.props.children).toBe(nativeMenuItem);
     expect(
       authenticatedRuntimeLayout.menuItemRender?.({ isUrl: true }, <span>fallback</span>)?.props
         .children,
     ).toBe('fallback');
+  });
+
+  it.each(['tgdata', 'codata', 'mydata', 'tedata'])(
+    'switches to the same dataset object in %s using the full menu behind header copies',
+    (destination) => {
+      const { layout } = require('@/app');
+      mockHistory.location.pathname = '/mydata/sources';
+      mockHistory.location.search = '?id=old-record&version=1&mode=edit';
+      const runtimeLayout = layout({
+        initialState: { currentUser: { name: 'Alice' }, settings: {} },
+        setInitialState: jest.fn(),
+      });
+      const input = ['tgdata', 'codata', 'mydata', 'tedata'].map((scope) => ({
+        key: `/${scope}`,
+        path: `/${scope}`,
+        children: ['models', 'processes', 'flows', 'sources'].map((kind) => ({
+          path: `/${scope}/${kind}`,
+        })),
+      }));
+      runtimeLayout.menuDataRender(input);
+      const nativeScope = <span>Native scope label and icon</span>;
+      const link = runtimeLayout.menuItemRender({ path: `/${destination}` }, nativeScope);
+
+      expect(link.props.to).toBe(`/${destination}/sources`);
+      expect(link.props.children).toBe(nativeScope);
+      expect(mockHistory.push).not.toHaveBeenCalled();
+      expect(mockHistory.replace).not.toHaveBeenCalled();
+      expect(mockHistory.location.search).toBe('?id=old-record&version=1&mode=edit');
+    },
+  );
+
+  it.each([false, true])(
+    'closes native mobile navigation only for a mobile menu link (isMobile=%s)',
+    (isMobile) => {
+      const { layout } = require('@/app');
+      const onClick = jest.fn();
+      const runtimeLayout = layout({
+        initialState: { currentUser: { name: 'Alice' }, settings: {} },
+        setInitialState: jest.fn(),
+      });
+      const link = runtimeLayout.menuItemRender(
+        { path: '/tgdata/processes', isMobile, onClick },
+        <span>Native process label</span>,
+      );
+      render(link);
+      fireEvent.click(screen.getByRole('link', { name: 'Native process label' }));
+
+      expect(onClick).toHaveBeenCalledTimes(isMobile ? 1 : 0);
+    },
+  );
+
+  it('preserves nested supporting links and restricts scope switches to open/commercial data with tid', () => {
+    const { layout } = require('@/app');
+    mockHistory.location.pathname = '/tgdata/contacts';
+    mockHistory.location.search = '?tid=team%2B1&id=record&mode=view';
+    const runtimeLayout = layout({
+      initialState: { currentUser: { name: 'Alice' }, settings: {} },
+      setInitialState: jest.fn(),
+    });
+    const input = ['tgdata', 'codata', 'mydata', 'tedata'].map((scope) => ({
+      key: `/${scope}`,
+      path: `/${scope}`,
+      children: [
+        'models',
+        'processes',
+        'flows',
+        'sources',
+        'contacts',
+        'flowproperties',
+        'unitgroups',
+      ].map((kind) => ({ path: `/${scope}/${kind}` })),
+    }));
+    const menu = runtimeLayout.menuDataRender([...input, { path: '/data-processing' }]);
+
+    expect(menu.map((item) => item.path)).toEqual(['/tgdata', '/codata']);
+    for (const scope of menu) {
+      const supporting = scope.children.find((child) => child.key?.endsWith(':supporting'));
+      expect(supporting).not.toHaveProperty('path');
+      expect(supporting.children.map((child) => child.path)).toEqual(
+        ['sources', 'contacts', 'flowproperties', 'unitgroups'].map(
+          (kind) => `${scope.path}/${kind}?tid=team%2B1`,
+        ),
+      );
+    }
+    expect(
+      runtimeLayout.menuItemRender({ path: '/codata' }, <span>Commercial</span>).props.to,
+    ).toBe('/codata/contacts?tid=team%2B1');
+    expect(input[0].children[0].path).toBe('/tgdata/models');
+  });
+
+  it('retains hidden routes and nondata destinations while grouping only native data menus', () => {
+    const { layout } = require('@/app');
+    mockHistory.location.pathname = '/mydata/processes/analysis';
+    const runtimeLayout = layout({
+      initialState: { currentUser: { name: 'Alice' }, settings: {} },
+      setInitialState: jest.fn(),
+    });
+    const hiddenExample = { path: '/exampledata', hideInMenu: true };
+    const analysis = { path: '/mydata/processes/analysis', hideInMenu: true };
+    const managerMenu = { path: '/data-processing', access: 'canDataProductManager' };
+    const menu = runtimeLayout.menuDataRender([
+      { path: '/mydata', children: [{ path: '/mydata/processes' }, analysis] },
+      { path: '/codata', children: [{ path: '/codata/models' }, { path: '/codata/processes' }] },
+      hiddenExample,
+      managerMenu,
+    ]);
+
+    expect(menu[0].children).toContain(analysis);
+    expect(menu).toContain(hiddenExample);
+    expect(menu).toContain(managerMenu);
+    expect(
+      runtimeLayout.menuItemRender({ path: '/codata' }, <span>Commercial</span>).props.to,
+    ).toBe('/codata/processes');
+    const nativeGroup = <span>Supporting Data</span>;
+    expect(runtimeLayout.menuItemRender({ key: 'supporting' }, nativeGroup)).toBe(nativeGroup);
+    expect(
+      runtimeLayout.menuItemRender({ path: '/account?tab=connected-apps' }, <span>Account</span>)
+        .props.to,
+    ).toBe('/account?tab=connected-apps');
+  });
+
+  it.each([
+    { currentUser: null, systemStatus: { schemaVersion: 1, phase: 'normal' } },
+    {
+      currentUser: { name: 'Alice', access: 'admin' },
+      systemStatus: { schemaVersion: 1, phase: 'maintenance' },
+    },
+    {
+      currentUser: { name: 'Alice', access: 'data_product_manager' },
+      systemStatus: { schemaVersion: 1, phase: 'verifying' },
+    },
+  ])(
+    'does not expose transformed scopes while authentication or maintenance blocks navigation: %p',
+    (state) => {
+      const { layout } = require('@/app');
+      mockHistory.location.search = '?tid=team-1';
+      const runtimeLayout = layout({
+        initialState: { ...state, settings: {} },
+        setInitialState: jest.fn(),
+      });
+
+      expect(
+        runtimeLayout.menuDataRender([
+          { path: '/tgdata', children: [{ path: '/tgdata/contacts' }] },
+          { path: '/codata', children: [{ path: '/codata/models' }] },
+        ]),
+      ).toEqual([]);
+      expect(runtimeLayout.avatarProps).toBeUndefined();
+      expect(runtimeLayout.actionsRender().map((action) => action.type)).toEqual(
+        state.systemStatus.phase === 'normal' ? ['dark-mode', 'select-lang', 'question-link'] : [],
+      );
+    },
+  );
+
+  it.each([
+    ['admin', ['Data Dashboard']],
+    ['data_product_manager', ['Data Processing']],
+    [undefined, []],
+    ['member', []],
+  ])('keeps exact role shortcut availability for %s', (access, expectedTitles) => {
+    const { layout } = require('@/app');
+    const runtimeLayout = layout({
+      initialState: { currentUser: { access, name: 'Alice' }, settings: {} },
+      setInitialState: jest.fn(),
+    });
+    const shortcuts = runtimeLayout
+      .actionsRender()
+      .filter((action) => ['NationalCarbonDashboard', 'DataProcessing'].includes(action.key));
+
+    expect(shortcuts.map((action) => action.props.title)).toEqual(expectedTitles);
   });
 
   it('limits anonymous login header actions and hides the private avatar and menu', () => {

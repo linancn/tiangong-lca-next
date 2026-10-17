@@ -96,6 +96,7 @@ const Settings: ProLayoutProps & {
   ...brandProfile.layout,
   // Explicit deployment override wins over the profile preset.
   layout: readLayoutEnv(process.env.APP_LAYOUT),
+  splitMenus: readLayoutEnv(process.env.APP_LAYOUT) === 'mix',
   colorWeak: false,
   title: defaultAppTitle,
   pwa: true,

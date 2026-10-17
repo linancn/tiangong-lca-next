@@ -1,5 +1,6 @@
 import { brandProfile } from '../config/brandProfile';
-import { BrandMenuTheme } from '@/contexts/BrandMenuTheme';
+import { BrandMenuTheme, renderBrandHeaderMenu } from '@/contexts/BrandMenuTheme';
+import { buildDataNavigation, resolveDataScopeLink } from '@/components/DataNavigation/navigation';
 import './components/BrandPresentation/style.less';
 import {
   AvatarDropdown,
@@ -41,11 +42,10 @@ import {
 } from '@/services/auth/taskCenters';
 import { reloadBrowserPage } from '@/utils/browserNavigation';
 import { readBrowserStorage, writeBrowserStorage } from '@/services/general/browserStorage';
-import styles from '@/style/custom.less';
 import { AntdAppApiRegistrar } from '@/contexts/AntdAppContext';
 import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
 import { DashboardOutlined, DatabaseOutlined, LinkOutlined, MenuOutlined } from '@ant-design/icons';
-import type { Settings as LayoutSettings } from '@ant-design/pro-components';
+import type { MenuDataItem, Settings as LayoutSettings } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig, RuntimeAntdConfig } from '@umijs/max';
 import type { ReactNode } from 'react';
 import { getBrandTheme } from '../config/branding';
@@ -220,6 +220,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   const canViewDashboard = initialState?.currentUser?.access === 'admin';
   const canViewDataProcessing = initialState?.currentUser?.access === 'data_product_manager';
   const maintenanceActive = isSystemMaintenanceActive(initialState?.systemStatus);
+  let navigationMenuData: MenuDataItem[] = [];
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -429,51 +430,50 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     menuDataRender: (menuDataProps) => {
       if (maintenanceActive || !initialState?.currentUser) {
-        return [];
+        navigationMenuData = [];
+        return navigationMenuData;
       }
-      const location = history.location;
-      const searchParams = new URLSearchParams(location.search);
-      const tid = searchParams.get('tid');
-      if (tid) {
-        const teamMenus = menuDataProps.filter(
-          (item) => item.path === '/tgdata' || item.path === '/codata',
-        );
-        return teamMenus.map((menu) => {
-          return {
-            ...menu,
-            children: menu?.children?.map((item) => {
-              return {
-                ...item,
-                path: item.path + '?tid=' + tid,
-              };
-            }),
-          };
-        });
-      } else {
-        return menuDataProps;
-      }
+      navigationMenuData = buildDataNavigation(menuDataProps, {
+        supportingLabel: formatMessage({
+          id: 'menu.supportingData',
+          defaultMessage: 'Supporting Data',
+        }),
+        supportingIcon: <DatabaseOutlined />,
+        search: history.location.search,
+      });
+      return navigationMenuData;
     },
     menuItemRender: (menuItemProps, defaultDom) => {
       if (menuItemProps.isUrl || !menuItemProps.path) {
         return defaultDom;
       }
       return (
-        <Link to={menuItemProps.path}>
-          {/* {menuItemProps.pro_layout_parentKeys &&
-            menuItemProps.pro_layout_parentKeys.length > 0 && (
-              <span className={styles.menu_icon_margin}>{menuItemProps.icon}</span>
-            )} */}
-          <span className={styles.menu_icon_margin}>{menuItemProps.icon}</span>
-          <span>{menuItemProps.name}</span>
+        <Link
+          to={resolveDataScopeLink(
+            menuItemProps,
+            history.location.pathname,
+            history.location.search,
+            navigationMenuData,
+          )!}
+          onClick={menuItemProps.isMobile ? menuItemProps.onClick : undefined}
+        >
+          {defaultDom}
         </Link>
       );
     },
     ...initialState?.settings,
+    splitMenus:
+      (initialState?.settings?.layout ?? defaultSettings.layout) === 'mix' &&
+      (initialState?.settings?.splitMenus ?? defaultSettings.splitMenus),
     menuContentRender:
       brandProfile.id === 'atlas'
         ? (_props, defaultDom) => (
             <BrandMenuTheme isDarkMode={!!initialState?.isDarkMode}>{defaultDom}</BrandMenuTheme>
           )
+        : undefined,
+    headerContentRender:
+      brandProfile.id === 'atlas'
+        ? (_props, defaultDom) => renderBrandHeaderMenu(defaultDom, !!initialState?.isDarkMode)
         : undefined,
     collapsedButtonRender: (collapsed, defaultDom) =>
       renderAccessibleCollapsedButton(

@@ -1,4 +1,5 @@
 export default {
+  'menu.supportingData': 'Données complémentaires',
   'menu.welcome': 'Bienvenue',
   'menu.more-blocks': 'Plus de blocs',
   'menu.home': 'Accueil',

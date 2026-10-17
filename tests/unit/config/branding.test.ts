@@ -151,7 +151,8 @@ it('selects the Atlas layout preset and honors the explicit layout override', ()
     jest.resetModules();
     const defaults = require('../../../config/defaultSettings').default;
     expect(defaults).toMatchObject({
-      layout: 'side',
+      layout: 'mix',
+      splitMenus: true,
       siderWidth: 256,
       fixedHeader: true,
       menuProps: { theme: 'dark' },

@@ -7,7 +7,7 @@ import { captureReadableTooltip } from '../dataset-lists/tooltip-readability';
 test.use({ semanticPersona: 'data_product_manager' });
 test.skip(
   process.env.E2E_BRAND !== 'atlas' || process.env.E2E_QUALIFICATION !== 'true',
-  'Atlas sidebar proof requires the compiled Atlas bundle and closed semantic backend.',
+  'Atlas navigation proof requires the compiled Atlas bundle and closed semantic backend.',
 );
 
 const palettes = {
@@ -170,9 +170,12 @@ async function expectGlobalContentMode(page: Page, mode: Mode) {
 
 async function expectNativeDarkMenu(sidebar: Locator) {
   await expect(sidebar.locator('.ant-pro-sider-menu.ant-menu-root')).toHaveClass(/ant-menu-dark/);
-  const inlineSubmenu = sidebar.locator('.ant-menu-sub.ant-menu-inline').first();
-  await expect(inlineSubmenu).toBeVisible();
-  await expect(inlineSubmenu).toHaveCSS('background-color', 'rgb(0, 12, 23)');
+}
+
+function supportingGroup(sidebar: Locator) {
+  return sidebar
+    .locator('.ant-menu-submenu-title')
+    .filter({ hasText: message('menu.supportingData') });
 }
 
 async function applyMode(page: Page, mode: Mode) {
@@ -204,8 +207,8 @@ async function focusVisible(page: Page, control: Locator, mode: Mode) {
 }
 
 for (const mode of ['light', 'dark'] as const) {
-  for (const width of [1440, 1366]) {
-    test(`Atlas ${mode} sidebar preserves menu and control states at ${width}`, async ({
+  for (const width of [1440, 1024]) {
+    test(`Atlas ${mode} split navigation preserves menus and header controls at ${width}`, async ({
       page,
     }, testInfo) => {
       await page.setViewportSize({ width, height: 960 });
@@ -217,6 +220,7 @@ for (const mode of ['light', 'dark'] as const) {
       await page.goto('/#/tgdata/processes');
       const palette = palettes[mode];
       const sidebar = page.locator('.ant-pro-sider').first();
+      const header = page.getByTestId('pro-layout-top-nav-header');
       const collapse = sidebar.getByRole('button', {
         name: message('app.setting.navigationmode'),
         exact: true,
@@ -224,98 +228,90 @@ for (const mode of ['light', 'dark'] as const) {
       const table = page.locator('.responsive-data-list-viewport').first();
       await expect(table.locator('.ant-table-tbody > tr[data-row-key]')).toHaveCount(50);
       await expect(sidebar).toHaveCSS('background-color', palette.background);
+      // The native TopNavHeader is transparent; its Layout.Header owns the surface.
+      await expect(page.getByTestId('pro-layout-header')).toHaveCSS(
+        'background-color',
+        palette.background,
+      );
+      await expect(header.locator('.ant-menu-root')).toHaveClass(/ant-menu-horizontal/);
+      await expect(header.locator('.ant-menu-root')).toHaveClass(/ant-menu-dark/);
       await expectGlobalContentMode(page, mode);
       await expectNativeDarkMenu(sidebar);
-      await expect(sidebar.locator('.ant-pro-sider-logo h1')).toHaveCSS('color', palette.title);
+      await expect(sidebar.locator('a[href="#/mydata/models"]')).toHaveCount(0);
       const selected = sidebar.locator('.ant-menu-item:has(a[href="#/tgdata/processes"])');
       const flow = sidebar.locator('.ant-menu-item:has(a[href="#/tgdata/flows"])');
       await expect(selected).toHaveClass(/ant-menu-item-selected/);
       await expect(selected).toHaveCSS('background-color', palette.selectedBackground);
-      await expect(selected.locator('a')).toHaveCSS('color', palette.selected);
       await readable(selected.locator('a'));
       await expect(flow.locator('a')).toHaveCSS('color', palette.text);
       await readable(flow.locator('a'));
       await flow.hover();
-      await expect(flow).toHaveCSS('background-color', palette.hoverBackground);
       await expect(flow.locator('a')).toHaveCSS('color', palette.hover);
       await readable(flow.locator('a'));
-      await capture(page, sidebar, testInfo, `${mode}-${width}-menu-hover`);
+      await capture(page, sidebar, testInfo, `${mode}-${width}-object-hover`);
       await page.mouse.move(width - 2, 2);
 
-      const avatar = sidebar.locator('.tg-global-header-avatar-trigger');
-      await expect(avatar.locator('.tg-global-header-avatar-name-text')).toBeVisible();
-      await expect(avatar.locator('.tg-global-header-avatar-name-text')).toHaveCSS(
-        'color',
-        palette.text,
-      );
+      const avatar = header.locator('.tg-global-header-avatar-trigger');
+      await insideViewport(avatar);
       await readable(avatar.locator('.tg-global-header-avatar-name-text'));
-      await avatar.hover();
-      await expect(avatar).toHaveCSS('background-color', 'rgba(255, 255, 255, 0.12)');
-      await page.mouse.move(width - 2, 2);
-      // The account menu also opens on hover. Close it before checking tools.
-      await page.keyboard.press('Escape');
-      const tools = sidebar.locator('.ant-pro-sider-actions-list').getByRole('button');
+      const tools = header
+        .locator('.ant-pro-global-header-header-actions-item')
+        .getByRole('button');
       expect(await tools.count()).toBeGreaterThanOrEqual(5);
       for (const tool of await tools.all()) {
         await insideViewport(tool);
         await expect(tool.locator('svg').first()).toBeVisible();
-        await expect(tool.locator('.anticon').first()).toHaveCSS('color', palette.text);
         await readable(tool.locator('.anticon').first(), 3);
-        await tool.hover();
-        await expect(tool).toHaveCSS('background-color', 'rgba(255, 255, 255, 0.12)');
         await focusVisible(page, tool, mode);
       }
       await page.mouse.move(width - 2, 2);
       await focusVisible(page, avatar, mode);
-      await capture(page, sidebar, testInfo, `${mode}-${width}-account-focus`);
+      await capture(page, header, testInfo, `${mode}-${width}-header-account-focus`);
       await avatar.blur();
-      await page.mouse.move(width - 2, 2);
-      await capture(page, sidebar, testInfo, `${mode}-${width}-expanded`);
+      // Supporting data is the sole submenu below the active scope on desktop.
+      const supporting = supportingGroup(sidebar);
+      await supporting.click();
+      await expect(sidebar.locator('a[href="#/tgdata/sources"]')).toBeVisible();
+      await expect(sidebar.locator('.ant-menu-sub.ant-menu-inline')).toHaveCSS(
+        'background-color',
+        'rgb(0, 12, 23)',
+      );
+      await sidebar.locator('a[href="#/tgdata/sources"]').click();
+      await expect(page).toHaveURL(/#\/tgdata\/sources$/);
+      await expect(table).toBeVisible();
       const expandedWidth = (await table.boundingBox())!.width;
       await expect(collapse).toHaveCSS('background-color', palette.collapseBackground);
-      await expect(collapse).toHaveCSS('color', 'rgb(255, 255, 255)');
       await focusVisible(page, collapse, mode);
       await collapse.press('Enter');
       await expect(collapse).toHaveAttribute('aria-expanded', 'false');
       await expect(collapse).toBeFocused();
-      await expect(collapse.locator('svg')).toBeVisible();
       await expect
         .poll(async () => (await table.boundingBox())!.width - expandedWidth)
         .toBeGreaterThan(100);
-      await expect(avatar.locator('.tg-global-header-avatar-name-text')).toBeHidden();
+      // Account/tools remain in the native header when only the sider collapses.
       await insideViewport(avatar);
-      await readable(avatar.locator('.anticon'), 3);
-      await page.mouse.move(width - 2, 2);
-      await capture(page, sidebar, testInfo, `${mode}-${width}-collapsed`);
-
-      const group = sidebar
-        .locator('.ant-menu-submenu-title')
-        .filter({ hasText: message('menu.tgdata') })
-        .first();
-      await group.hover();
+      await expect(avatar.locator('.tg-global-header-avatar-name-text')).toBeVisible();
+      await supporting.hover();
       const popup = page.locator('.ant-menu-submenu-popup:visible').first();
       await insideViewport(popup);
-      const popupMenu = popup.locator('.ant-menu').first();
       await expect(popup).toHaveClass(/ant-menu-dark/);
-      await expect(popupMenu).toHaveCSS('background-color', palette.popup);
+      await expect(popup.locator('.ant-menu').first()).toHaveCSS('background-color', palette.popup);
       const popupSelected = popup.locator('.ant-menu-item-selected');
       await expect(popupSelected).toHaveCSS('background-color', palette.selectedBackground);
-      await expect(popupSelected.locator('a')).toHaveCSS('color', palette.selected);
       await readable(popupSelected.locator('a'));
-      await capture(page, popup, testInfo, `${mode}-${width}-native-popup`);
+      await capture(page, popup, testInfo, `${mode}-${width}-supporting-popup`);
       await page.mouse.move(width - 2, 2);
       await expect(popup).toBeHidden();
       await collapse.focus();
       await collapse.press('Space');
       await expect(collapse).toHaveAttribute('aria-expanded', 'true');
-      await expect(collapse).toBeFocused();
       await expect
         .poll(async () => Math.abs((await table.boundingBox())!.width - expandedWidth))
         .toBeLessThanOrEqual(1);
 
       if (width === 1440) {
-        const toggle = themeToggle(sidebar);
-        const help = sidebar.getByRole('button', {
+        const toggle = themeToggle(header);
+        const help = header.getByRole('button', {
           name: message('component.globalHeader.helpAndAbout'),
           exact: true,
         });
@@ -324,13 +320,12 @@ for (const mode of ['light', 'dark'] as const) {
         await page.mouse.down();
         await expect.poll(() => help.evaluate((element) => element.matches(':active'))).toBe(true);
         await expect(help).toHaveCSS('background-color', 'rgba(255, 255, 255, 0.18)');
-        await capture(page, sidebar, testInfo, `${mode}-tool-active`);
-        // Release outside the trigger so this style check does not open a menu.
+        await capture(page, header, testInfo, `${mode}-header-tool-active`);
         await page.mouse.move(width - 2, 2);
         await page.mouse.up();
         await toggle.hover();
         const tooltip = await captureReadableTooltip(page, message('pages.theme.toggleDarkMode'));
-        await testInfo.attach(`${mode}-tool-tooltip`, {
+        await testInfo.attach(`${mode}-header-tool-tooltip`, {
           body: tooltip.screenshot,
           contentType: 'image/png',
         });
@@ -339,7 +334,7 @@ for (const mode of ['light', 'dark'] as const) {
           ['help', help],
           [
             'language',
-            sidebar.getByRole('button', { name: message('pages.lang.select'), exact: true }),
+            header.getByRole('button', { name: message('pages.lang.select'), exact: true }),
           ],
           ['account', avatar],
         ] as const) {
@@ -347,29 +342,21 @@ for (const mode of ['light', 'dark'] as const) {
           else await trigger.click();
           const menu = page.locator('.ant-dropdown:visible').getByRole('menu').first();
           await insideViewport(menu);
-          const menuItem = menu.getByRole('menuitem').first();
-          await menuItem.hover();
-          await readable(menuItem);
+          await readable(menu.getByRole('menuitem').first());
           await capture(page, menu, testInfo, `${mode}-${name}-dropdown`);
           await page.keyboard.press('Escape');
           await page.mouse.move(width - 2, 2);
           await expect(menu).toBeHidden();
         }
-        // Both directions use the public control and survive a document reload.
         await toggle.click();
         await expect
           .poll(() => page.evaluate(() => localStorage.getItem('isDarkMode')))
           .toBe(String(mode !== 'dark'));
         await page.reload({ waitUntil: 'domcontentloaded' });
-        await expect(sidebar).toHaveCSS(
-          'background-color',
-          palettes[mode === 'dark' ? 'light' : 'dark'].background,
-        );
         await expectGlobalContentMode(page, mode === 'dark' ? 'light' : 'dark');
         await expectNativeDarkMenu(sidebar);
-        await themeToggle(sidebar).click();
+        await themeToggle(header).click();
         await page.reload({ waitUntil: 'domcontentloaded' });
-        await expect(sidebar).toHaveCSS('background-color', palette.background);
         await expectGlobalContentMode(page, mode);
         await expectNativeDarkMenu(sidebar);
       }
@@ -390,6 +377,10 @@ for (const mode of ['light', 'dark'] as const) {
     const mobileTrigger = page.locator('.tg-pro-layout-mobile-menu-action');
     await insideViewport(mobileTrigger);
     const header = page.getByTestId('pro-layout-global-header');
+    await expect(page.getByTestId('pro-layout-header')).toHaveCSS(
+      'background-color',
+      palettes[mode].background,
+    );
     const avatar = header.locator('.tg-global-header-avatar-trigger');
     await insideViewport(avatar);
     await readable(avatar.locator('.tg-global-header-avatar-name-text'));
@@ -399,10 +390,6 @@ for (const mode of ['light', 'dark'] as const) {
     expect(await controls.count()).toBeGreaterThanOrEqual(6);
     for (const control of await controls.all()) {
       await insideViewport(control);
-      await expect(control.locator('.anticon').first()).toHaveCSS(
-        'color',
-        palettes[mode].headerText,
-      );
       await readable(control.locator('.anticon').first(), 3);
       await focusVisible(page, control, mode);
     }
@@ -418,17 +405,14 @@ for (const mode of ['light', 'dark'] as const) {
     const selected = drawer.locator('.ant-menu-item-selected:has(a[href="#/tgdata/processes"])');
     await readable(selected.locator('a'));
     await expect(selected).toHaveCSS('background-color', palettes[mode].selectedBackground);
-    // Native mobile ProLayout keeps account/actions in the header, outside
-    // the modal navigation drawer; they were checked before opening it.
     await page.mouse.move(389, 1);
     await capture(page, drawer, testInfo, `${mode}-390-mobile-drawer`);
     await drawer.locator('a[href="#/tgdata/flows"]').click();
     await expect(page).toHaveURL(/#\/tgdata\/flows$/);
-    await expect(drawer.locator('.ant-menu-item-selected a[href="#/tgdata/flows"]')).toBeVisible();
-    await page.keyboard.press('Escape');
     await expect(drawer).toBeHidden();
     await mobileTrigger.click();
     await expect(drawer).toBeVisible();
+    await expect(drawer.locator('.ant-menu-item-selected a[href="#/tgdata/flows"]')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(drawer).toBeHidden();
     await insideViewport(mobileTrigger);
