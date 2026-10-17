@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
+lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
 lastReviewedNote: 'Platform #1297: reviewed the test-only ResultSet replacement assertion correction and generated evidence refresh; bootstrap, repository boundaries, dependency versions and delivery gates remain unchanged.'
 related:
   - .docpact/config.yaml

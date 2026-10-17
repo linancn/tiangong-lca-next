@@ -42,7 +42,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
+lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
 lastReviewedNote: 'Platform #1297: reviewed the ResultSet replacement test ordering correction; initial-state and completed-replacement assertions preserve existing async-test, coverage, source-bound locale evidence and release-gate contracts without product or policy changes.'
 ---
 
