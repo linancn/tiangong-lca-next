@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 3b46c6fc7898274c22381671b18a741c8d1a4222
-lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
+lastReviewedCommit: 70be5b5450b57eb2fe677673de6582757b593f55
+lastReviewedNote: 'Platform #1304: reviewed proxy-addr 2.0.8 and Moment 2.31.0 leaf/peer snapshots on fresh Main 0.0.140 at 70be5b54. Installed ordinary proxy/date/locale controls retain their results and security corrections are intentional. Newer Main source, product version, UI/compiler/runtime graph, assertions, environment and release controls are preserved. The ordinary checked push owns the full local gate; fresh Main Candidate, backmerge and root integration remain required. No production action is authorized.'
 ---
 
 # Testing Troubleshooting
