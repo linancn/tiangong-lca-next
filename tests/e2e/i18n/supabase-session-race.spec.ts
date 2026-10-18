@@ -64,8 +64,9 @@ test('foreign session and sign-out fence a held refresh across actual applicatio
         })
         .click();
       const nativeBeforeWinner = race.taskRequests.length;
-      // Age only A to trigger its public SDK timer, then restore wall time so
-      // B's newly issued token remains valid when A's reload admits it.
+      // Playwright advances the whole context clock. With A observed visible,
+      // the SDK timer enters the shared refresh gate; B may also refresh.
+      // Restore context wall time so B's new token stays valid on reload.
       await a.clock.setFixedTime(new Date());
       await b.bringToFront();
       await expect.poll(() => b.evaluate(() => document.visibilityState)).toBe('visible');
