@@ -450,6 +450,7 @@ export default {
   'pages.dataProcessing.preview.nextPage': 'Weiter',
   'pages.dataProcessing.preview.exportExcel': 'Nach Excel exportieren',
   'pages.dataProcessing.preview.exportFailed': 'Die Ergebnisdetails konnten nicht exportiert werden.',
+  'pages.dataProcessing.preview.valueUnavailable': 'Nicht verfügbar',
   'pages.dataProcessing.preview.warningTitle': 'Einige Vorschaudaten konnten nicht geladen werden',
   'pages.dataProcessing.preview.resultUnavailable': 'Für diese Vorschau sind keine Berechnungsergebnisse verfügbar.',
   'pages.dataProcessing.preview.artifactVerificationTitle': 'Artefaktprüfung',

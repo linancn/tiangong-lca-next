@@ -5,12 +5,12 @@
     "repository": "tiangong-lca/platform",
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "14da567d85ff251025e61e025bb98878f9c0fbd9b8bf44e3338192cc95e86484",
-    "auditedInputDigest": "16e391d9ec1e991399e1aab2c26c7fba4b9318e7981f0c33511989fe5d0354bd"
+    "sourceManifestDigest": "9eed6713bbef4bb36a4cc471ce4bd43e9b84f001d22e43a74681b643e1e81202",
+    "auditedInputDigest": "9f03eddd313acc0eff15aad6d76adcf9c329fcbc176586ff15fa46582987c540"
   },
   "inventory": {
-    "sourceMessageCount": 3611,
-    "localeMessageCount": 3611,
+    "sourceMessageCount": 3612,
+    "localeMessageCount": 3612,
     "leafModuleCount": 31,
     "dynamicFamilyCount": 18,
     "dynamicCallsiteCount": 38,
@@ -44,18 +44,18 @@
       "preserved tokens and layout/RTL/dark risks",
       "candidate/rationale/risk/validation"
     ],
-    "messageCount": 3611,
-    "completeCount": 3611,
+    "messageCount": 3612,
+    "completeCount": 3612,
     "blockedCount": 0,
-    "dossierDigest": "ed0a87f4e0d29c425febf1e0df18172efda875dc1bb34351bd5c6bed96ad1c90",
-    "catalogDigest": "190d1bce005880b337f28c58f5d401af856c591c69464228efe79256a8d27d1f",
+    "dossierDigest": "13e01ffe12c592dc06025384863bdfbfd8c724f13844e3566b42806ef76becb7",
+    "catalogDigest": "1a31aa1d5e34d372d017aaabc5b3c12414b5e2b777f639ba8399abc127f1d075",
     "moduleCount": 32,
     "moduleDigest": "3b4f2df2201d552cc6e09b75bcebf64a30ac3511d401d79c50d4eb6e806195d3",
     "roleCounts": {
       "error-or-validation": 409,
       "explanatory-copy": 125,
       "field-guidance": 65,
-      "label-or-body-copy": 1482,
+      "label-or-body-copy": 1483,
       "navigation-or-tab": 245,
       "reserved-catalog-copy": 330,
       "status-or-empty-state": 136,
@@ -69,11 +69,11 @@
       "interactive-ready": 585,
       "retained-not-currently-reachable": 470,
       "successful-completion": 198,
-      "visible": 1885
+      "visible": 1886
     },
-    "riskCounts": { "high": 1691, "low": 1677, "medium": 243 },
-    "highRiskMessageCount": 1691,
-    "highRiskMessageDigest": "86098f79547f6938dd742f1bc9cb4a1c83e4e3053d91672f86707fa899e63419"
+    "riskCounts": { "high": 1692, "low": 1677, "medium": 243 },
+    "highRiskMessageCount": 1692,
+    "highRiskMessageDigest": "0cc0db33e51a65019407721252765b9280c6e7452df642419bf913d790f470fe"
   },
   "typedContentDossiers": {
     "sourcePath": "src/components/ImportTidasPackage/reportContent.ts",
@@ -144,7 +144,7 @@
         "focusedVariantCount": 8
       },
       "sourceFileCount": 42,
-      "sourceEvidenceDigest": "df222dcede9c090ad93e07f5a693ad312f5617c85f94d02af048e3cc8f72c36c",
+      "sourceEvidenceDigest": "4f52ebf1bbcb93e102781ebb72ad6adef11c773994fce80188fc5b84a1b29234",
       "rowEvidence": [
         {
           "executableAssertionId": "rv.root.redirect-to-welcome",
@@ -232,7 +232,7 @@
           "route": "/oauth/consent",
           "viewState": "invalid-authorization-request",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "347bb7755542e98cace5a8bba9564aa2edc5d35e39548add28a63f0a61790253",
+          "sourceDigest": "0c3bad8e3a9e14cb56d61d8dbec20a5b1fcace168745cc651a4b5433af81dbae",
           "focusedTestDigest": "d54b33052766e376903b1b0f18f9a12cd74d27dda7dca2fe01f731ee723b91fb",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "a04d26991f78275e05a5e14ead16da86f547281a453c3553c1450c9d7b7f2146",
@@ -250,7 +250,7 @@
           "route": "/user/login",
           "viewState": "login-and-register",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "5cbeb362c2bdf9f6ced58027c028e9c784895d79f6429fe90e0e593846c8da84",
+          "sourceDigest": "14e14e089b735979618485ccb174236f21f5f275d33a9ff7344ddc3e630177a9",
           "focusedTestDigest": "f3f1baf3738b6474c20551b5d6e2b7b4c3f1328802bb03837e9f389bf144cdae",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "5598e3ac5fb06b788671b7f7e67b5643b4f0057c5c9deef1fe99da6152ed7fc7",
@@ -274,7 +274,7 @@
           "route": "/user/login/password_forgot",
           "viewState": "password-forgot",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "f241f88116a0faff5e0b1682f5288c9560be89907cec4015ced02d69432ae949",
+          "sourceDigest": "ed73a0ca464f6795f09cfc69a9b2dcd1a42d5f30d12156fa41b9f73893f3e0fc",
           "focusedTestDigest": "276a83ee1f0b087c4b9631114899e9043afef5e85f078c9d47be1a22aa926344",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "0ed279e14ece4881b06a02af5603f00ded7d5e8b34bf6de078d7b8d46cf68f00",
@@ -298,7 +298,7 @@
           "route": "/user/login/password_reset",
           "viewState": "password-reset",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "0b414503e994f0127f76cdc9d628a1f81bb1d256b72ab9e4c1aa06d9b463b1bd",
+          "sourceDigest": "59ed829c5007b9a81d9ab847ead3b7733daa9b7df61449ff8db06e9a17686a68",
           "focusedTestDigest": "b78902356809301e60b8184f7272e56cc1e875df480b8a71b6d1d214653f9a18",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "55def77fcde5265acb3f816b429fc087d63aafe080dbe461da66189fbcd75fde",
@@ -391,7 +391,7 @@
           "route": "*",
           "viewState": "not-found",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "3b1af3be8871b29e0d9c8682af8cb6fcb07549adb794c64b85a8fb4468b13c9f",
+          "sourceDigest": "841439358543a6c925deb39fabcaa3b42e7826f24114c752d3a59b499a4fc80b",
           "focusedTestDigest": "0977e99cc3b323b7448dc6b97056cf3a379444838a9fc46e13f7398268cd8a75",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "b8ea1e9c64fab4ac0f3adc277885552796c3a6f8f15c10a81ade409284f6cb99",
@@ -1225,13 +1225,13 @@
           "route": "/data-processing",
           "viewState": "build-preview-publication-tabs",
           "requiredEvidenceScope": "access-boundary-observed",
-          "sourceDigest": "f834f831838efde98206aeb279ecbca852fc3c9ff6099b4180cbabff97122524",
-          "focusedTestDigest": "b9a1aa6f6a6f2e9703f5a573c867ea582fe6a1e115057ef8dd1f6bf589b5e215",
+          "sourceDigest": "43efbf69203b8e13a6f1688af5771425d9332ccc3e9b77d5ad05028bf5cede34",
+          "focusedTestDigest": "c2d281c4cc7cb6596e50d72c40b82f7bc99fdd6fb55412d54534302f7c54a910",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "bab91c736a148188c3778bd30db083f6ac1af6408c3505f399dfdebf9d510ccc",
           "derivedMessageCount": 145,
-          "derivedMessageDigest": "cf5ce4322fc0c7314ec6cc1ed47d8eae09248beb922d629d1af676000646fe70",
-          "stateSignals": ["empty", "error", "loading", "modal", "success", "unavailable"],
+          "derivedMessageDigest": "7a3d0f9eec281c046c4e7fa91a408fd8b255705750658e221746bd573f50e882",
+          "stateSignals": ["empty", "error", "loading", "modal", "retry", "success", "unavailable"],
           "queryParameters": [],
           "navigationTargets": [
             "/dashboard/national-carbon",
@@ -1298,7 +1298,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "6ec572fe879d1fd2dc48e6dea75b5d132e0c11a091dcdd5f4650669c9af89254",
+      "rowEvidenceDigest": "d838121388ba950d90acb3e2bf55109f219f76782a39dc8856312af8cf543203",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1322,5 +1322,5 @@
     "docs/plans/i18n-de-DE/style-guide.md": "b139bb9cc48a23f9b9f69efc44611daba4684c3495aa5cf4fb0ac57e3ab3994f"
   },
   "blockedContext": [],
-  "contextDigest": "58ff1d30f2e9a50fed9f0175bf9eb4ce7f0bd44d48f2f4c0a402fb053d2a45ac"
+  "contextDigest": "d892d04ee067e5a8b8694eebc0ab97bc1070c79634bcd1f90ded50d98240337e"
 }
