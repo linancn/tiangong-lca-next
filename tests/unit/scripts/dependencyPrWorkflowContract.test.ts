@@ -10,6 +10,18 @@ const workflow = fs.readFileSync(
   'utf8',
 );
 
+const FORBIDDEN_COMPATIBILITY_OPERATIONS =
+  /permissions:|secrets\.|GITHUB_TOKEN|GH_TOKEN|pnpm install|pnpm prepush:gate|deploy|release:to-dev|release:promote/u;
+
+function workflowJob(source: string, name: string): string {
+  const header = `\n  ${name}:\n`;
+  const start = source.indexOf(header);
+  if (start < 0) throw new Error(`Workflow job is missing: ${name}`);
+  const bodyStart = start + header.length;
+  const next = source.slice(bodyStart).search(/^  [A-Za-z0-9_-]+:[ \t]*$/mu);
+  return source.slice(start + 1, next < 0 ? undefined : bodyStart + next).trimEnd();
+}
+
 describe('ordinary dependency workflow validation ownership', () => {
   const cases = [
     ['Dev bot dependency', 'dev', 'dependabot/npm_and_yarn/ui', '', true, 'pull_request'],
@@ -70,7 +82,7 @@ describe('ordinary dependency workflow validation ownership', () => {
   it.each(cases)(
     '%s selects the same owner for the compatibility probe',
     (_name, base, head, body, expected, event) => {
-      const probe = workflow.slice(workflow.indexOf('  action-compatibility:'));
+      const probe = workflowJob(workflow, 'action-compatibility');
       const expression = probe.match(/\n    if: >-\n([\s\S]*?)\n    runs-on:/u)?.[1];
       if (!expression) throw new Error('Compatibility job selection expression is missing.');
       expect(
@@ -93,7 +105,7 @@ describe('ordinary dependency workflow validation ownership', () => {
   );
 
   it('exercises the selected tools and archive upload without adding release authority', () => {
-    const probe = workflow.slice(workflow.indexOf('  action-compatibility:'));
+    const probe = workflowJob(workflow, 'action-compatibility');
     expect(probe).toContain(
       'uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0',
     );
@@ -107,11 +119,32 @@ describe('ordinary dependency workflow validation ownership', () => {
     expect(probe).toContain('archive: true');
     expect(probe).toContain('if-no-files-found: error');
     expect(probe).toContain('--stage artifact-upload');
-    expect(probe).not.toMatch(
-      /permissions:|secrets\.|GITHUB_TOKEN|GH_TOKEN|pnpm install|pnpm prepush:gate|deploy|release:to-dev|release:promote/u,
-    );
+    expect(probe).not.toMatch(FORBIDDEN_COMPATIBILITY_OPERATIONS);
     expect(workflow).toContain('permissions:\n  contents: read');
   });
+
+  it('does not attribute a separate browser install to the compatibility probe', () => {
+    const probe = workflowJob(workflow, 'action-compatibility');
+    const browser = workflowJob(workflow, 'semantic-qualification');
+    expect(browser).toContain('pnpm install --frozen-lockfile');
+    expect(probe).not.toContain('pnpm install');
+    expect(probe).not.toContain('semantic-qualification:');
+    expect(probe).toContain('--stage artifact-upload');
+    expect(() => workflowJob(workflow, 'missing-job')).toThrow('Workflow job is missing');
+  });
+
+  it.each(['pnpm install', 'pnpm prepush:gate', 'GH_TOKEN=synthetic', 'release:to-dev'])(
+    'still rejects %s when it is actually inside the compatibility job',
+    (forbidden) => {
+      const controlled = workflow.replace(
+        '      - name: Check out exact compatibility candidate\n',
+        `      - name: Forbidden compatibility control\n        run: ${forbidden}\n      - name: Check out exact compatibility candidate\n`,
+      );
+      const probe = workflowJob(controlled, 'action-compatibility');
+      expect(probe).toContain(`run: ${forbidden}`);
+      expect(() => expect(probe).not.toMatch(FORBIDDEN_COMPATIBILITY_OPERATIONS)).toThrow();
+    },
+  );
 
   it('retains a read-only canonical source gate without release or deployment authority', () => {
     expect(workflow).toContain('contents: read');

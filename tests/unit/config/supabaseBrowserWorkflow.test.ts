@@ -3,13 +3,22 @@ import path from 'node:path';
 
 const root = path.resolve(__dirname, '../../..');
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/dependency-pr.yml'), 'utf8');
-const browserJob = workflow.split('\n  semantic-qualification:\n')[1];
+function workflowJob(source: string, name: string): string {
+  const header = `\n  ${name}:\n`;
+  const start = source.indexOf(header);
+  if (start < 0) throw new Error(`Workflow job is missing: ${name}`);
+  const bodyStart = start + header.length;
+  const next = source.slice(bodyStart).search(/^  [A-Za-z0-9_-]+:[ \t]*$/mu);
+  return source.slice(start + 1, next < 0 ? undefined : bodyStart + next).trimEnd();
+}
+
+const browserJob = workflowJob(workflow, 'semantic-qualification');
 
 describe('ordinary dependency browser qualification boundary', () => {
   it('uses the same protected-phase selection and one unchanged aggregate owner', () => {
     const condition = (section: string) =>
       section.split('    if: >-\n')[1].split('    runs-on:')[0];
-    expect(condition(browserJob)).toBe(condition(workflow.split('\n  dependency-gate:\n')[1]));
+    expect(condition(browserJob)).toBe(condition(workflowJob(workflow, 'dependency-gate')));
     expect(workflow.match(/run: pnpm prepush:gate/gu)).toHaveLength(1);
     expect(browserJob).toContain('ref: ${{ github.event.pull_request.head.sha || github.sha }}');
     expect(browserJob).toContain('persist-credentials: false');
@@ -19,6 +28,13 @@ describe('ordinary dependency browser qualification boundary', () => {
       /secrets\.|pull_request_target|production|release:to-dev|e2e:dev/u,
     );
     expect(workflow).toContain('permissions:\n  contents: read');
+  });
+
+  it('bounds the browser job when another ordinary job follows it', () => {
+    const controlled = `${workflow}\n  later-control:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo later-job-sentinel\n`;
+    expect(workflowJob(controlled, 'semantic-qualification')).toBe(browserJob);
+    expect(workflowJob(controlled, 'later-control')).toContain('later-job-sentinel');
+    expect(browserJob).not.toContain('later-job-sentinel');
   });
 
   it('keeps canonical proof separate from owned cleanup and artifact service acknowledgement', () => {
