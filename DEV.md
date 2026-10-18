@@ -44,9 +44,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-17
-lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
-lastReviewedNote: 'Platform #1297: reviewed the test-only ResultSet replacement assertion correction and generated evidence refresh; bootstrap, repository boundaries, dependency versions and delivery gates remain unchanged.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 230fd68b77b1168d2b8c30108ff9961aeed84867
+lastReviewedNote: 'Platform #1304: reviewed proxy-addr 2.0.8 and Moment 2.31.0 leaf/peer snapshots at 230fd68b. Installed ordinary proxy/date/locale controls retain their results and the two security corrections are intentional. Product 0.0.139, UI/compiler/runtime graph, source/assertions, environment and release controls remain unchanged. The ordinary checked push owns the full local gate; fresh Main Candidate, backmerge and root integration remain required. No production action is authorized.'
 ---
 
 # Development Bootstrap
