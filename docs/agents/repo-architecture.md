@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: 0131ba945642d8c1b2d3eaed8775e287491ccd8b
-lastReviewedNote: 'Platform #1315: reviewed combined qualification at 0131ba94, including installed Supabase 2.118.0 lockless defaults, actual SDK/consumer contracts, context-wide Playwright clock with observed tab visibility, unchanged canonical controller and scoped PR/resource proof. Focused checks, lint, web/Electron checks, build and locale regeneration pass. Actual hosted three-browser, capacity, artifact and cleanup qualification remains pending; Main owns the final ordinary full-gate push and delivery. Product/SDK/Zod/toolchain/authorization/release boundaries remain unchanged.'
+lastReviewedCommit: c08c66edd935d42f8aa258b76dd52727e269a701
+lastReviewedNote: "Platform #1315: reviewed the exact combined candidate and test-only workflow-boundary correction at c08c66ed. Named-job extraction preserves all compatibility no-install/no-aggregate/no-auth/no-release and global permission guards;29 focused tests and lint pass. Main's first ordinary full gate failed solely on the prior unbounded test slice before transport; a new ordinary full checked push and hosted browser/capacity/artifact/cleanup acceptance remain Main-owned. Workflow/runtime/package/coverage/release policies are unchanged."
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
