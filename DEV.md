@@ -46,8 +46,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 61a07a81efee0b2d203865736a8878daac836fc3
-lastReviewedNote: 'Platform #1308: reviewed result-preview pagination and failure recovery proof; bootstrap, runtime, dependencies and checked-push gates are unchanged.'
+lastReviewedCommit: f8294fd8ee58c80cdb10968ab1751be781a5794d
+lastReviewedNote: 'Platform #1304: reviewed the two security leaf/peer closures on accepted Main 0.0.141 at f8294fd8. All newer preview, locale and test work, product version, environment, runtime, graph and release controls are preserved outside proxy-addr 2.0.8 and Moment 2.31.0. Prior 894d6076 CI qualifies only that source; this composition requires new checked-push and hosted qualification. No assertions, thresholds, branch policy or production authority change.'
 ---
 
 # Development Bootstrap
