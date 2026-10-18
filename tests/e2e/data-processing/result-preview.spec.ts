@@ -278,6 +278,10 @@ test('opens exact process results with readable names, units and a usable narrow
   });
   await dialog.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(dialog).toHaveCount(0);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.getByRole('tab', { name: 'Exports', exact: true }).click();
+  await expect(page.getByText('calculation-bundle.json', { exact: true })).toBeVisible();
+  await expect(page.getByText('Process results', { exact: true })).toHaveCount(0);
   expect(writes).toEqual([]);
   expect(unexpected).toEqual([]);
 });

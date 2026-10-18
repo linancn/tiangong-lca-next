@@ -560,7 +560,11 @@ const CalculationBundlePanel = ({
   return (
     <Card
       className={styles.bundleCard}
-      title={t('pages.dataProcessing.resultView.title', 'Process results')}
+      title={
+        view === 'exports'
+          ? t('pages.dataProcessing.workspace.exports', 'Exports')
+          : t('pages.dataProcessing.resultView.title', 'Process results')
+      }
     >
       <Space orientation='vertical' size='middle' className={styles.previewDetails}>
         {view !== 'exports' ? processControl : null}

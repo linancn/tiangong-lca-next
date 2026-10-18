@@ -560,6 +560,8 @@ describe('CalculationBundlePanel', () => {
   it('opens exports without loading numerical preview chunks or exposing a process selector', async () => {
     render(<CalculationBundlePanel packageId='package' view='exports' />);
     expect(await screen.findByRole('button', { name: 'Generate export' })).toBeInTheDocument();
+    expect(screen.getByText('Exports')).toBeInTheDocument();
+    expect(screen.queryByText('Process results')).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Process' })).not.toBeInTheDocument();
     expect(
       mockFetchRecords.mock.calls.every(([artifact]) => artifact.kind === 'process_axis'),
