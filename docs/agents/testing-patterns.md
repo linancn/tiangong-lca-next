@@ -46,8 +46,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: d067d381e859d76f38ecf94d0fceb1b33e6f58c9
-lastReviewedNote: 'Platform #1316: reviewed the coherent UI graph and bounded diagnostics for synthetic release-fixture external failures. The original complete gate failed 29 releaseWorkflow cases with command_failed/status40 while512suites passed; repeated focused48case runs pass but the original cause remains unproved. The diagnostic preserves every spawn argument, returned result and assertion, escapes/bounds output and never serializes environment/account configuration. An injected owned git failure still fails and exposes its exact command; normal48cases pass. Production release guards, packages, coverage and browser policies remain unchanged. New ordinary full checked push and exact-head hosted qualification remain required; no delivery or release claim.'
+lastReviewedCommit: c3ce88e3bf92c19c5b3db6eeb13a78dc163beb27
+lastReviewedNote: 'Platform #1316: reviewed the coherent UI graph, bounded fixture diagnostics and explicit CommonJS executable boundary. Actual ordinary gate diagnosed require-not-defined under an ESM temporary ancestor; both original failed runs remain failed. New real-command regression preserves all48 old assertions and command bodies; focused49cases and independent18module-scope scenarios pass. Production guards, dependencies, original temporary-path defaults, coverage and browser policy remain unchanged. Fresh complete ordinary checked push and exact-head hosted qualification remain required; no delivery or release claim.'
 ---
 
 # Testing Patterns Reference
