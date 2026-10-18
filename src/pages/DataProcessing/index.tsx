@@ -5,6 +5,7 @@ import {
   closureCheckPollIntervalMs,
   closureCheckPollMaxAttempts,
 } from '@/components/ClosureTaskDetail';
+import { dataListPagination } from '@/components/ResponsiveDataList';
 import LcaReleaseReadPanel from '@/components/LcaReleaseReadPanel';
 import {
   createClosureCheck,
@@ -143,7 +144,7 @@ type LciaResultPackageOption = {
 type StatusTone = 'success' | 'error' | 'processing' | 'warning' | 'default';
 
 const submittedBuildPendingPhase = 'waiting_for_worker_processing';
-const previewPageSize = 25;
+const previewPageSize = dataListPagination.defaultPageSize;
 function isTerminalTaskStatus(status: TaskSummaryV2['workerStatus'] | undefined): boolean {
   return Boolean(
     status && ['completed', 'blocked', 'stale', 'failed', 'cancelled'].includes(status),
@@ -687,6 +688,7 @@ const DataProcessing = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const resultSetLoadGeneration = useRef(0);
   const previewReadGeneration = useRef(0);
+  const previewPageSizeRef = useRef(previewPageSize);
   const previewRouteKey = `${deepLink.resultSetId ?? ''}:${deepLink.packageId ?? ''}`;
   const previewRouteRef = useRef(previewRouteKey);
   previewRouteRef.current = previewRouteKey;
@@ -1173,10 +1175,6 @@ const DataProcessing = () => {
       return rows;
     }
 
-    if (action === 'previewPackage') {
-      return rows;
-    }
-
     if (action === 'publishPackage') {
       addRow(
         t('pages.dataProcessing.command.publicationId', 'Publication ID'),
@@ -1281,6 +1279,11 @@ const DataProcessing = () => {
       return;
     }
 
+    if (action === 'previewPackage') {
+      // Read state belongs to the result panel, including partially loaded responses.
+      setCommandStatus(null);
+      return;
+    }
     setCommandStatus({
       kind: 'success',
       message: commandSuccessMessage(action, result.data),
@@ -1570,6 +1573,7 @@ const DataProcessing = () => {
     options: {
       impactCategoryId?: string;
       rowOffset: number;
+      rowLimit?: number;
     },
   ) => {
     const generation = ++previewReadGeneration.current;
@@ -1583,14 +1587,19 @@ const DataProcessing = () => {
       history.replace({ pathname: location.pathname, search: `?${searchParams.toString()}` });
     }
     const rowOffset = options.rowOffset;
+    const rowLimit = options.rowLimit ?? previewPageSizeRef.current;
+    previewPageSizeRef.current = rowLimit;
     const impactCategoryId = options.impactCategoryId ?? previewImpactCategoryId;
-    const result = await runCommand('previewPackage', () =>
-      previewLciaResultPackage({
-        packageId,
-        rowOffset,
-        rowLimit: previewPageSize,
-        ...(impactCategoryId ? { impactCategoryId } : {}),
-      }),
+    const result = await runCommand(
+      'previewPackage',
+      () =>
+        previewLciaResultPackage({
+          packageId,
+          rowOffset,
+          rowLimit,
+          ...(impactCategoryId ? { impactCategoryId } : {}),
+        }),
+      () => generation === previewReadGeneration.current && route === previewRouteRef.current,
     );
     if (
       !mountedRef.current ||
@@ -1616,6 +1625,7 @@ const DataProcessing = () => {
 
   useEffect(() => {
     setPreviewData(null);
+    previewPageSizeRef.current = previewPageSize;
     setPreviewImpactCategoryId(undefined);
     setCommandStatus(null);
     setSelectedPackageId(deepLink.packageId);
@@ -2339,7 +2349,8 @@ const DataProcessing = () => {
   const previewResultReady = previewDetailPage.status === 'ready';
   const previewResultUnavailableReason = firstString(previewDetailPage.reason);
   const previewDetailTotal = numberField(previewDetailPage.totalCount);
-  const previewDetailReturned = numberField(previewDetailPage.returnedCount);
+  const previewDetailLimit = numberField(previewDetailPage.limit) || previewPageSizeRef.current;
+  const previewDetailOffset = numberField(previewDetailPage.offset);
   const selectedPreviewPackageId = firstString(previewSummary.packageId, selectedPackageId);
   const selectedPreviewImpactCategoryId = firstString(
     previewDetailPage.impactCategoryId,
@@ -2402,7 +2413,7 @@ const DataProcessing = () => {
       width: 140,
       render: (value: unknown) =>
         value === null || value === undefined || value === ''
-          ? '-'
+          ? t('pages.dataProcessing.preview.valueUnavailable', 'Unavailable')
           : formatBundleNumber(Number(value)),
     },
     {
@@ -2428,41 +2439,12 @@ const DataProcessing = () => {
     },
   ];
 
-  const renderPreviewPager = (
-    page: Record<string, unknown>,
-    total: number,
-    returned: number,
-    onOffsetChange: (offset: number) => void,
-  ) => {
-    const offset = numberField(page.offset);
-    const limit = numberField(page.limit) || previewPageSize;
-    const start = total === 0 ? 0 : offset + 1;
-    const end = total === 0 ? 0 : offset + returned;
-    const canPrevious = offset > 0;
-    const canNext = offset + returned < total;
-
-    return (
-      <Space size='small' className={styles.previewPager}>
-        <Button
-          size='small'
-          disabled={!canPrevious}
-          onClick={() => onOffsetChange(Math.max(0, offset - limit))}
-        >
-          {t('pages.dataProcessing.preview.previousPage', 'Previous')}
-        </Button>
-        <span>{`${start}-${end} / ${total}`}</span>
-        <Button size='small' disabled={!canNext} onClick={() => onOffsetChange(offset + limit)}>
-          {t('pages.dataProcessing.preview.nextPage', 'Next')}
-        </Button>
-      </Space>
-    );
-  };
-
-  const reloadPreviewDetailPage = (rowOffset: number) => {
+  const reloadPreviewDetailPage = (rowOffset: number, rowLimit = previewDetailLimit) => {
     if (selectedPreviewPackageId) {
       void previewPackageById(selectedPreviewPackageId, {
         impactCategoryId: previewImpactCategoryId,
         rowOffset,
+        rowLimit,
       });
     }
   };
@@ -2555,12 +2537,6 @@ const DataProcessing = () => {
             title={t('pages.dataProcessing.preview.resultDetailsTitle', 'Result details')}
             extra={
               <Space size='small' className={styles.previewResultActions}>
-                {renderPreviewPager(
-                  previewDetailPage,
-                  previewDetailTotal,
-                  previewDetailReturned,
-                  reloadPreviewDetailPage,
-                )}
                 <Button
                   size='small'
                   icon={<DownloadOutlined />}
@@ -2585,31 +2561,49 @@ const DataProcessing = () => {
                   onChange={handlePreviewImpactChange}
                 />
               </Space>
-              {previewWarnings.length > 0 ? (
+              {!previewResultReady || previewWarnings.length > 0 ? (
                 <Alert
-                  type='warning'
-                  title={t(
-                    'pages.dataProcessing.preview.warningTitle',
-                    'Some preview data could not be loaded',
-                  )}
-                />
-              ) : null}
-              {!previewResultReady ? (
-                <Alert
-                  type='warning'
+                  type={previewResultReady ? 'warning' : 'error'}
+                  showIcon
                   title={
-                    previewResultUnavailableReason ??
-                    t(
-                      'pages.dataProcessing.preview.resultUnavailable',
-                      'Calculation results are not available for this preview.',
-                    )
+                    previewResultReady
+                      ? t(
+                          'pages.dataProcessing.preview.warningTitle',
+                          'Some preview data could not be loaded',
+                        )
+                      : t(
+                          'pages.dataProcessing.preview.resultUnavailable',
+                          'Calculation results are not available for this preview.',
+                        )
+                  }
+                  action={
+                    <Button
+                      loading={submittingAction === 'previewPackage'}
+                      onClick={() => reloadPreviewDetailPage(previewDetailOffset)}
+                    >
+                      {t('pages.dataProcessing.bundle.retry', 'Retry')}
+                    </Button>
                   }
                 />
               ) : null}
               <div className={styles.previewTableWrap}>
                 <Table
                   size='small'
-                  pagination={false}
+                  loading={submittingAction === 'previewPackage'}
+                  pagination={{
+                    ...dataListPagination,
+                    className: 'result-preview-pagination',
+                    current: Math.floor(previewDetailOffset / previewDetailLimit) + 1,
+                    pageSize: previewDetailLimit,
+                    total: previewDetailTotal,
+                    responsive: true,
+                    disabled: submittingAction === 'previewPackage',
+                    onChange: (page, pageSize) =>
+                      reloadPreviewDetailPage(
+                        pageSize === previewDetailLimit ? (page - 1) * pageSize : 0,
+                        pageSize,
+                      ),
+                  }}
                   rowKey={(row: Record<string, unknown>) =>
                     `${stringifyCommandData(row.processId)}:${stringifyCommandData(
                       row.processVersion,
@@ -2630,7 +2624,18 @@ const DataProcessing = () => {
                 label: t('pages.dataProcessing.workspace.evidence', 'Technical evidence'),
                 children: (
                   <Space orientation='vertical' className={styles.previewDetails}>
-                    {' '}
+                    {previewResultUnavailableReason || previewWarnings.length > 0 ? (
+                      <pre className={styles.previewDiagnostics}>
+                        {JSON.stringify(
+                          {
+                            reason: previewResultUnavailableReason,
+                            warnings: previewWarnings,
+                          },
+                          null,
+                          2,
+                        )}
+                      </pre>
+                    ) : null}
                     <Card title={t('pages.dataProcessing.preview.inputScopeTitle', 'Input scope')}>
                       <Descriptions
                         bordered
@@ -2780,7 +2785,13 @@ const DataProcessing = () => {
                             key: 'snapshot-id',
                             label: t('pages.dataProcessing.preview.snapshotId', 'Snapshot ID'),
                             children: stringifyCommandData(
-                              previewSnapshotBuilder.resolved_snapshot_id,
+                              firstString(
+                                previewSummary.snapshotId,
+                                isRecord(previewArtifactManifest.snapshotSource)
+                                  ? previewArtifactManifest.snapshotSource.snapshotId
+                                  : undefined,
+                                previewSnapshotBuilder.resolved_snapshot_id,
+                              ),
                             ),
                           },
                           {

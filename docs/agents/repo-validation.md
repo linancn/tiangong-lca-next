@@ -47,8 +47,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 70be5b5450b57eb2fe677673de6582757b593f55
-lastReviewedNote: 'Platform #1304: reviewed proxy-addr 2.0.8 and Moment 2.31.0 leaf/peer snapshots on fresh Main 0.0.140 at 70be5b54. Installed ordinary proxy/date/locale controls retain their results and security corrections are intentional. Newer Main source, product version, UI/compiler/runtime graph, assertions, environment and release controls are preserved. The ordinary checked push owns the full local gate; fresh Main Candidate, backmerge and root integration remain required. No production action is authorized.'
+lastReviewedCommit: 61a07a81efee0b2d203865736a8878daac836fc3
+lastReviewedNote: 'Platform #1308: reviewed shared result pagination, consolidated unavailable feedback, retry and zero-value behavior, snapshot evidence and synthetic browser proof; delivery gates and authorization are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -296,3 +296,5 @@ These synthetic, loopback-only screenshots and checks prove frontend presentatio
 For independent calculation exports, keep the new panel and service inside statement/branch coverage. Focused proof covers no enqueue on mount, explicit request, terminal/read-failure polling stop, package/format/page reset, stale read/request/download completion, verified file/manifest downloads and authorization/binding drift. Pair this with credential-free rendered desktop/narrow interaction and the separate original-full-library Database/Edge/Worker scenario. Synthetic browser evidence does not claim a logged-in production replay.
 
 For Platform #1302, `pnpm exec playwright test --config=playwright.result-preview.config.ts` builds the qualification frontend and intercepts all backend requests. It verifies result-list to exact-version drawer navigation, reviewed LCIA labels/units, LCI metadata and 390px layout without authorizing any calculation or publication. Screenshots are local synthetic evidence under `.local/e2e-release/result-preview`; this suite is separate from scope-closure and semantic-language release qualification.
+
+Result-preview regressions also cover server pagination, page-size changes, one unavailable notice, same-page retry, zero-valued results, snapshotSource evidence and stale-read suppression. The hermetic result-preview browser suite exercises these transitions at desktop and narrow widths; synthetic browser success does not prove that a production Edge revision has been deployed.

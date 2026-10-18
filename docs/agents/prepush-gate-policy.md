@@ -46,8 +46,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 70be5b5450b57eb2fe677673de6582757b593f55
-lastReviewedNote: 'Platform #1304: reviewed proxy-addr 2.0.8 and Moment 2.31.0 leaf/peer snapshots on fresh Main 0.0.140 at 70be5b54. Installed ordinary proxy/date/locale controls retain their results and security corrections are intentional. Newer Main source, product version, UI/compiler/runtime graph, assertions, environment and release controls are preserved. The ordinary checked push owns the full local gate; fresh Main Candidate, backmerge and root integration remain required. No production action is authorized.'
+lastReviewedCommit: 61a07a81efee0b2d203865736a8878daac836fc3
+lastReviewedNote: 'Platform #1308: reviewed shared result pagination, consolidated unavailable feedback, retry and zero-value behavior, snapshot evidence and synthetic browser proof; delivery gates and authorization are unchanged.'
 ---
 
 # Pre-Push Gate Policy
