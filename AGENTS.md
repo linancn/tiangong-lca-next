@@ -49,8 +49,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: 5d4779ddfaef170303e5b5019a0cb23d85d9c87e
-lastReviewedNote: 'Platform #1315: reviewed six-family Supabase 2.118.0 graph, actual installed SDK/consumer contracts, unchanged canonical browser controller, scoped PR job and exact resource recovery; reviewed successor 5d4779dd correcting the installed lockless-default claim and binding explicit locale/observed tab visibility. Focused proof, lint, web/Electron checks, build and canonical locale regeneration pass. Actual hosted three-browser, capacity, artifact and cleanup qualification remains pending; Main owns the final ordinary full-gate push and delivery. Product/SDK/Zod/toolchain/authorization/release boundaries remain unchanged.'
+lastReviewedCommit: 0131ba945642d8c1b2d3eaed8775e287491ccd8b
+lastReviewedNote: 'Platform #1315: reviewed combined qualification at 0131ba94, including installed Supabase 2.118.0 lockless defaults, actual SDK/consumer contracts, context-wide Playwright clock with observed tab visibility, unchanged canonical controller and scoped PR/resource proof. Focused checks, lint, web/Electron checks, build and locale regeneration pass. Actual hosted three-browser, capacity, artifact and cleanup qualification remains pending; Main owns the final ordinary full-gate push and delivery. Product/SDK/Zod/toolchain/authorization/release boundaries remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
