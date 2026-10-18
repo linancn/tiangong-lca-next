@@ -101,7 +101,7 @@
   },
   "routeViewCoverage": {
     "path": "docs/plans/i18n/route-view-coverage.json",
-    "digest": "8a34d95c1f22a4cf454401fbb7134cf873218ba2e5442559a35e84bac6e6cf72",
+    "digest": "3e6cc7250457b49ecc15c70a095024d6fa937412c6763e7e6026f5dbd286b4d5",
     "requiredRouteViews": ["/", "/welcome", "/welcome?view=carbon-footprint"],
     "derivedEvidence": {
       "schemaVersion": "tiangong.i18n-route-view-derived-evidence.v2",
@@ -117,7 +117,7 @@
         "evidenceSchemaVersion": "tiangong.i18n-semantic-e2e-evidence.v2",
         "proofStorage": "ignored-local-or-github-actions-artifact",
         "requiredAt": "dev-release-candidate-gate",
-        "routeCoverageContractDigest": "0d58848105bc7388e9882facd82ac40201439b7c77f2e43102d063ac5aace007",
+        "routeCoverageContractDigest": "b7f7a33c744eac6d93afae45ac3664b35f5399ebde7579b4eebfcb9d41784451",
         "requiredAssertionCount": 60,
         "executionEvidence": null,
         "contractReady": true,
@@ -1316,11 +1316,11 @@
     "scripts/i18n/language-hardcoding-allowlist.json": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a",
     "src/components/ImportTidasPackage/reportContent.ts": "3b08a703edbbfd6312f863c6b70aae4289fe411d077d1d37b576b37eeb856c3c",
     "docs/plans/i18n-de-DE/dynamic-families.json": "f0b227ff0f1d01d46956576d26803aedb97db62498481ca741ced467384bc160",
-    "docs/plans/i18n/route-view-coverage.json": "8a34d95c1f22a4cf454401fbb7134cf873218ba2e5442559a35e84bac6e6cf72",
+    "docs/plans/i18n/route-view-coverage.json": "3e6cc7250457b49ecc15c70a095024d6fa937412c6763e7e6026f5dbd286b4d5",
     "docs/plans/i18n/fallback-contract.json": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "docs/plans/i18n-de-DE/glossary.json": "a5fd4e759af2713fbec83f2b95171c7b32206d7218da0401d28d2eecefccce3a",
     "docs/plans/i18n-de-DE/style-guide.md": "b139bb9cc48a23f9b9f69efc44611daba4684c3495aa5cf4fb0ac57e3ab3994f"
   },
   "blockedContext": [],
-  "contextDigest": "ca9fc1b6a36affa420f040d6c0d91b8bfea739b94896bc6bb6a8551f45c56105"
+  "contextDigest": "7ece2f7e4b8e39eb31a11e8104b1ad30cf5f3bd9bdd0b90e30cfc2f0a29fbe8c"
 }

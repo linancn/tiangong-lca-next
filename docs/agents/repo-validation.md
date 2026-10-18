@@ -88,7 +88,7 @@ pnpm prepush:gate
 
 ## Ordinary dependency PR validation
 
-The scoped `dependency-pr.yml` workflow runs the same pinned frozen install and `pnpm prepush:gate` for relevant PRs into Dev or Main. It uses no production credentials, static release preflight, publication or browser command. Existing Main Candidate and release gates retain their separate requirements. [Dependency maintenance](dependency-maintenance.md) owns monitoring targets, default-branch activation, deferred ecosystems and manual acceptance.
+The scoped `dependency-pr.yml` workflow runs the same pinned frozen install and `pnpm prepush:gate` for relevant PRs into Dev or Main. Its aggregate job uses no production credentials, static release preflight, publication or browser command; the separate ordinary dependency `semantic-qualification` job runs only the canonical synthetic browser qualification and its exact resource closure. Existing Main Candidate and release gates retain their separate requirements. [Dependency maintenance](dependency-maintenance.md) owns monitoring targets, default-branch activation, deferred ecosystems and manual acceptance.
 
 The secretless Action compatibility job is separate from the aggregate: verify actual setup-node and pnpm/setup versions before/after runtime replacement, unchanged manifest/lock/install-policy bytes and exact checkout, then verify the receipt upload ID/digest. Its helper and workflow tests reject wrong versions, stale heads, changed graph files, invalid upload identities and overwritten proof files. Main's hosted review must download the named ZIP and verify both receipts against the exact head and job steps; local helper tests or skipped release jobs do not prove hosted Action execution. No new permissions, credentials, package resolution, browser run or release capability is introduced.
 
@@ -149,7 +149,7 @@ The canonical command is `pnpm test:e2e:i18n`, implemented with `@playwright/tes
 
 The independent `.github/workflows/i18n-semantic-e2e.yml` workflow is a credential-free, manually dispatched hermetic qualification boundary:
 
-- `workflow_dispatch` provides the only on-demand trigger; routine pull requests, `dev` pushes, and release aggregation do not call this browser qualification
+- `workflow_dispatch` provides the only on-demand trigger; other routine pull requests, `dev` pushes, and release aggregation do not call this manual workflow; the bounded ordinary dependency PR job separately runs the same canonical synthetic qualification
 - every invocation uses no production credentials, permits no production writes, and runs the complete hermetic semantic qualification
 - select an open business PR branch or exact SHA before `release:to-dev` when its change risk warrants browser evidence; a failure is fixed and rerun on that same PR
 - it always executes the content-addressed qualification's prebuilt candidate, closed simulator, complete Chromium matrix, and Firefox/WebKit critical scenarios; it is not a required release check and no release stage consumes its proof
@@ -300,3 +300,7 @@ For independent calculation exports, keep the new panel and service inside state
 For Platform #1302, `pnpm exec playwright test --config=playwright.result-preview.config.ts` builds the qualification frontend and intercepts all backend requests. It verifies result-list to exact-version drawer navigation, reviewed LCIA labels/units, LCI metadata and 390px layout without authorizing any calculation or publication. Screenshots are local synthetic evidence under `.local/e2e-release/result-preview`; this suite is separate from scope-closure and semantic-language release qualification.
 
 Result-preview regressions also cover server pagination, page-size changes, one unavailable notice, same-page retry, zero-valued results, snapshotSource evidence and stale-read suppression. The hermetic result-preview browser suite exercises these transitions at desktop and narrow widths; synthetic browser success does not prove that a production Edge revision has been deployed.
+
+## Supabase dependency proof
+
+For the six-family Supabase `2.118.0` update, run the mapper-independent `installedSupabaseContract` plus existing auth/task/native-dispatch and Storage consumer suites, web/Electron checks, lint and build. The ordinary dependency browser job, source-bound observer and retained-resource limits are owned by [dependency maintenance](dependency-maintenance.md). Local declarations and injected-Docker tests do not qualify actual browser execution or capacity. Preserve the complete 100% gate; the final ordinary checked push owns its one local aggregate. Actual hosted canonical proof and artifact/cleanup verification remain required for #1315 before compatibility acceptance, without authorizing Main promotion or publication.

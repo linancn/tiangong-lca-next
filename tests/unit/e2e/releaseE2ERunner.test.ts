@@ -267,7 +267,7 @@ describe('release E2E controller contracts', () => {
       checks: [
         {
           id: 'environment.playwright-discovery',
-          summary: { fullListedTests: 84, listedTests: 96 },
+          summary: { fullListedTests: 87, listedTests: 99 },
         },
       ],
     };
@@ -277,9 +277,9 @@ describe('release E2E controller contracts', () => {
         contract.assertionIds.map((id: string) => [id, contract.browsers]),
       ),
       browsers: {
-        chromium: { executed: 32, skipped: 0 },
-        firefox: { executed: 17, skipped: 15 },
-        webkit: { executed: 17, skipped: 15 },
+        chromium: { executed: 33, skipped: 0 },
+        firefox: { executed: 18, skipped: 15 },
+        webkit: { executed: 18, skipped: 15 },
       },
       canonicalBrowsers: contract.canonicalBrowsers,
       harnessBrowsers: contract.harnessBrowsers,

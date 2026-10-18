@@ -135,3 +135,86 @@ jobs:
           ARTIFACT_DIGEST: ${{ steps.compatibility-artifact.outputs.artifact-digest }}
         run: >-
           node scripts/qualification/action-compatibility-probe.cjs --stage artifact-upload --artifact-id "$ARTIFACT_ID" --artifact-digest "$ARTIFACT_DIGEST"
+
+  semantic-qualification:
+    name: Supabase semantic qualification (non-release)
+    if: >-
+      github.event_name != 'pull_request' || !(
+        (
+          github.event.pull_request.base.ref == 'dev' &&
+          contains(github.event.pull_request.body || '', 'tiangong-next-release-automation:v2')
+        ) ||
+        (
+          github.event.pull_request.base.ref == 'main' &&
+          (
+            github.event.pull_request.head.ref == 'dev' ||
+            startsWith(github.event.pull_request.head.ref, 'codex/promote-') ||
+            startsWith(github.event.pull_request.head.ref, 'codex/hotfix-')
+          )
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out exact browser candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up pinned pnpm and Node.js
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+        with:
+          version: 11.24.0
+          runtime: node@24.19.0
+          cache: true
+          install: false
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Bind runner capacity and start owned resource observation
+        run: |
+          set -euo pipefail
+          state="$RUNNER_TEMP/platform-supabase-browser-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          printf 'QUALIFICATION_STATE=%s\n' "$state" >> "$GITHUB_ENV"
+          node scripts/qualification/supabase-browser-resources.cjs start --root "$GITHUB_WORKSPACE" --state "$state" --head "$EXPECTED_HEAD"
+      - name: Run unchanged complete canonical qualification
+        run: >-
+          pnpm --silent e2e:qualify --proof .local/e2e-release/qualification-proof.json --format=json --output .local/e2e-release/qualification-controller-report.json
+      - name: Verify canonical generated qualification proof
+        run: >-
+          pnpm --silent release:proof:verify --proof .local/e2e-release/qualification-proof.json --format=json
+      - name: Recover only exact owned resources and record retained capacity
+        if: always() && env.QUALIFICATION_STATE != ''
+        run: >-
+          node scripts/qualification/supabase-browser-resources.cjs finish --root "$GITHUB_WORKSPACE" --state "$QUALIFICATION_STATE" --head "$EXPECTED_HEAD"
+      - name: Require independently verified resource closure
+        if: always() && env.QUALIFICATION_STATE != ''
+        run: >-
+          node scripts/qualification/supabase-browser-resources.cjs verify --root "$GITHUB_WORKSPACE" --state "$QUALIFICATION_STATE" --head "$EXPECTED_HEAD"
+      - name: Upload synthetic qualification and cleanup evidence
+        if: always()
+        id: semantic-artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: platform-supabase-qualification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/platform-supabase-browser-${{ github.run_id }}-${{ github.run_attempt }}/*.json
+            .local/e2e-release/qualification-proof.json
+            .local/e2e-release/qualification-controller-report.json
+            .local/e2e-release/runs/**/run-result.json
+            .local/e2e-release/runs/**/preflight-report.json
+            .local/e2e-release/runs/**/semantic-harness-qualification.json
+            .local/e2e-release/runs/**/qualification-evidence-roundtrip.json
+          archive: true
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+      - name: Verify artifact service acknowledgement
+        if: always() && steps.semantic-artifact.outcome == 'success'
+        env:
+          ARTIFACT_ID: ${{ steps.semantic-artifact.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.semantic-artifact.outputs.artifact-digest }}
+        run: >-
+          node scripts/qualification/action-compatibility-probe.cjs --stage artifact-upload --artifact-id "$ARTIFACT_ID" --artifact-digest "$ARTIFACT_DIGEST"
