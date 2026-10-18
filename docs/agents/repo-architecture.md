@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: b1fa7a6d62b334df1206302a71a45e98c630203e
-lastReviewedNote: 'Platform #1315: reviewed native navigation-aware identity observation at b1fa7a6d after hosted380 Chromium context-loss failure. Fresh non-null generation and exact stored owner are observed atomically before/after held-response release; existing45s authenticated/15s public budget,120s test limit, routes and dispatch/logout checks remain.160 focused checks, lint, types and locale checks pass.380 hosted result remains68pass/1fail/30skip with separate verified cleanup success. New ordinary full checked push and real three-browser qualification remain Main-owned; workflow/runtime/package/coverage/release policies are unchanged.'
+lastReviewedCommit: f45bbdd0281631de020e183b5e4e3246f9301a24
+lastReviewedNote: 'Platform #1316: reviewed coherent React/DOM 19.3.1, types 19.3.0, Antd 6.6.6 and mature Umi 4.7.24 with original1276 history and qualified Dev1315 preserved. Seventy added package records match official age/integrity and the scoped closure; policy/exclusions, Pro3, SDK/Supabase, source and release boundaries remain exact. Local 17 package/tool/SDK and 367 consumer tests, lint/web/Electron checks and both brand builds pass. Official doctor has only its non-SSR warning; v6 lint retains the documented bounded-language virtual=false warning. Independent review, normal full checked push and fresh canonical hosted browser/artifact/cleanup proof remain required; no Main release/root or deployment claim.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
