@@ -49,7 +49,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 4495a5f784e0244be413d2a0ddef91124b21dcbb
+lastReviewedCommit: 61a07a81efee0b2d203865736a8878daac836fc3
 lastReviewedNote: 'Platform #1308: reviewed shared result pagination, consolidated unavailable feedback, retry and zero-value behavior, snapshot evidence and synthetic browser proof; delivery gates and authorization are unchanged.'
 related:
   - .docpact/config.yaml
