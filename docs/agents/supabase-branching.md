@@ -24,9 +24,9 @@ checkPaths:
   - playwright.dataset-lists.config.ts
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 18e81718ed5750cdeca5ebbd7650257315559fc1
-lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: 78fed8c000c9c13d25f660b6e85039a816a9ec73
+lastReviewedNote: 'Platform #1315: reviewed combined six-family Supabase 2.118.0 graph, real installed SDK/consumer transport and session-race contracts, unchanged canonical browser controller, scoped PR job and exact owned-resource recovery at 78fed8c0. Focused proof, lint, web/Electron checks, build and canonical locale regeneration pass. Actual hosted three-browser, capacity, artifact and cleanup qualification remains pending; Main owns the final ordinary full-gate push and delivery. Product/SDK/Zod/toolchain/authorization/release boundaries remain unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

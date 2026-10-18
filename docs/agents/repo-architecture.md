@@ -27,9 +27,9 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 4495a5f784e0244be413d2a0ddef91124b21dcbb
-lastReviewedNote: 'Platform #1308: reviewed shared result pagination, consolidated unavailable feedback, retry and zero-value behavior, snapshot evidence and synthetic browser proof; delivery gates and authorization are unchanged.'
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: 78fed8c000c9c13d25f660b6e85039a816a9ec73
+lastReviewedNote: 'Platform #1315: reviewed combined six-family Supabase 2.118.0 graph, real installed SDK/consumer transport and session-race contracts, unchanged canonical browser controller, scoped PR job and exact owned-resource recovery at 78fed8c0. Focused proof, lint, web/Electron checks, build and canonical locale regeneration pass. Actual hosted three-browser, capacity, artifact and cleanup qualification remains pending; Main owns the final ordinary full-gate push and delivery. Product/SDK/Zod/toolchain/authorization/release boundaries remain unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
