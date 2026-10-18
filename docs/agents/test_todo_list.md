@@ -44,7 +44,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 18e81718ed5750cdeca5ebbd7650257315559fc1
+lastReviewedCommit: 3b46c6fc7898274c22381671b18a741c8d1a4222
 lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
 ---
 
