@@ -297,8 +297,8 @@ const runCli = (
   args: string[],
   environment: Record<string, string> = {},
   cwd = fixture.root,
-) =>
-  spawnSync(process.execPath, [script, ...args], {
+) => {
+  const result = spawnSync(process.execPath, [script, ...args], {
     cwd,
     encoding: 'utf8',
     env: {
@@ -311,6 +311,38 @@ const runCli = (
       ...environment,
     },
   });
+  if (result.status === workflow.EXIT.external) {
+    const boundedText = (value: unknown, maximum = 2000) => {
+      const text = String(value ?? '');
+      return { text: text.slice(0, maximum), truncated: text.length > maximum };
+    };
+    let cliError: Record<string, any> | undefined;
+    try {
+      cliError = JSON.parse(result.stdout)?.error;
+    } catch {
+      // Preserve malformed CLI output below without hiding the original test failure.
+    }
+    // Only this controlled fixture's CLI output is logged; never include its environment.
+    // JSON escaping keeps control characters inert, and every output field is bounded.
+    process.stderr.write(
+      `${JSON.stringify({
+        event: 'release-workflow-fixture-external-failure',
+        fixture: path.basename(fixture.container),
+        script: path.basename(script),
+        status: result.status,
+        error: {
+          code: boundedText(cliError?.code, 200),
+          command: boundedText(JSON.stringify(cliError?.details?.command)),
+          exit_code: boundedText(cliError?.details?.exit_code, 100),
+          stderr: boundedText(cliError?.details?.stderr),
+        },
+        stdout: boundedText(result.stdout, 4000),
+        stderr: boundedText(result.stderr),
+      })}\n`,
+    );
+  }
+  return result;
+};
 
 const promotionPr = (fixture: Fixture, mergeSha = fixture.devSha) =>
   JSON.stringify({
