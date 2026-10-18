@@ -32,6 +32,7 @@ checkPaths:
   - package.json
   - playwright.config.ts
   - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
   - scripts/release/**
@@ -47,9 +48,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-10-17
-lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
-lastReviewedNote: 'Platform #1297: reviewed the test-only ResultSet replacement assertion correction and generated evidence refresh; bootstrap, repository boundaries, dependency versions and delivery gates remain unchanged.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 3b46c6fc7898274c22381671b18a741c8d1a4222
+lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

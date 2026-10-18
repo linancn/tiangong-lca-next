@@ -1,3 +1,5 @@
+import { getDataDetail } from '@/services/general/api';
+import { STATIC_LCIA_CACHE_MANIFEST } from '@/services/lciaMethods/evidence';
 import CalculationBundlePanel, {
   artifactForProcess,
   artifactInlineByteSize,
@@ -5,7 +7,7 @@ import CalculationBundlePanel, {
   processOptionLabel,
   recordsToCsv,
 } from '@/pages/DataProcessing/CalculationBundlePanel';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 jest.mock('antd', () => require('../../../mocks/antd').createAntdMock());
 jest.mock('@ant-design/icons', () =>
@@ -18,6 +20,9 @@ jest.mock('@umijs/max', () => ({
   }),
 }));
 
+jest.mock('@/services/general/api', () => ({
+  getDataDetail: jest.fn(async () => ({ data: null, success: false })),
+}));
 const mockGetCalculationBundle = jest.fn();
 const mockFetchRecords = jest.fn();
 const mockFetchText = jest.fn();
@@ -154,6 +159,7 @@ const bundleProjection = (overrides: Record<string, any> = {}) => ({
 
 describe('CalculationBundlePanel', () => {
   beforeEach(() => {
+    (getDataDetail as jest.Mock).mockReset().mockResolvedValue({ success: false, data: null });
     jest.clearAllMocks();
     mockGetCalculationBundle.mockResolvedValue({ data: bundleProjection(), error: null });
     mockFetchText.mockResolvedValue(JSON.stringify({ complete: true }));
@@ -192,8 +198,191 @@ describe('CalculationBundlePanel', () => {
     HTMLAnchorElement.prototype.click = jest.fn();
   });
 
+  it('does not substitute the first process for a missing exact version', async () => {
+    render(
+      <CalculationBundlePanel
+        packageId='package-1'
+        initialProcessId={processRows[0].rootProcess.id}
+        initialProcessVersion='99.00.000'
+      />,
+    );
+    expect(
+      await screen.findByText('This process version is not included in this calculation.'),
+    ).toBeInTheDocument();
+    expect(mockFetchRecords.mock.calls.map(([item]) => item.kind)).toEqual(['process_axis']);
+    expect(screen.queryByText('method-0')).not.toBeInTheDocument();
+  });
+
+  it('retries unavailable names, resolves exact method units and retains standalone selection', async () => {
+    const method = STATIC_LCIA_CACHE_MANIFEST.methods[0];
+    const baseRead = mockFetchRecords.getMockImplementation()!;
+    mockFetchRecords.mockImplementation(async (artifact) =>
+      artifact.kind === 'lcia'
+        ? [
+            {
+              processIndex: 0,
+              method: { id: method.method_id, version: method.method_version },
+              meanAmount: 3,
+            },
+          ]
+        : baseRead(artifact),
+    );
+    render(<CalculationBundlePanel packageId='metadata' />);
+    expect(
+      await screen.findByText(
+        'Some names are unavailable. Exact identifiers remain visible; results are unchanged.',
+      ),
+    ).toBeInTheDocument();
+    (getDataDetail as jest.Mock).mockImplementation(async (id, version, kind) => ({
+      success: true,
+      data: {
+        id,
+        version,
+        json: {
+          [kind === 'flows' ? 'flowDataSet' : 'processDataSet']: {
+            [kind === 'flows' ? 'flowInformation' : 'processInformation']: {
+              dataSetInformation: {
+                name: {
+                  baseName: [
+                    {
+                      '@xml:lang': 'en',
+                      '#text': kind === 'flows' ? 'Cement flow' : 'Cement process',
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByText(
+          'Some names are unavailable. Exact identifiers remain visible; results are unchanged.',
+        ),
+      ).not.toBeInTheDocument(),
+    );
+    expect(screen.queryByText(method.method_id)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Current process JSON' }));
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Process' }), { target: { value: '1' } });
+    fireEvent.click(screen.getByTestId('tab-lci'));
+    expect(await screen.findByText('12.500000')).toBeInTheDocument();
+    expect(screen.getByText('Input')).toBeInTheDocument();
+  });
+
+  it.each(['bundle', 'axis', 'records'] as const)(
+    'discards a late %s response after changing packages',
+    async (phase) => {
+      let settle!: (value: any) => void;
+      const pending = new Promise((resolve) => {
+        settle = resolve;
+      });
+      if (phase === 'bundle') mockGetCalculationBundle.mockReturnValueOnce(pending);
+      else if (phase === 'axis') mockFetchRecords.mockReturnValueOnce(pending);
+      else {
+        const original = mockFetchRecords.getMockImplementation()!;
+        let deferred = false;
+        mockFetchRecords.mockImplementation((artifact) => {
+          if (!deferred && artifact.kind === 'lci') {
+            deferred = true;
+            return pending;
+          }
+          return original(artifact);
+        });
+      }
+      const view = render(<CalculationBundlePanel packageId='old' />);
+      await waitFor(() =>
+        expect(phase === 'bundle' ? mockGetCalculationBundle : mockFetchRecords).toHaveBeenCalled(),
+      );
+      await waitFor(() =>
+        expect(
+          phase !== 'records' || mockFetchRecords.mock.calls.some(([item]) => item.kind === 'lci'),
+        ).toBe(true),
+      );
+      view.rerender(<CalculationBundlePanel packageId='current' />);
+      expect(await screen.findByText('method-0')).toBeInTheDocument();
+      await act(async () => {
+        settle(
+          phase === 'bundle'
+            ? { data: bundleProjection(), error: null }
+            : phase === 'axis'
+              ? processRows
+              : [
+                  {
+                    processIndex: 0,
+                    flow: { id: 'stale-flow', version: '01.00.000' },
+                    direction: 'Input',
+                    unit: 'kg',
+                    meanAmount: 99,
+                  },
+                ],
+        );
+      });
+      fireEvent.click(screen.getByTestId('tab-lci'));
+      expect(screen.queryByText('stale-flow')).not.toBeInTheDocument();
+      expect(screen.getByText('flow-0')).toBeInTheDocument();
+    },
+  );
+
+  it('supports an empty process axis and bundles without optional coverage/downloads', async () => {
+    mockGetCalculationBundle.mockResolvedValue({
+      data: bundleProjection({ artifacts: [artifact('process_axis')], downloads: undefined }),
+      error: null,
+    });
+    mockFetchRecords.mockResolvedValue([]);
+    render(<CalculationBundlePanel packageId='empty' />);
+    expect(await screen.findByText('Process results')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Current process JSON' })).toBeDisabled();
+    expect(mockFetchText).not.toHaveBeenCalled();
+    expect(screen.getByText('Incomplete / blocked')).toBeInTheDocument();
+  });
+
+  it('retains unknown flow directions and reports non-Error read/download failures', async () => {
+    const baseRead = mockFetchRecords.getMockImplementation()!;
+    mockFetchRecords.mockImplementation(async (artifact) =>
+      artifact.kind === 'lci'
+        ? [
+            {
+              processIndex: 0,
+              flow: { id: 'unknown-direction-flow', version: '01.00.000' },
+              direction: 'Other',
+              unit: 'kg',
+              meanAmount: 1,
+            },
+          ]
+        : baseRead(artifact),
+    );
+    const view = render(<CalculationBundlePanel packageId='unknown-direction' view='results' />);
+    expect(await screen.findByText('Process results')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-lci'));
+    expect(await screen.findByText('Other')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Current process CSV' }));
+    expect(screen.queryByTestId('tab-downloads')).not.toBeInTheDocument();
+    mockFetchRecords.mockImplementation((artifact) =>
+      artifact.kind === 'process_axis'
+        ? Promise.resolve(processRows)
+        : Promise.reject('record failure'),
+    );
+    view.rerender(<CalculationBundlePanel packageId='read-failure' />);
+    expect(await screen.findByText('record failure')).toBeInTheDocument();
+    mockFetchFreshDownloadBlob.mockRejectedValueOnce('download failure');
+    fireEvent.click(screen.getByTestId('tab-downloads'));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Download' })[0]);
+    expect(await screen.findByText('download failure')).toBeInTheDocument();
+  });
+
   it('covers deterministic display and export helpers', () => {
     expect(artifactForProcess([artifact('lci') as any], 'lci', 1)?.kind).toBe('lci');
+    expect(
+      artifactForProcess(
+        [artifact('lci', { firstProcessIndex: undefined, lastProcessIndex: undefined }) as any],
+        'lci',
+        1,
+      ),
+    ).toBeUndefined();
     expect(artifactForProcess([artifact('lci') as any], 'lcia', 1)).toBeUndefined();
     expect(artifactInlineByteSize(artifact('lci') as any)).toBe(100);
     expect(
@@ -216,7 +405,7 @@ describe('CalculationBundlePanel', () => {
   });
 
   it('shows directional LCI, LCIA, evidence, exports, and verified downloads', async () => {
-    render(
+    const { rerender } = render(
       <CalculationBundlePanel
         packageId='33333333-3333-4333-8333-333333333333'
         initialProcessId='22222222-2222-4222-8222-222222222222'
@@ -224,7 +413,8 @@ describe('CalculationBundlePanel', () => {
       />,
     );
 
-    expect(await screen.findByText('Calculation Bundle')).toBeInTheDocument();
+    expect(await screen.findByText('Process results')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-lci'));
     await waitFor(() => expect(screen.getByText('flow-1')).toBeInTheDocument());
     expect(screen.getByText('CN')).toBeInTheDocument();
     expect(screen.getByText('12.500000')).toBeInTheDocument();
@@ -233,7 +423,7 @@ describe('CalculationBundlePanel', () => {
     expect(await screen.findByText('method-1')).toBeInTheDocument();
     expect(screen.getByText('42.000000')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('tab-evidence'));
+    expect(screen.queryByTestId('tab-evidence')).not.toBeInTheDocument();
     expect(screen.getByText('e'.repeat(64))).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('tab-downloads'));
     expect(screen.getByText('calculation-bundle.json')).toBeInTheDocument();
@@ -271,12 +461,17 @@ describe('CalculationBundlePanel', () => {
     expect(URL.createObjectURL).toHaveBeenCalledTimes(downloadButtons.length + 2);
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(downloadButtons.length + 2);
 
-    fireEvent.change(screen.getByLabelText('Process'), { target: { value: '0' } });
+    rerender(
+      <CalculationBundlePanel
+        packageId='33333333-3333-4333-8333-333333333333'
+        initialProcessId={processRows[0].rootProcess.id}
+        initialProcessVersion={processRows[0].rootProcess.version}
+      />,
+    );
     await waitFor(() => expect(screen.getByText('flow-0')).toBeInTheDocument());
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh secure links' }));
-    await waitFor(() => expect(mockGetCalculationBundle).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole('button', { name: 'Refresh secure links' })).not.toBeInTheDocument();
   });
 
   it('shows verified download failures without creating a local download', async () => {
@@ -285,13 +480,15 @@ describe('CalculationBundlePanel', () => {
     );
     render(<CalculationBundlePanel packageId='download-failure' />);
 
-    expect(await screen.findByText('Calculation Bundle')).toBeInTheDocument();
+    expect(await screen.findByText('Process results')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('tab-downloads'));
     fireEvent.click(screen.getAllByRole('button', { name: 'Download' })[0]);
 
     expect(await screen.findByText('Calculation artifact SHA-256 mismatch')).toBeInTheDocument();
     expect(URL.createObjectURL).not.toHaveBeenCalled();
     expect(HTMLAnchorElement.prototype.click).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh secure links' }));
+    await waitFor(() => expect(mockGetCalculationBundle).toHaveBeenCalledTimes(2));
   });
 
   it('renders legacy and generic load failures with a retry path', async () => {
@@ -363,6 +560,8 @@ describe('CalculationBundlePanel', () => {
   it('opens exports without loading numerical preview chunks or exposing a process selector', async () => {
     render(<CalculationBundlePanel packageId='package' view='exports' />);
     expect(await screen.findByRole('button', { name: 'Generate export' })).toBeInTheDocument();
+    expect(screen.getByText('Exports')).toBeInTheDocument();
+    expect(screen.queryByText('Process results')).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Process' })).not.toBeInTheDocument();
     expect(
       mockFetchRecords.mock.calls.every(([artifact]) => artifact.kind === 'process_axis'),
