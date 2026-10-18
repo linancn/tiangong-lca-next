@@ -17,6 +17,8 @@ test('foreign session and sign-out fence a held refresh across actual applicatio
   baseURL,
 }, testInfo) => {
   test.setTimeout(120_000);
+  // Match playwright.config.ts: authenticated 45s; public/local 15s.
+  const identityTimeout = process.env.E2E_AUTHENTICATED === 'true' ? 45_000 : 15_000;
   annotateEvidence(testInfo, findRouteAssertion('/welcome'), 'supabase-session-race');
   for (const scenario of ['foreign-session', 'sign-out'] as const) {
     const context = await browser.newContext({ baseURL, locale: 'en-US', serviceWorkers: 'block' });
@@ -82,20 +84,33 @@ test('foreign session and sign-out fence a held refresh across actual applicatio
       // The product invalidates A synchronously and schedules a full admission
       // reload outside Auth's callback. A's HTTP refresh may be aborted by
       // that reload; native Node corpus separately proves returned winning B.
-      await expect
-        .poll(() => a.evaluate(() => sessionStorage.getItem('qualification-document-generation')))
-        .not.toBe(generation);
+      const waitForFreshIdentity = async () => {
+        const observation = await a.waitForFunction(
+          ({ previousGeneration, expectedOwner }) => {
+            const currentGeneration = sessionStorage.getItem('qualification-document-generation');
+            if (!currentGeneration || currentGeneration === previousGeneration) return false;
+            const key = Object.keys(localStorage).find((value) =>
+              /^sb-.+-auth-token$/u.test(value),
+            );
+            const session = key ? JSON.parse(localStorage.getItem(key) ?? 'null') : null;
+            return (session?.user?.id ?? null) === expectedOwner;
+          },
+          {
+            previousGeneration: generation,
+            expectedOwner: scenario === 'foreign-session' ? SYNTHETIC_ACTOR_B : null,
+          },
+          { polling: 100, timeout: identityTimeout },
+        );
+        await observation.dispose();
+      };
+      await waitForFreshIdentity();
       race.refresh.release();
       await expect
         .poll(() => new URL(a.url()).hash.startsWith('#/user/login'))
         .toBe(scenario === 'sign-out');
-      const session = await a.evaluate(() => {
-        const key = Object.keys(localStorage).find((value) => /^sb-.+-auth-token$/u.test(value));
-        return key ? JSON.parse(localStorage.getItem(key) ?? 'null') : null;
-      });
-      expect(session?.user?.id ?? null).toBe(
-        scenario === 'foreign-session' ? SYNTHETIC_ACTOR_B : null,
-      );
+      // Retain the post-release exact owner assertion without another separate
+      // evaluation window while either tab's stale refresh is settling.
+      await waitForFreshIdentity();
       expect(
         race.taskRequests
           .slice(nativeBeforeWinner)
