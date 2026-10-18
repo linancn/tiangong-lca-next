@@ -61,6 +61,7 @@ import {
   Collapse,
   Modal,
   Descriptions,
+  Drawer,
   Form,
   Input,
   Progress,
@@ -81,7 +82,8 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import CalculationBundlePanel from './CalculationBundlePanel';
+import CalculationBundlePanel, { formatBundleNumber } from './CalculationBundlePanel';
+import { closureDisplayStatus } from './resultPresentation';
 import styles from './index.less';
 import ResultSetDirectory from './ResultSetDirectory';
 import { deriveResultSetWorkflowSummary } from './resultSetWorkflow';
@@ -608,6 +610,18 @@ const DataProcessing = () => {
   const [submittingAction, setSubmittingAction] = useState<CommandAction | null>(null);
   const commandSequenceRef = useRef(0);
   const createResultSetInFlightRef = useRef(false);
+  const [resultProcess, setResultProcess] = useState<{
+    id: string;
+    version: string;
+    name?: string;
+  } | null>(null);
+  useEffect(() => {
+    setResultProcess(
+      deepLink.processId && deepLink.processVersion
+        ? { id: deepLink.processId, version: deepLink.processVersion }
+        : null,
+    );
+  }, [deepLink.resultSetId, deepLink.packageId, deepLink.processId, deepLink.processVersion]);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
   const dataProductTasks = useSyncExternalStore(
@@ -1051,10 +1065,10 @@ const DataProcessing = () => {
       closureTasks
         .filter((task) => Boolean(task.closureCheckId))
         .map((task) => ({
-          label: `${formatTimestamp(task.updatedAt)} · ${task.domainStatus ?? task.workerStatus}`,
+          label: `${formatTimestamp(task.updatedAt)} · ${closureDisplayStatus(task.domainStatus ?? task.workerStatus, t)}`,
           value: task.closureCheckId as string,
         })),
-    [closureTasks],
+    [closureTasks, t],
   );
 
   useEffect(() => {
@@ -1322,6 +1336,7 @@ const DataProcessing = () => {
     setActiveTabKey(tab);
     setSelectedPackageId(options.packageId);
     setPreviewData(null);
+    setResultProcess(null);
     setCommandStatus(null);
     activateClosureCheckId(options.closureCheckId);
     closureCheckRef.current = null;
@@ -1358,6 +1373,7 @@ const DataProcessing = () => {
     setActiveTabKey('builds');
     setSelectedPackageId(undefined);
     setPreviewData(null);
+    setResultProcess(null);
     setCommandStatus(null);
     activateClosureCheckId(undefined);
     closureCheckRef.current = null;
@@ -1922,6 +1938,20 @@ const DataProcessing = () => {
 
   const renderBuildRequests = () => (
     <Space orientation='vertical' size='middle' className={styles.workbenchPanel}>
+      {packageOptions.length > 0 ? (
+        <Alert
+          type='info'
+          title={t(
+            'pages.dataProcessing.resultView.existing',
+            'Calculated results are available. The form below starts a new calculation; existing results remain available in Result preview.',
+          )}
+          action={
+            <Button onClick={() => handleTabChange('preview')}>
+              {t('pages.dataProcessing.resultView.open', 'View results')}
+            </Button>
+          }
+        />
+      ) : null}
       <Card>
         <Form
           form={buildForm}
@@ -2004,22 +2034,28 @@ const DataProcessing = () => {
                     {
                       key: 'status',
                       label: t('pages.dataProcessing.closure.status', 'Check status'),
-                      children: closureCheck.runStatus,
+                      children: closureDisplayStatus(closureCheck.runStatus, t),
                     },
                     {
                       key: 'certificate',
                       label: t('pages.dataProcessing.closure.certificate', 'Certificate'),
-                      children: closureCheck.certificateValidity,
+                      children: closureDisplayStatus(closureCheck.certificateValidity, t),
                     },
                     {
                       key: 'completeness',
                       label: t('pages.dataProcessing.closure.completeness', 'Scan completeness'),
-                      children: closureCheck.scanCompleteness,
+                      children: closureDisplayStatus(closureCheck.scanCompleteness, t),
                     },
                     {
                       key: 'issues',
                       label: t('pages.dataProcessing.closure.issues', 'Issues'),
-                      children: `${closureCheck.blockerCodes?.length ?? 0} blockers`,
+                      children: intl.formatMessage(
+                        {
+                          id: 'pages.dataProcessing.resultView.blockers',
+                          defaultMessage: '{count} blocking issues',
+                        },
+                        { count: closureCheck.blockerCodes?.length ?? 0 },
+                      ),
                     },
                   ]}
                 />
@@ -2098,10 +2134,51 @@ const DataProcessing = () => {
                   ) : null}
                   {closureIssues.map((issue) => (
                     <div key={issue.issueId} data-testid={`closure-issue-${issue.issueId}`}>
-                      <strong>{issue.title}</strong>
-                      <span>{` · ${issue.severity}`}</span>
-                      {issue.summary ? <div>{issue.summary}</div> : null}
-                      {issue.suggestedAction ? <div>{issue.suggestedAction}</div> : null}
+                      <strong>
+                        {issue.code === 'matrix_readiness_singular_risk_medium'
+                          ? t(
+                              'pages.dataProcessing.resultView.matrixReview',
+                              'Review calculation matrix stability',
+                            )
+                          : issue.title}
+                      </strong>
+                      <span>{` · ${closureDisplayStatus(issue.severity, t)}`}</span>
+                      {issue.code === 'matrix_readiness_singular_risk_medium' ? (
+                        <div>
+                          {t(
+                            'pages.dataProcessing.resultView.matrixReviewDetail',
+                            'The preflight detected a medium matrix singularity risk. Review process connections and the issue report; follow the check status before starting calculation.',
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          {issue.summary ? <div>{issue.summary}</div> : null}
+                          {issue.suggestedAction ? <div>{issue.suggestedAction}</div> : null}
+                        </>
+                      )}
+                      <Collapse
+                        size='small'
+                        items={[
+                          {
+                            key: 'diagnostic',
+                            label: t(
+                              'pages.dataProcessing.workspace.evidence',
+                              'Technical evidence',
+                            ),
+                            children: (
+                              <Space orientation='vertical'>
+                                <code>{issue.code}</code>
+                                {issue.code === 'matrix_readiness_singular_risk_medium' ? (
+                                  <>
+                                    <span>{issue.summary}</span>
+                                    <span>{issue.suggestedAction}</span>
+                                  </>
+                                ) : null}
+                              </Space>
+                            ),
+                          },
+                        ]}
+                      />
                     </div>
                   ))}
                   {closureIssuesAfterIssueId ? (
@@ -2152,12 +2229,17 @@ const DataProcessing = () => {
             }
             onClick={handleCreateBuild}
           >
-            {deepLink.resultSetId
+            {packageOptions.length > 0
               ? t(
-                  'pages.dataProcessing.action.calculateFromCheck',
-                  'Use this check to start calculation',
+                  'pages.dataProcessing.resultView.recalculate',
+                  'Start a new calculation with this check',
                 )
-              : t('pages.dataProcessing.action.createBuild', 'Generate result set')}
+              : deepLink.resultSetId
+                ? t(
+                    'pages.dataProcessing.action.calculateFromCheck',
+                    'Use this check to start calculation',
+                  )
+                : t('pages.dataProcessing.action.createBuild', 'Generate result set')}
           </Button>
         </Form>
       </Card>
@@ -2314,18 +2396,35 @@ const DataProcessing = () => {
       width: 120,
     },
     {
-      title: t('pages.dataProcessing.preview.stateCode', 'State code'),
-      dataIndex: 'stateCode',
-      key: 'stateCode',
-      width: 120,
-      render: stringifyCommandData,
-    },
-    {
       title: previewValueTitle,
       dataIndex: 'value',
       key: 'value',
       width: 140,
-      render: formatNumericValue,
+      render: (value: unknown) =>
+        value === null || value === undefined || value === ''
+          ? '-'
+          : formatBundleNumber(Number(value)),
+    },
+    {
+      title: t('pages.dataProcessing.resultView.details', 'Result details'),
+      key: 'details',
+      width: 120,
+      render: (_: unknown, row: Record<string, unknown>) => (
+        <Button
+          type='link'
+          size='small'
+          disabled={!firstString(row.processId) || !firstString(row.processVersion)}
+          onClick={() =>
+            setResultProcess({
+              id: String(row.processId),
+              version: String(row.processVersion),
+              name: firstString(row.processName),
+            })
+          }
+        >
+          {t('pages.dataProcessing.resultView.open', 'View results')}
+        </Button>
+      ),
     },
   ];
 
@@ -2434,12 +2533,24 @@ const DataProcessing = () => {
       ) : null}
       {previewData ? (
         <Space orientation='vertical' size='middle' className={styles.previewDetails}>
-          <CalculationBundlePanel
-            packageId={selectedPreviewPackageId as string}
-            view='results'
-            initialProcessId={deepLink.processId}
-            initialProcessVersion={deepLink.processVersion}
-          />
+          <Drawer
+            title={t('pages.dataProcessing.resultView.title', 'Process results')}
+            open={Boolean(resultProcess)}
+            onClose={() => setResultProcess(null)}
+            size='large'
+            destroyOnHidden
+          >
+            {resultProcess ? (
+              <CalculationBundlePanel
+                key={`${getDataProductTaskOwnerId()}:${selectedPreviewPackageId}:${resultProcess.id}:${resultProcess.version}`}
+                packageId={selectedPreviewPackageId as string}
+                view='results'
+                initialProcessId={resultProcess.id}
+                initialProcessVersion={resultProcess.version}
+                processName={resultProcess.name}
+              />
+            ) : null}
+          </Drawer>
           <Card
             title={t('pages.dataProcessing.preview.resultDetailsTitle', 'Result details')}
             extra={

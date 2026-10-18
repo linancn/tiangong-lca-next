@@ -28,6 +28,7 @@ checkPaths:
   - tsconfig*.json
   - playwright.config.ts
   - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
   - docker/e2e/**
@@ -45,9 +46,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-10-17
-lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
-lastReviewedNote: 'Platform #1297: reviewed the ResultSet replacement test ordering correction; initial-state and completed-replacement assertions preserve existing async-test, coverage, source-bound locale evidence and release-gate contracts without product or policy changes.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 18e81718ed5750cdeca5ebbd7650257315559fc1
+lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -293,3 +294,5 @@ Measure rendered text contrast against composited backgrounds at least 4.5:1 and
 These synthetic, loopback-only screenshots and checks prove frontend presentation and interaction. They do not replace the exact release candidate gates, production deployment receipts or served-manifest verification. Record actual commands, results, screenshot paths and owned resource cleanup or retention in the tracked Issue/PR; this matrix states required proof, not a completed run.
 
 For independent calculation exports, keep the new panel and service inside statement/branch coverage. Focused proof covers no enqueue on mount, explicit request, terminal/read-failure polling stop, package/format/page reset, stale read/request/download completion, verified file/manifest downloads and authorization/binding drift. Pair this with credential-free rendered desktop/narrow interaction and the separate original-full-library Database/Edge/Worker scenario. Synthetic browser evidence does not claim a logged-in production replay.
+
+For Platform #1302, `pnpm exec playwright test --config=playwright.result-preview.config.ts` builds the qualification frontend and intercepts all backend requests. It verifies result-list to exact-version drawer navigation, reviewed LCIA labels/units, LCI metadata and 390px layout without authorizing any calculation or publication. Screenshots are local synthetic evidence under `.local/e2e-release/result-preview`; this suite is separate from scope-closure and semantic-language release qualification.

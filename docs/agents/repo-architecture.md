@@ -27,9 +27,9 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-17
-lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
-lastReviewedNote: 'Platform #1293: reviewed native scope/object menus, pathless Supporting Data, object-preserving links, restricted tid context, no-sider non-dataset pages and Atlas top/side menu theme boundaries. Routes, authentication and services retain their owners.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 18e81718ed5750cdeca5ebbd7650257315559fc1
+lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -252,6 +252,8 @@ The persisted calculation read path is:
 The public release read path is:
 
 `src/pages/DataProcessing/index.tsx -> src/components/LcaReleaseReadPanel/index.tsx -> src/services/lcaReleases/api.ts -> public current-release projection`
+
+Data Processing uses the paginated result list as the entry to an exact process/version result drawer. `src/services/lcaReleases/presentation.ts` enriches names through existing exact-version reads and resolves method names/units from the reviewed catalog; missing metadata leaves identifiers and values intact. The drawer defaults to LCIA and shows the dataset reference quantity, with LCI and collapsed technical evidence alongside it. Incomplete characterization coverage alone has no warning banner; genuine query, calculation and provenance failures retain their existing states.
 
 Next owns read orchestration, release dataset identity display, directional LCI/LCIA rendering, integrity checks before parsing preview shards or saving downloads, and fresh signed-download requests. The product download surface groups LCIA XLSX/CSV as result files, LCI Parquet/CSV as advanced data, and the manifest plus whole-bundle ZIP as audit evidence. Canonical `.ndjson.gz` shards remain available to the preview reader but are not enumerated as ordinary downloads. Verified downloads are saved through a local Blob instead of a cross-origin download anchor. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
 

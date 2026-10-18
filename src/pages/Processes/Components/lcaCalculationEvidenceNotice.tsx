@@ -163,6 +163,9 @@ export default function LcaCalculationEvidenceNotice({
     );
   }, [intl.locale]);
 
+  // Uncharacterized pairs describe method coverage, not a result defect.
+  if (resolved.status === 'incomplete_coverage') return null;
+
   const details = matrix ? (
     <Space orientation='vertical' size='small' style={{ width: '100%' }}>
       <Descriptions
