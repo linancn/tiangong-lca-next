@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: f8294fd8ee58c80cdb10968ab1751be781a5794d
-lastReviewedNote: 'Platform #1304: reviewed the two security leaf/peer closures on accepted Main 0.0.141 at f8294fd8. All newer preview, locale and test work, product version, environment, runtime, graph and release controls are preserved outside proxy-addr 2.0.8 and Moment 2.31.0. Prior 894d6076 CI qualifies only that source; this composition requires new checked-push and hosted qualification. No assertions, thresholds, branch policy or production authority change.'
+lastReviewedCommit: 65fa54a5c890c24731a55349e7727d4cdc4b3498
+lastReviewedNote: 'Platform #1314: reviewed latest pinned Actions and the non-release compatibility probe at 65fa54a5. Frozen install, focused contracts, lint, static workflow checks and build pass. Existing release/browser/gate owners and product graph are preserved; Main owns the full checked push, actual hosted artifact proof and Dev-only delivery. Main promotion/root inclusion remain held for separate release proof and authorization.'
 ---
 
 # Testing Troubleshooting

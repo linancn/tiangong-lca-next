@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-10-16
-lastReviewedCommit: b7b9f14f33badb2ddc05ee50899c99f7117ec7e0
-lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 65fa54a5c890c24731a55349e7727d4cdc4b3498
+lastReviewedNote: 'Platform #1314: reviewed latest pinned Actions and the non-release compatibility probe at 65fa54a5. Frozen install, focused contracts, lint, static workflow checks and build pass. Existing release/browser/gate owners and product graph are preserved; Main owns the full checked push, actual hosted artifact proof and Dev-only delivery. Main promotion/root inclusion remain held for separate release proof and authorization.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

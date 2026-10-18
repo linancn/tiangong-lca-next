@@ -14,9 +14,9 @@ checkPaths:
   - .github/dependabot.yml
   - .github/workflows/dependency-pr.yml
   - docs/agents/dependency-maintenance.md
-lastReviewedAt: 2026-10-16
-lastReviewedCommit: b1bfe7124be7e8562ec464b0c6fd69475ceff41e
-lastReviewedNote: 'Platform #1275: reviewed exact qualified Main b1bfe7124be7e8562ec464b0c6fd69475ceff41e backmerge into released Dev 71fc65d0abf0c8b25176020c635149fad554270e. Preserves v0.0.137 runtime, dependencies, workflows, release inputs and frozen evidence; carries the Main-owned Git history regression and tooltip assertion repair. Full local and fresh hosted validation remain required; no release or production operation is authorized.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 65fa54a5c890c24731a55349e7727d4cdc4b3498
+lastReviewedNote: 'Platform #1314: reviewed latest pinned Actions and the non-release compatibility probe at 65fa54a5. Frozen install, focused contracts, lint, static workflow checks and build pass. Existing release/browser/gate owners and product graph are preserved; Main owns the full checked push, actual hosted artifact proof and Dev-only delivery. Main promotion/root inclusion remain held for separate release proof and authorization.'
 related:
   - ../../AGENTS.md
   - repo-validation.md
