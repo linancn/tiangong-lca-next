@@ -46,8 +46,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: f45bbdd0281631de020e183b5e4e3246f9301a24
-lastReviewedNote: 'Platform #1316: reviewed coherent React/DOM 19.3.1, types 19.3.0, Antd 6.6.6 and mature Umi 4.7.24 with original1276 history and qualified Dev1315 preserved. Seventy added package records match official age/integrity and the scoped closure; policy/exclusions, Pro3, SDK/Supabase, source and release boundaries remain exact. Local 17 package/tool/SDK and 367 consumer tests, lint/web/Electron checks and both brand builds pass. Official doctor has only its non-SSR warning; v6 lint retains the documented bounded-language virtual=false warning. Independent review, normal full checked push and fresh canonical hosted browser/artifact/cleanup proof remain required; no Main release/root or deployment claim.'
+lastReviewedCommit: d067d381e859d76f38ecf94d0fceb1b33e6f58c9
+lastReviewedNote: 'Platform #1316: reviewed the coherent UI graph and bounded diagnostics for synthetic release-fixture external failures. The original complete gate failed 29 releaseWorkflow cases with command_failed/status40 while512suites passed; repeated focused48case runs pass but the original cause remains unproved. The diagnostic preserves every spawn argument, returned result and assertion, escapes/bounds output and never serializes environment/account configuration. An injected owned git failure still fails and exposes its exact command; normal48cases pass. Production release guards, packages, coverage and browser policies remain unchanged. New ordinary full checked push and exact-head hosted qualification remain required; no delivery or release claim.'
 ---
 
 # Testing Patterns Reference
