@@ -450,6 +450,7 @@ export default {
   'pages.dataProcessing.preview.nextPage': 'Suivant',
   'pages.dataProcessing.preview.exportExcel': 'Exporter vers Excel',
   'pages.dataProcessing.preview.exportFailed': 'Échec de l’exportation des détails des résultats',
+  'pages.dataProcessing.preview.valueUnavailable': 'Indisponible',
   'pages.dataProcessing.preview.warningTitle': 'Certaines données de l’aperçu n’ont pas pu être chargées',
   'pages.dataProcessing.preview.resultUnavailable': 'Les résultats du calcul ne sont pas disponibles pour cet aperçu.',
   'pages.dataProcessing.preview.artifactVerificationTitle': 'Vérification des artefacts',

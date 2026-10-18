@@ -87,7 +87,20 @@ function closureSummary(
   };
 }
 
-jest.mock('antd', () => require('../../../mocks/antd').createAntdMock());
+jest.mock('antd', () => {
+  const mocks = require('../../../mocks/antd').createAntdMock();
+  const { Pagination } = jest.requireActual('antd');
+  const MockTable = mocks.Table;
+  return {
+    ...mocks,
+    Table: (props: any) => (
+      <>
+        <MockTable {...props} />
+        {props.pagination ? <Pagination {...props.pagination} /> : null}
+      </>
+    ),
+  };
+});
 jest.mock('@ant-design/pro-components', () =>
   require('../../../mocks/proComponents').createProComponentsMock(),
 );
@@ -1419,7 +1432,7 @@ describe('DataProcessing page', () => {
       expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith({
         packageId: 'package-1',
         rowOffset: 0,
-        rowLimit: 25,
+        rowLimit: 50,
       }),
     );
     expect(await screen.findByText('2026-06-public')).toBeInTheDocument();
@@ -2030,7 +2043,7 @@ describe('DataProcessing page', () => {
       expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith({
         packageId: 'package-ready',
         rowOffset: 0,
-        rowLimit: 25,
+        rowLimit: 50,
       }),
     );
     expect(screen.getByTestId('tab-panel-preview')).toBeInTheDocument();
@@ -2343,8 +2356,114 @@ describe('DataProcessing page', () => {
     expect(URL.createObjectURL).not.toHaveBeenCalled();
   });
 
+  it('shows one retryable unavailable state, preserves diagnostics and recovers zero values', async () => {
+    mockLocation.search = '?tab=preview&packageId=package-1';
+    const data = {
+      summary: { packageId: 'package-1', defaultImpactCategory: 'climate-change' },
+      artifactManifest: { snapshotSource: { snapshotId: 'certified-snapshot' } },
+      detailPage: {
+        status: 'unavailable',
+        reason: 'result_projection_artifacts_unavailable',
+        offset: 0,
+        limit: 50,
+        totalCount: 1,
+        returnedCount: 1,
+        rows: [
+          {
+            rowNumber: 1,
+            processId: 'process-a',
+            processName: 'Cement',
+            processVersion: '01.00.000',
+            value: null,
+          },
+        ],
+      },
+      previewWarnings: [{ code: 'query_artifact_shape_invalid', detail: 'v2 jobId is invalid' }],
+    };
+    mockPreviewLciaResultPackage
+      .mockResolvedValueOnce({ data, error: null })
+      .mockResolvedValueOnce({
+        data: {
+          ...data,
+          previewWarnings: [],
+          detailPage: {
+            ...data.detailPage,
+            status: 'ready',
+            reason: undefined,
+            rows: [{ ...data.detailPage.rows[0], value: 0 }],
+          },
+        },
+        error: null,
+      });
+    render(<DataProcessing />);
+    expect(
+      await screen.findByText('Calculation results are not available for this preview.'),
+    ).toBeInTheDocument();
+    const alerts = screen.getAllByRole('alert');
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]).not.toHaveTextContent('result_projection_artifacts_unavailable');
+    expect(screen.queryByText('Result preview loaded')).not.toBeInTheDocument();
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+    expect(screen.getByText('certified-snapshot')).toBeInTheDocument();
+    expect(screen.getByText(/v2 jobId is invalid/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByRole('cell', { name: '0' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
+      packageId: 'package-1',
+      impactCategoryId: 'climate-change',
+      rowOffset: 0,
+      rowLimit: 50,
+    });
+  });
+
+  it('resets to the first page when changing page size and keeps the size for method changes', async () => {
+    mockLocation.search = '?tab=preview&packageId=package-1';
+    mockPreviewLciaResultPackage.mockImplementation(
+      async ({ rowLimit, rowOffset, impactCategoryId }) => ({
+        data: {
+          summary: { packageId: 'package-1', defaultImpactCategory: 'climate-change' },
+          detailPage: {
+            status: 'ready',
+            offset: rowLimit === 50 ? 50 : rowOffset,
+            limit: rowLimit,
+            totalCount: 200,
+            impactCategoryId: impactCategoryId || 'climate-change',
+            rows: [],
+          },
+          impactOptions: [
+            { impactCategoryId: 'climate-change', impactName: 'Climate change' },
+            { impactCategoryId: 'acidification', impactName: 'Acidification' },
+          ],
+        },
+        error: null,
+      }),
+    );
+    render(<DataProcessing />);
+    const sizeSelect = await screen.findByRole('combobox', { name: 'Page Size' });
+    fireEvent.mouseDown(sizeSelect);
+    fireEvent.click(await screen.findByTitle('20 / page'));
+    await waitFor(() =>
+      expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
+        packageId: 'package-1',
+        impactCategoryId: 'climate-change',
+        rowOffset: 0,
+        rowLimit: 20,
+      }),
+    );
+    fireEvent.change(screen.getByLabelText('LCIA method'), { target: { value: 'acidification' } });
+    await waitFor(() =>
+      expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
+        packageId: 'package-1',
+        impactCategoryId: 'acidification',
+        rowOffset: 0,
+        rowLimit: 20,
+      }),
+    );
+  });
+
   it('paginates preview details, switches impact categories, and renders preview warnings', async () => {
-    const previewPayload = (offset: number, returnedCount = 25) => ({
+    const previewPayload = (offset: number, returnedCount = 50) => ({
       data: {
         summary: {
           packageId: 'package-1',
@@ -2359,9 +2478,9 @@ describe('DataProcessing page', () => {
           impactVersion: '01.00.000',
           unit: 'kg CO2 eq',
           offset,
-          limit: 25,
+          limit: 50,
           returnedCount,
-          totalCount: 60,
+          totalCount: 160,
           rows: [
             {
               rowNumber: offset + 1,
@@ -2415,9 +2534,9 @@ describe('DataProcessing page', () => {
       error: null,
     });
     mockPreviewLciaResultPackage
-      .mockResolvedValueOnce(previewPayload(25))
-      .mockResolvedValueOnce(previewPayload(50, 10))
-      .mockResolvedValueOnce(previewPayload(25))
+      .mockResolvedValueOnce(previewPayload(50))
+      .mockResolvedValueOnce(previewPayload(100, 50))
+      .mockResolvedValueOnce(previewPayload(50))
       .mockResolvedValueOnce({
         data: {
           ...previewPayload(0).data,
@@ -2455,26 +2574,26 @@ describe('DataProcessing page', () => {
     expect(screen.getByText('Process without version')).toBeInTheDocument();
     expect(screen.getByText('process-without-name')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Process without version' })).not.toBeInTheDocument();
-    expect(screen.getByText('26-50 / 60')).toBeInTheDocument();
+    expect(screen.getByTitle('2')).toHaveClass('ant-pagination-item-active');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'right' }));
+    await waitFor(() =>
+      expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
+        packageId: 'package-1',
+        impactCategoryId: 'climate-change',
+        rowOffset: 100,
+        rowLimit: 50,
+      }),
+    );
+    await waitFor(() => expect(screen.getByTitle('3')).toHaveClass('ant-pagination-item-active'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'left' }));
     await waitFor(() =>
       expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
         packageId: 'package-1',
         impactCategoryId: 'climate-change',
         rowOffset: 50,
-        rowLimit: 25,
-      }),
-    );
-    expect(await screen.findByText('51-60 / 60')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Previous' }));
-    await waitFor(() =>
-      expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
-        packageId: 'package-1',
-        impactCategoryId: 'climate-change',
-        rowOffset: 25,
-        rowLimit: 25,
+        rowLimit: 50,
       }),
     );
 
@@ -2486,7 +2605,7 @@ describe('DataProcessing page', () => {
         packageId: 'package-1',
         impactCategoryId: 'acidification',
         rowOffset: 0,
-        rowLimit: 25,
+        rowLimit: 50,
       }),
     );
     expect(
@@ -2501,7 +2620,7 @@ describe('DataProcessing page', () => {
         packageId: 'package-1',
         impactCategoryId: 'no-suffix-impact',
         rowOffset: 0,
-        rowLimit: 25,
+        rowLimit: 50,
       }),
     );
   });
@@ -2556,174 +2675,182 @@ describe('DataProcessing page', () => {
     expect(await screen.findByRole('columnheader', { name: 'Value' })).toBeInTheDocument();
   });
 
-  it('handles command errors and sparse payload fallbacks for managers', async () => {
-    mockDataProductTasks = [];
-    mockCreateLciaResultBuildRequest.mockResolvedValueOnce({
-      data: null,
-      error: {},
-    });
-    mockPreviewLciaResultPackage.mockResolvedValueOnce({
-      data: {},
-      error: null,
-    });
-    mockPreviewLciaResultPackage.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'preview failed' },
-    });
-    mockPublishLciaResultPackage.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'publish failed' },
-    });
-    mockUnpublishLciaResultPublication.mockResolvedValueOnce({
-      data: 'unpublished',
-      error: null,
-    });
+  it.each(['unpublished', null])(
+    'handles command errors and sparse payload %s for managers',
+    async (unpublishData) => {
+      mockDataProductTasks = [];
+      mockCreateLciaResultBuildRequest.mockResolvedValueOnce({
+        data: null,
+        error: {},
+      });
+      mockPreviewLciaResultPackage.mockResolvedValueOnce({
+        data: {},
+        error: null,
+      });
+      mockPreviewLciaResultPackage.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'preview failed' },
+      });
+      mockPublishLciaResultPackage.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'publish failed' },
+      });
+      mockUnpublishLciaResultPublication.mockResolvedValueOnce({
+        data: unpublishData,
+        error: null,
+      });
 
-    render(<DataProcessing />);
+      render(<DataProcessing />);
 
-    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
-    await waitForValidCertificate();
-    await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(1));
-    expect(screen.getByTestId('data-product-jobs-empty')).toHaveTextContent(
-      'No result generation tasks',
-    );
+      expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+      await waitForValidCertificate();
+      await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('data-product-jobs-empty')).toHaveTextContent(
+        'No result generation tasks',
+      );
 
-    fireEvent.change(screen.getByLabelText('Result set name'), {
-      target: { value: 'Sparse package' },
-    });
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /Use this check to start calculation|Start a new calculation with this check/,
-      }),
-    );
-
-    await waitFor(() =>
-      expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith(
-        {
-          name: 'Test result set',
-          coverageMode: 'global_eligible',
-          lciaMethodSet: expectedReviewedLciaMethods,
-          closureCheckId: 'closure-valid',
-          requestedScopeHash: 'scope-hash-valid',
-          policyFingerprint: 'policy-valid',
-        },
-        expect.objectContaining({
-          taskSession: expect.objectContaining({
-            ownerId: 'owner-a',
-            isCurrent: expect.any(Function),
-          }),
+      fireEvent.change(screen.getByLabelText('Result set name'), {
+        target: { value: 'Sparse package' },
+      });
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
         }),
-      ),
-    );
-    expect(await screen.findByText('Command failed')).toBeInTheDocument();
+      );
 
-    mockDataProductTasks = [
-      {
-        schemaVersion: 'task-summary.v2',
-        jobId: 'worker-job-ready-after-error',
-        jobKind: 'lcia_result.package_build',
-        category: 'data_product',
-        workerStatus: 'completed',
-        domainValidity: 'none',
-        projectionUpdatedAt: '2026-06-23T10:00:00Z',
-        title: 'Preview-ready package',
-        resultPackageId: 'package-1',
-        capabilities: {
-          canCancel: false,
-          canDownloadReport: false,
-          canOpenWorkbench: true,
-          canPreviewResult: true,
-        },
-      },
-    ];
-    await act(async () => {
-      taskListeners.forEach((listener) => listener());
-    });
+      await waitFor(() =>
+        expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith(
+          {
+            name: 'Test result set',
+            coverageMode: 'global_eligible',
+            lciaMethodSet: expectedReviewedLciaMethods,
+            closureCheckId: 'closure-valid',
+            requestedScopeHash: 'scope-hash-valid',
+            policyFingerprint: 'policy-valid',
+          },
+          expect.objectContaining({
+            taskSession: expect.objectContaining({
+              ownerId: 'owner-a',
+              isCurrent: expect.any(Function),
+            }),
+          }),
+        ),
+      );
+      expect(await screen.findByText('Command failed')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh jobs' }));
-    await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2));
-
-    fireEvent.click(screen.getByTestId('tab-preview'));
-    await waitForReadyPreviewPackage();
-    fireEvent.change(screen.getByLabelText('Calculation version'), {
-      target: { value: 'package-1' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
-
-    await waitFor(() =>
-      expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith({
-        packageId: 'package-1',
-        rowOffset: 0,
-        rowLimit: 25,
-      }),
-    );
-    expect(await screen.findByText('Result set overview')).toBeInTheDocument();
-    expect(screen.getByText('Input scope')).toBeInTheDocument();
-    expect(screen.getByText('Artifact verification')).toBeInTheDocument();
-    expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(5);
-
-    fireEvent.change(screen.getByLabelText('Calculation version'), {
-      target: { value: 'package-1' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
-
-    await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalledTimes(2));
-    expect(await screen.findByText('preview failed')).toBeInTheDocument();
-    expect(screen.queryByTestId('descriptions')).not.toBeInTheDocument();
-
-    mockListLciaResultPublications.mockResolvedValueOnce({
-      data: [
+      mockDataProductTasks = [
         {
-          publicationId: 'publication-sparse',
+          schemaVersion: 'task-summary.v2',
+          jobId: 'worker-job-ready-after-error',
+          jobKind: 'lcia_result.package_build',
+          category: 'data_product',
+          workerStatus: 'completed',
+          domainValidity: 'none',
+          projectionUpdatedAt: '2026-06-23T10:00:00Z',
+          title: 'Preview-ready package',
+          resultPackageId: 'package-1',
+          capabilities: {
+            canCancel: false,
+            canDownloadReport: false,
+            canOpenWorkbench: true,
+            canPreviewResult: true,
+          },
+        },
+      ];
+      await act(async () => {
+        taskListeners.forEach((listener) => listener());
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Refresh jobs' }));
+      await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2));
+
+      fireEvent.click(screen.getByTestId('tab-preview'));
+      await waitForReadyPreviewPackage();
+      fireEvent.change(screen.getByLabelText('Calculation version'), {
+        target: { value: 'package-1' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
+
+      await waitFor(() =>
+        expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith({
           packageId: 'package-1',
-          packageName: 'Sparse package',
-          packageVersion: '2026-06-public',
-          status: 'current',
-          isCurrent: true,
-        },
-        {
-          packageId: 'package-without-publication-id',
-          packageName: 'Unpublished package',
-          packageVersion: '2026-06-old',
-          status: 'unpublished',
-        },
-        {
-          packageName: 'Publication without package id',
-          packageVersion: '2026-05-old',
-          status: 'unpublished',
-        },
-      ],
-      error: null,
-    });
-    fireEvent.click(screen.getByTestId('tab-publication'));
-    const publicationPanel = screen.getByTestId('tab-panel-publication');
-    fireEvent.change(within(publicationPanel).getByLabelText('Publish result set'), {
-      target: { value: 'package-1' },
-    });
-    fireEvent.change(within(publicationPanel).getByLabelText('Publish default impact category'), {
-      target: { value: 'climate-change' },
-    });
-    fireEvent.click(within(publicationPanel).getByRole('button', { name: 'Publish result set' }));
+          rowOffset: 0,
+          rowLimit: 50,
+        }),
+      );
+      expect(await screen.findByText('Result set overview')).toBeInTheDocument();
+      expect(screen.getByText('Input scope')).toBeInTheDocument();
+      expect(screen.getByText('Artifact verification')).toBeInTheDocument();
+      expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(5);
 
-    await waitFor(() =>
-      expect(mockPublishLciaResultPackage).toHaveBeenCalledWith({
-        packageId: 'package-1',
-        displayDefaultImpactCategory: 'climate-change',
-      }),
-    );
-    expect(await screen.findByText('publish failed')).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText('Calculation version'), {
+        target: { value: 'package-1' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
-    const publicationRow = await screen.findByTestId('data-product-publication-publication-sparse');
-    expect(screen.queryByText('Unpublished package')).not.toBeInTheDocument();
-    fireEvent.click(within(publicationRow).getByRole('button', { name: 'Unpublish publication' }));
+      await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalledTimes(2));
+      expect(await screen.findByText('preview failed')).toBeInTheDocument();
+      expect(screen.queryByTestId('descriptions')).not.toBeInTheDocument();
 
-    await waitFor(() =>
-      expect(mockUnpublishLciaResultPublication).toHaveBeenCalledWith({
-        publicationId: 'publication-sparse',
-      }),
-    );
-    expect(await screen.findByText('unpublished')).toBeInTheDocument();
-  });
+      mockListLciaResultPublications.mockResolvedValueOnce({
+        data: [
+          {
+            publicationId: 'publication-sparse',
+            packageId: 'package-1',
+            packageName: 'Sparse package',
+            packageVersion: '2026-06-public',
+            status: 'current',
+            isCurrent: true,
+          },
+          {
+            packageId: 'package-without-publication-id',
+            packageName: 'Unpublished package',
+            packageVersion: '2026-06-old',
+            status: 'unpublished',
+          },
+          {
+            packageName: 'Publication without package id',
+            packageVersion: '2026-05-old',
+            status: 'unpublished',
+          },
+        ],
+        error: null,
+      });
+      fireEvent.click(screen.getByTestId('tab-publication'));
+      const publicationPanel = screen.getByTestId('tab-panel-publication');
+      fireEvent.change(within(publicationPanel).getByLabelText('Publish result set'), {
+        target: { value: 'package-1' },
+      });
+      fireEvent.change(within(publicationPanel).getByLabelText('Publish default impact category'), {
+        target: { value: 'climate-change' },
+      });
+      fireEvent.click(within(publicationPanel).getByRole('button', { name: 'Publish result set' }));
+
+      await waitFor(() =>
+        expect(mockPublishLciaResultPackage).toHaveBeenCalledWith({
+          packageId: 'package-1',
+          displayDefaultImpactCategory: 'climate-change',
+        }),
+      );
+      expect(await screen.findByText('publish failed')).toBeInTheDocument();
+
+      const publicationRow = await screen.findByTestId(
+        'data-product-publication-publication-sparse',
+      );
+      expect(screen.queryByText('Unpublished package')).not.toBeInTheDocument();
+      fireEvent.click(
+        within(publicationRow).getByRole('button', { name: 'Unpublish publication' }),
+      );
+
+      await waitFor(() =>
+        expect(mockUnpublishLciaResultPublication).toHaveBeenCalledWith({
+          publicationId: 'publication-sparse',
+        }),
+      );
+      expect(await screen.findByText('Publication unpublished')).toBeInTheDocument();
+      expect(screen.queryAllByText('unpublished')).toHaveLength(unpublishData ? 1 : 0);
+    },
+  );
 
   it('handles failed method metadata loading and sparse task summaries', async () => {
     mockFetch.mockResolvedValueOnce({
@@ -4109,7 +4236,7 @@ describe('DataProcessing page', () => {
     expect(screen.queryByText('Previous version unavailable')).not.toBeInTheDocument();
     mockPreviewLciaResultPackage.mockClear();
     // Paging inherits the loaded version's method rather than the previous route.
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'right' }));
     await waitFor(() =>
       expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith(
         expect.objectContaining({

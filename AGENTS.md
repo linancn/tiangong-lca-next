@@ -49,8 +49,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 3b46c6fc7898274c22381671b18a741c8d1a4222
-lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
+lastReviewedCommit: 61a07a81efee0b2d203865736a8878daac836fc3
+lastReviewedNote: 'Platform #1308: reviewed shared result pagination, consolidated unavailable feedback, retry and zero-value behavior, snapshot evidence and synthetic browser proof; delivery gates and authorization are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

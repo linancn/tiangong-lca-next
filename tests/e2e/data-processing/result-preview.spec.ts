@@ -147,6 +147,8 @@ test('opens exact process results with readable names, units and a usable narrow
     },
   );
   const unexpected: string[] = [];
+  let previewUnavailable = false;
+  const previewRequests: Array<{ rowOffset: number; rowLimit: number }> = [];
   const writes: string[] = [];
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
@@ -209,19 +211,32 @@ test('opens exact process results with readable names, units and a usable narrow
           data = bundle;
           break;
         case 'preview_package':
+          previewRequests.push(body);
           data = {
             summary: { packageId, defaultImpactCategory: method.method_id },
+            artifactManifest: { snapshotSource: { snapshotId: userId } },
+            previewWarnings: previewUnavailable
+              ? [{ code: 'query_artifact_shape_invalid', detail: 'v2 jobId is invalid' }]
+              : [],
             detailPage: {
-              status: 'ready',
+              status: previewUnavailable ? 'unavailable' : 'ready',
+              reason: previewUnavailable ? 'result_projection_artifacts_unavailable' : undefined,
               impactCategoryId: method.method_id,
               impactName: 'Climate change',
               impactVersion: method.method_version,
               unit: 'kg CO2 Equivalents',
-              offset: 0,
-              limit: 25,
+              offset: body.rowOffset ?? 0,
+              limit: body.rowLimit ?? 50,
               returnedCount: 1,
-              totalCount: 1,
-              rows: [{ processId, processVersion: version, processName: name, value: 0.125 }],
+              totalCount: 120,
+              rows: [
+                {
+                  processId,
+                  processVersion: version,
+                  processName: name,
+                  value: previewUnavailable ? null : 0,
+                },
+              ],
             },
           };
           break;
@@ -237,6 +252,42 @@ test('opens exact process results with readable names, units and a usable narrow
   );
   await expect(page.getByRole('link', { name })).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(previewRequests[previewRequests.length - 1]?.rowLimit).toBe(50);
+  previewUnavailable = true;
+  await page.getByRole('button', { name: 'right', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveCount(1);
+  await expect(page.getByRole('alert')).toContainText('Calculation results are not available');
+  await expect(page.getByRole('alert')).not.toContainText(
+    'result_projection_artifacts_unavailable',
+  );
+  expect(previewRequests[previewRequests.length - 1]?.rowOffset).toBe(50);
+  await expect(page.getByText('Result preview loaded', { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Technical evidence', exact: true }).click();
+  await expect(page.getByText(/v2 jobId is invalid/)).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('preview-unavailable.png'), fullPage: true });
+  previewUnavailable = false;
+  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(
+    page
+      .getByRole('row')
+      .filter({ has: page.getByRole('link', { name, exact: true }) })
+      .getByRole('cell', { name: '0', exact: true }),
+  ).toBeVisible();
+  await page.locator('.result-preview-pagination').getByRole('combobox').click();
+  await page.getByTitle('20 / page', { exact: true }).click();
+  await expect.poll(() => previewRequests[previewRequests.length - 1]?.rowLimit).toBe(20);
+  expect(previewRequests[previewRequests.length - 1]?.rowOffset).toBe(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+    .toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath('preview-pagination-narrow.png'),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1280, height: 720 });
+
   await page.screenshot({
     path: testInfo.outputPath('results-list.png'),
     fullPage: true,

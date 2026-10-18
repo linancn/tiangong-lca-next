@@ -46,8 +46,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 3b46c6fc7898274c22381671b18a741c8d1a4222
-lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
+lastReviewedCommit: 61a07a81efee0b2d203865736a8878daac836fc3
+lastReviewedNote: 'Platform #1308: reviewed result-preview pagination and failure recovery proof; bootstrap, runtime, dependencies and checked-push gates are unchanged.'
 ---
 
 # Development Bootstrap
