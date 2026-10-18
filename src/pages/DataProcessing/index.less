@@ -110,7 +110,7 @@
 
 .workbenchPanel {
   width: 100%;
-  max-width: 1180px;
+  min-width: 0;
 }
 
 .commandMessage {
@@ -331,7 +331,8 @@
 }
 
 .bundleProcessSelect {
-  min-width: min(680px, 75vw);
+  width: 100%;
+  min-width: 0;
 }
 
 .bundleDownloadGrid {
@@ -420,7 +421,15 @@
 }
 
 .previewResultToolbar {
+  width: 100%;
   flex-wrap: wrap;
+}
+
+.previewResultToolbar > :global(.ant-space-item),
+.previewTableStack > :global(.ant-space-item),
+.previewDetails > :global(.ant-space-item) {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .previewResultSelect {
@@ -543,6 +552,12 @@
     min-width: 0;
     max-width: 100%;
     width: 100%;
+  }
+
+  .previewDetails :global(.ant-card-head-wrapper) {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-block: 12px;
   }
 
   .previewDetails,

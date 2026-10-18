@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-10-18'
-lastReviewedCommit: '230fd68b77b1168d2b8c30108ff9961aeed84867'
-lastReviewedNote: 'Platform #1304: reviewed proxy-addr 2.0.8 and Moment 2.31.0 leaf/peer snapshots at 230fd68b. Installed ordinary proxy/date/locale controls retain their results and the two security corrections are intentional. Product 0.0.139, UI/compiler/runtime graph, source/assertions, environment and release controls remain unchanged. The ordinary checked push owns the full local gate; fresh Main Candidate, backmerge and root integration remain required. No production action is authorized.'
+lastReviewedAt: "2026-10-18"
+lastReviewedCommit: "3b46c6fc7898274c22381671b18a741c8d1a4222"
+lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -63,6 +63,7 @@ ownership:
           - tsconfig.electron.json
           - playwright.config.ts
           - playwright.dataset-lists.config.ts
+          - playwright.result-preview.config.ts
           - config/docs-capture/**
           - package.json
           - pnpm-lock.yaml
@@ -138,6 +139,7 @@ coverage:
     - tsconfig.electron.json
     - playwright.config.ts
     - playwright.dataset-lists.config.ts
+    - playwright.result-preview.config.ts
     - config/docs-capture/**
     - package.json
     - pnpm-lock.yaml
@@ -239,6 +241,7 @@ routing:
         - tsconfig.electron.json
         - playwright.config.ts
         - playwright.dataset-lists.config.ts
+        - playwright.result-preview.config.ts
         - config/docs-capture/**
         - .nvmrc
         - jest.config.cjs
@@ -315,6 +318,7 @@ routing:
         - tsconfig.electron.json
         - playwright.config.ts
         - playwright.dataset-lists.config.ts
+        - playwright.result-preview.config.ts
         - .nvmrc
         - jest.config.cjs
         - Dockerfile.app
@@ -801,6 +805,8 @@ rules:
       - path: playwright.config.ts
         kind: semantic-e2e-config
       - path: playwright.dataset-lists.config.ts
+        kind: semantic-e2e-config
+      - path: playwright.result-preview.config.ts
         kind: semantic-e2e-config
       - path: docker/e2e/**
         kind: semantic-e2e-environment

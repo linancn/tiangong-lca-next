@@ -26,6 +26,7 @@ checkPaths:
   - jest.config.cjs
   - playwright.config.ts
   - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - scripts/e2e/**
   - scripts/release/**
   - docker/e2e/**
@@ -43,8 +44,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 230fd68b77b1168d2b8c30108ff9961aeed84867
-lastReviewedNote: 'Platform #1304: reviewed proxy-addr 2.0.8 and Moment 2.31.0 leaf/peer snapshots at 230fd68b. Installed ordinary proxy/date/locale controls retain their results and the two security corrections are intentional. Product 0.0.139, UI/compiler/runtime graph, source/assertions, environment and release controls remain unchanged. The ordinary checked push owns the full local gate; fresh Main Candidate, backmerge and root integration remain required. No production action is authorized.'
+lastReviewedCommit: 3b46c6fc7898274c22381671b18a741c8d1a4222
+lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
 ---
 
 # Testing Execution State
