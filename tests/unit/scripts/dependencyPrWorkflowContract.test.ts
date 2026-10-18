@@ -67,6 +67,52 @@ describe('ordinary dependency workflow validation ownership', () => {
     },
   );
 
+  it.each(cases)(
+    '%s selects the same owner for the compatibility probe',
+    (_name, base, head, body, expected, event) => {
+      const probe = workflow.slice(workflow.indexOf('  action-compatibility:'));
+      const expression = probe.match(/\n    if: >-\n([\s\S]*?)\n    runs-on:/u)?.[1];
+      if (!expression) throw new Error('Compatibility job selection expression is missing.');
+      expect(
+        vm.runInNewContext(
+          expression,
+          {
+            github: {
+              event_name: event,
+              event: { pull_request: { base: { ref: base }, head: { ref: head }, body } },
+            },
+            contains: (value: string, part: string) =>
+              value.toLowerCase().includes(part.toLowerCase()),
+            startsWith: (value: string, part: string) =>
+              value.toLowerCase().startsWith(part.toLowerCase()),
+          },
+          { timeout: 100 },
+        ),
+      ).toBe(expected);
+    },
+  );
+
+  it('exercises the selected tools and archive upload without adding release authority', () => {
+    const probe = workflow.slice(workflow.indexOf('  action-compatibility:'));
+    expect(probe).toContain(
+      'uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0',
+    );
+    expect(probe).toContain('uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1');
+    expect(probe).toContain(
+      'uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2',
+    );
+    expect(probe.indexOf('--stage setup-node')).toBeLessThan(probe.indexOf('uses: pnpm/setup@'));
+    expect(probe).toContain('install: false');
+    expect(probe).toContain('cache: false');
+    expect(probe).toContain('archive: true');
+    expect(probe).toContain('if-no-files-found: error');
+    expect(probe).toContain('--stage artifact-upload');
+    expect(probe).not.toMatch(
+      /permissions:|secrets\.|GITHUB_TOKEN|GH_TOKEN|pnpm install|pnpm prepush:gate|deploy|release:to-dev|release:promote/u,
+    );
+    expect(workflow).toContain('permissions:\n  contents: read');
+  });
+
   it('retains a read-only canonical source gate without release or deployment authority', () => {
     expect(workflow).toContain('contents: read');
     expect(workflow).toContain('persist-credentials: false');

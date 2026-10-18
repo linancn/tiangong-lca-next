@@ -49,7 +49,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up pinned pnpm and Node.js
-        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
         with:
           version: 11.24.0
           runtime: node@24.19.0
@@ -64,9 +64,74 @@ jobs:
         run: pnpm prepush:gate
       - name: Preserve complete test logs
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dependency-pr-test-logs-${{ github.run_id }}-${{ github.run_attempt }}
           path: .local/test-logs/**
           if-no-files-found: ignore
           retention-days: 7
+
+  action-compatibility:
+    name: Action compatibility (non-release)
+    # Match the ordinary dependency gate; protected release phases keep their owner.
+    if: >-
+      github.event_name != 'pull_request' || !(
+        (
+          github.event.pull_request.base.ref == 'dev' &&
+          contains(github.event.pull_request.body || '', 'tiangong-next-release-automation:v2')
+        ) ||
+        (
+          github.event.pull_request.base.ref == 'main' &&
+          (
+            github.event.pull_request.head.ref == 'dev' ||
+            startsWith(github.event.pull_request.head.ref, 'codex/promote-') ||
+            startsWith(github.event.pull_request.head.ref, 'codex/hotfix-')
+          )
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact compatibility candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Exercise setup-node without registry authentication
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.19.0
+          package-manager-cache: false
+      - name: Verify setup-node runtime before another action can replace it
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: >-
+          node scripts/qualification/action-compatibility-probe.cjs --stage setup-node --expected-head "$EXPECTED_HEAD" --output "$RUNNER_TEMP/platform-actions-compatibility/setup-node.json"
+      - name: Exercise pinned pnpm and runtime without installing the product
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+        with:
+          version: 11.24.0
+          runtime: node@24.19.0
+          cache: false
+          install: false
+      - name: Verify pnpm runtime and bind product inputs
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: >-
+          node scripts/qualification/action-compatibility-probe.cjs --stage pnpm-setup --expected-head "$EXPECTED_HEAD" --output "$RUNNER_TEMP/platform-actions-compatibility/pnpm-setup.json"
+      - name: Upload exact tool compatibility receipts
+        id: compatibility-artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: platform-actions-compatibility-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/platform-actions-compatibility/*.json
+          archive: true
+          if-no-files-found: error
+          retention-days: 7
+      - name: Verify artifact service acknowledgement
+        env:
+          ARTIFACT_ID: ${{ steps.compatibility-artifact.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.compatibility-artifact.outputs.artifact-digest }}
+        run: >-
+          node scripts/qualification/action-compatibility-probe.cjs --stage artifact-upload --artifact-id "$ARTIFACT_ID" --artifact-digest "$ARTIFACT_DIGEST"
