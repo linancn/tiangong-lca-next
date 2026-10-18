@@ -450,6 +450,7 @@ export default {
   'pages.dataProcessing.preview.nextPage': '下一页',
   'pages.dataProcessing.preview.exportExcel': '导出 Excel',
   'pages.dataProcessing.preview.exportFailed': '导出结果明细失败',
+  'pages.dataProcessing.preview.valueUnavailable': '未加载',
   'pages.dataProcessing.preview.warningTitle': '部分预览数据未能加载',
   'pages.dataProcessing.preview.resultUnavailable': '当前预览暂不可查看计算结果。',
   'pages.dataProcessing.preview.artifactVerificationTitle': '产物校验',

@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 18e81718ed5750cdeca5ebbd7650257315559fc1
-lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
+lastReviewedCommit: 4495a5f784e0244be413d2a0ddef91124b21dcbb
+lastReviewedNote: 'Platform #1308: reviewed shared result pagination, consolidated unavailable feedback, retry and zero-value behavior, snapshot evidence and synthetic browser proof; delivery gates and authorization are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -302,3 +302,5 @@ LifecycleModel graph saves merge stored instance metadata by internal ID before 
 The committed SDK version is pinned by `package.json` and `pnpm-lock.yaml`; `tests/package-contracts/installedTidasSdk.contract.test.mjs` verifies the installed package independently of Jest mocks. Candidate package qualification does not constitute registry publication or final dependency adoption.
 
 Worker #320 replay coverage: service calculation evidence may carry matrix v2 with a `lcia-coverage-replay-snapshot:v1` descriptor. Its count is the exact logical gap count, while the locator/hash bind compressed snapshot replay inputs. Legacy matrix v1 and browser static calculation retain their original JSONL contracts. The UI never labels or links a replay snapshot as a downloadable gap JSONL. Terminal snapshot-build errors follow the existing error state and clear pending polling; production raw artifact URLs remain unavailable as browser downloads.
+
+Result preview uses the shared data-list pagination defaults through the native Table pagination API. Server offsets and limits remain authoritative; changing page size resets the offset. A preview read does not announce command success. Unavailable results have one localized retryable notice, with raw reasons and warnings in collapsed technical evidence; numeric zero remains a result. Snapshot evidence prefers the current summary or snapshotSource identity, retaining the earlier snapshotBuilder field as a fallback.
