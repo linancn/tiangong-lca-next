@@ -27,9 +27,9 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 4495a5f784e0244be413d2a0ddef91124b21dcbb
-lastReviewedNote: 'Platform #1308: reviewed shared result pagination, consolidated unavailable feedback, retry and zero-value behavior, snapshot evidence and synthetic browser proof; delivery gates and authorization are unchanged.'
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: b1fa7a6d62b334df1206302a71a45e98c630203e
+lastReviewedNote: 'Platform #1315: reviewed native navigation-aware identity observation at b1fa7a6d after hosted380 Chromium context-loss failure. Fresh non-null generation and exact stored owner are observed atomically before/after held-response release; existing45s authenticated/15s public budget,120s test limit, routes and dispatch/logout checks remain.160 focused checks, lint, types and locale checks pass.380 hosted result remains68pass/1fail/30skip with separate verified cleanup success. New ordinary full checked push and real three-browser qualification remain Main-owned; workflow/runtime/package/coverage/release policies are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

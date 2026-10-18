@@ -5,13 +5,13 @@ const { createHash } = require('node:crypto');
 const path = require('node:path');
 
 const BROWSERS = ['chromium', 'firefox', 'webkit'];
-// Reviewed complete discovery: 28 canonical cases and four harness controls per browser.
+// Reviewed complete discovery: 29 canonical cases and four harness controls per browser.
 // Fifteen canonical scenarios explicitly run in Chromium only. Process allocation runs in all
 // three browsers (66d8f7092); route identity comes from the current governed coverage contract.
 const CANONICAL_BROWSERS = {
-  chromium: { executed: 28, skipped: 0 },
-  firefox: { executed: 13, skipped: 15 },
-  webkit: { executed: 13, skipped: 15 },
+  chromium: { executed: 29, skipped: 0 },
+  firefox: { executed: 14, skipped: 15 },
+  webkit: { executed: 14, skipped: 15 },
 };
 const HARNESS_BROWSERS = Object.fromEntries(
   BROWSERS.map((browser) => [browser, { executed: 4, skipped: 0 }]),

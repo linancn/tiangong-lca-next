@@ -45,9 +45,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 65fa54a5c890c24731a55349e7727d4cdc4b3498
-lastReviewedNote: 'Platform #1314: reviewed latest pinned Actions and the non-release compatibility probe at 65fa54a5. Frozen install, focused contracts, lint, static workflow checks and build pass. Existing release/browser/gate owners and product graph are preserved; Main owns the full checked push, actual hosted artifact proof and Dev-only delivery. Main promotion/root inclusion remain held for separate release proof and authorization.'
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: b1fa7a6d62b334df1206302a71a45e98c630203e
+lastReviewedNote: 'Platform #1315: reviewed native navigation-aware identity observation at b1fa7a6d after hosted380 Chromium context-loss failure. Fresh non-null generation and exact stored owner are observed atomically before/after held-response release; existing45s authenticated/15s public budget,120s test limit, routes and dispatch/logout checks remain.160 focused checks, lint, types and locale checks pass.380 hosted result remains68pass/1fail/30skip with separate verified cleanup success. New ordinary full checked push and real three-browser qualification remain Main-owned; workflow/runtime/package/coverage/release policies are unchanged.'
 ---
 
 # Development Bootstrap
@@ -215,7 +215,7 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 
 The repository has one TypeScript track: the direct `typescript` dependency is exact-pinned to `7.0.2`, and every compiler entry uses that package. There is no TypeScript 6 alias or `tsc6` fallback. Repository-owned source analysis uses `scripts/typescript-native-parser.mjs`; that file and `scripts/typescript-native-parser.d.mts` are the only places allowed to import `typescript/unstable/*`. Run the adapter contract tests after every TypeScript upgrade.
 
-The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.4.1`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced`, its normalized failure envelope, singleton/ordered Process review acceptance, and required Process general-comment validation; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
+The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.5.0`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced`, its normalized failure envelope, singleton/ordered Process review acceptance, and required Process general-comment validation; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
 
 Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
 
@@ -233,7 +233,7 @@ The reviewed test and packaging majors are Jest / `jest-environment-jsdom` / `@j
 
 On macOS, the Jest child process disables V8 concurrent recompilation and Maglev after the documented Node 24 `ClearStaleLeftTrimmedPointerVisitor` crash reproduced while those optimization tiers were active. The unit stage also keeps its 25% worker pool with Jest's `512MB` idle-memory recycle boundary, so the mitigation does not turn the complete suite into a serial run.
 
-For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. This is an operator-selected acceptance signal, not an unavoidable release check.
+For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. The bounded ordinary dependency PR job also runs canonical synthetic qualification; its source/resource/artifact boundary lives in [dependency maintenance](docs/agents/dependency-maintenance.md). Browser proof remains separate from release proof.
 
 `release:to-dev --apply` changes only `package.json.version` plus bounded Docpact review metadata and requires `pnpm-lock.yaml` to remain byte-identical. Its generated candidate push runs Docpact plus `release:static-preflight`; it does not run browsers and never writes proof into the branch. The exact resulting Release PR into `dev` runs the reusable non-browser Release Gate—static contracts and the full Jest gate—then emits an external proof bound to both branch bases, candidate head/tree/version, PR, run, attempt, and artifact. The immutable promotion push, main promotion PR, and normal version-changing main publication verify candidate identity and that proof without running browser E2E. A direct main hotfix is explicitly marker-bound to its tracked Issue, current main base, and exact PR head, must preserve package version, and runs one clean-runner static/full gate on that head. Canonical E2E discovery still recursively includes nested spec directories whenever manual qualification is invoked; unknown simulator requests, external origins, and production writes fail that qualification.
 
