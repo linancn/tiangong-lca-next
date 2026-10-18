@@ -14,9 +14,9 @@ checkPaths:
   - .github/dependabot.yml
   - .github/workflows/dependency-pr.yml
   - docs/agents/dependency-maintenance.md
-lastReviewedAt: 2026-10-16
-lastReviewedCommit: b1bfe7124be7e8562ec464b0c6fd69475ceff41e
-lastReviewedNote: 'Platform #1275: reviewed exact qualified Main b1bfe7124be7e8562ec464b0c6fd69475ceff41e backmerge into released Dev 71fc65d0abf0c8b25176020c635149fad554270e. Preserves v0.0.137 runtime, dependencies, workflows, release inputs and frozen evidence; carries the Main-owned Git history regression and tooltip assertion repair. Full local and fresh hosted validation remain required; no release or production operation is authorized.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 65fa54a5c890c24731a55349e7727d4cdc4b3498
+lastReviewedNote: 'Platform #1314: reviewed latest pinned Actions and the non-release compatibility probe at 65fa54a5. Frozen install, focused contracts, lint, static workflow checks and build pass. Existing release/browser/gate owners and product graph are preserved; Main owns the full checked push, actual hosted artifact proof and Dev-only delivery. Main promotion/root inclusion remain held for separate release proof and authorization.'
 related:
   - ../../AGENTS.md
   - repo-validation.md
@@ -34,6 +34,8 @@ Keep the reviewed React/Ant Design/ProComponents generation, internal SDK, TypeS
 `dependency-pr.yml` runs for relevant dependency, package-policy, runtime-selector and workflow paths in PRs targeting `dev` or `main`, including human-authored changes. It checks out the exact head with `fetch-depth: 0`, uses the existing pinned pnpm/Node setup, installs the frozen graph and runs the unchanged `pnpm prepush:gate`. Complete history and the `origin/main` and `origin/dev` refs are required by the locale audit, frozen German review and correction provenance contracts. Checkout fetches that history before removing its credentials; the candidate stays bound to its exact SHA. Full Jest logs remain available as a seven-day artifact. Manual runs have independent run identities; newer PR commits cancel only superseded runs for that PR.
 
 Marked Dev Release PRs and Main candidates from `dev`, `codex/promote-*` or `codex/hotfix-*` defer to their existing exact Release Candidate or Main Candidate validation owner. The dependency job is skipped for those phases, not reported as proof. Existing candidate checks still reject invalid marker, lineage, version or head evidence; no protected gate is bypassed. Ordinary dependency proposals and human maintenance PRs outside those protected phases run the new job, including unmarked Main security proposals. This avoids a second aggregate execution on deterministic release/promotion/hotfix candidates.
+
+The selected Action baseline is pnpm/setup3.1.1, setup-node7.1.0 and upload-artifact7.0.2, each pinned to its verified executable commit. The ordinary dependency workflow also has a bounded `action-compatibility` job with the same phase-selection predicate. It runs setup-node before verifying its exact Node24.19.0 runtime, then pnpm/setup before verifying Node24.19.0/pnpm11.24.0. Both source-bound receipts reject a changed product manifest/lock/install policy and record the installed Node binary identity. This probe does not install the product or run a second aggregate gate. It uploads only its two JSON receipts as a seven-day ZIP and requires a service artifact ID/digest. Hosted qualification must independently download that actual artifact, check ZIP integrity, exact receipt contents and source/tool/graph identities; an upload acknowledgement alone is not roundtrip proof. Existing release/browser artifact paths, archive behavior and admission guards stay intact.
 
 This workflow has read-only repository access, no production/deployment credentials and no publication command. It does not call `release:static-preflight`, manufacture a Release PR marker or run browser E2E. The existing `ci.yml` remains Manual Web Deploy and has no PR trigger. The new check does not replace any required release or main-candidate check. Unrelated feature paths gain no automatic dependency workflow.
 

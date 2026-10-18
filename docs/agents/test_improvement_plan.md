@@ -46,8 +46,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: f8294fd8ee58c80cdb10968ab1751be781a5794d
-lastReviewedNote: 'Platform #1304: reviewed the two security leaf/peer closures on accepted Main 0.0.141 at f8294fd8. All newer preview, locale and test work, product version, environment, runtime, graph and release controls are preserved outside proxy-addr 2.0.8 and Moment 2.31.0. Prior 894d6076 CI qualifies only that source; this composition requires new checked-push and hosted qualification. No assertions, thresholds, branch policy or production authority change.'
+lastReviewedCommit: 65fa54a5c890c24731a55349e7727d4cdc4b3498
+lastReviewedNote: 'Platform #1314: reviewed latest pinned Actions and the non-release compatibility probe at 65fa54a5. Frozen install, focused contracts, lint, static workflow checks and build pass. Existing release/browser/gate owners and product graph are preserved; Main owns the full checked push, actual hosted artifact proof and Dev-only delivery. Main promotion/root inclusion remain held for separate release proof and authorization.'
 ---
 
 # Testing Strategy
@@ -59,7 +59,7 @@ lastReviewedNote: 'Platform #1304: reviewed the two security leaf/peer closures 
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
 - dependency installation is a governed proof input: the repository pins Node `24.19.0`, pnpm `11.24.0`, and TypeScript `7.0.2`, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
-- CI bootstrap provenance is part of the same proof: every owned `pnpm/setup` invocation uses the reviewed peeled executable v2.0.2 commit SHA rather than an annotated-tag object or movable major tag
+- CI bootstrap provenance is part of the same proof: every owned `pnpm/setup` invocation uses the reviewed peeled executable v3.1.1 commit SHA rather than an annotated-tag object or movable major tag
 - the released TIDAS SDK consumer is protected by a child Node contract outside Jest's module mapper; it resolves the real installed package at the exact version pinned by package.json and exercises all seven dataset factories plus the normalized `validateEnhanced` error envelope so mocked application suites cannot hide a package incompatibility
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth

@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
         with:
           version: 11.24.0
           runtime: node@24.19.0
@@ -87,7 +87,7 @@ jobs:
 
       - name: Upload full Jest logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-gate-jest-logs-${{ github.run_id }}-${{ github.run_attempt }}
           path: .local/test-logs/**
@@ -122,7 +122,7 @@ jobs:
 
       - name: Upload exact aggregate release proof
         if: inputs.emit_proof
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.release-proof.outputs.artifact_name }}
           path: ${{ steps.release-proof.outputs.proof_path }}

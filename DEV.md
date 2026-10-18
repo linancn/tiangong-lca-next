@@ -46,8 +46,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: f8294fd8ee58c80cdb10968ab1751be781a5794d
-lastReviewedNote: 'Platform #1304: reviewed the two security leaf/peer closures on accepted Main 0.0.141 at f8294fd8. All newer preview, locale and test work, product version, environment, runtime, graph and release controls are preserved outside proxy-addr 2.0.8 and Moment 2.31.0. Prior 894d6076 CI qualifies only that source; this composition requires new checked-push and hosted qualification. No assertions, thresholds, branch policy or production authority change.'
+lastReviewedCommit: 65fa54a5c890c24731a55349e7727d4cdc4b3498
+lastReviewedNote: 'Platform #1314: reviewed latest pinned Actions and the non-release compatibility probe at 65fa54a5. Frozen install, focused contracts, lint, static workflow checks and build pass. Existing release/browser/gate owners and product graph are preserved; Main owns the full checked push, actual hosted artifact proof and Dev-only delivery. Main promotion/root inclusion remain held for separate release proof and authorization.'
 ---
 
 # Development Bootstrap
@@ -219,7 +219,7 @@ The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.4.1`
 
 Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
 
-Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v2.0.2 commit SHA, while its inputs pin pnpm `11.24.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
+Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v3.1.1 commit SHA, while its inputs pin pnpm `11.24.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
 
 `pnpm lint` runs Oxlint, Prettier verification, and the native TypeScript 7 web typecheck. Oxlint owns unused and deprecated API correctness; the repo-local `tiangong/no-invalid-this` plugin preserves the legacy strict-context rule that Oxlint does not yet provide natively. Prettier owns formatting only and does not organize imports.
 
