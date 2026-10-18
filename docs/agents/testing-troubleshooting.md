@@ -32,6 +32,7 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - playwright.config.ts
   - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - scripts/e2e/**
   - scripts/release/**
   - docker/e2e/**
@@ -41,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-17
-lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
-lastReviewedNote: 'Platform #1297: reviewed the ResultSet replacement test ordering correction; initial-state and completed-replacement assertions preserve existing async-test, coverage, source-bound locale evidence and release-gate contracts without product or policy changes.'
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 18e81718ed5750cdeca5ebbd7650257315559fc1
+lastReviewedNote: 'Platform #1302: reviewed frontend result presentation, exact-version metadata reads, removal of coverage-only warnings and focused browser/unit proof. Backend semantics, authorization, dependencies and full delivery gates remain unchanged; validation outcomes are recorded in the Issue and PR.'
 ---
 
 # Testing Troubleshooting

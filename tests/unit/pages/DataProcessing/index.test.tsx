@@ -96,9 +96,13 @@ jest.mock('@ant-design/icons', () =>
 );
 jest.mock('@/pages/DataProcessing/CalculationBundlePanel', () => ({
   __esModule: true,
-  default: ({ packageId, onReviewCalculation }: any) => (
+  formatBundleNumber: (value: number) => (Number.isFinite(value) ? String(value) : '-'),
+  default: ({ packageId, initialProcessId, initialProcessVersion, onReviewCalculation }: any) => (
     <div data-testid='calculation-bundle-panel'>
       {packageId}
+      <span data-testid='selected-result-process'>
+        {initialProcessId}@{initialProcessVersion}
+      </span>
       {onReviewCalculation ? (
         <button type='button' onClick={onReviewCalculation}>
           Review calculation
@@ -208,6 +212,7 @@ const mockMessages: Record<string, Record<string, string>> = {
     'pages.dataProcessing.form.unpublishReason': '下架原因',
     'pages.dataProcessing.action.createBuild': '生成结果集',
     'pages.dataProcessing.action.calculateFromCheck': '使用此检查开始计算',
+    'pages.dataProcessing.resultView.recalculate': '使用此检查开始新计算',
     'pages.dataProcessing.workspace.loadVersion': '预览结果集',
     'pages.dataProcessing.action.publishPackage': '发布结果集',
     'pages.dataProcessing.action.unpublishPublication': '下架发布',
@@ -224,8 +229,16 @@ const mockMessages: Record<string, Record<string, string>> = {
   },
 };
 
-const mockFormatMessage = ({ id, defaultMessage }: { id?: string; defaultMessage?: string }) =>
-  (id && mockLocale ? mockMessages[mockLocale]?.[id] : undefined) ?? defaultMessage ?? id ?? '';
+const mockFormatMessage = (
+  { id, defaultMessage }: { id?: string; defaultMessage?: string },
+  values: Record<string, unknown> = {},
+) =>
+  (
+    (id && mockLocale ? mockMessages[mockLocale]?.[id] : undefined) ??
+    defaultMessage ??
+    id ??
+    ''
+  ).replace(/\{(\w+)\}/g, (match, key) => String(values[key] ?? match));
 
 const mockLciaMethodList = {
   files: [
@@ -463,7 +476,9 @@ describe('DataProcessing page', () => {
     await waitFor(() => expect(mockGetClosureCheck).toHaveBeenCalledWith('closure-valid'));
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Use this check to start calculation' }),
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
       ).not.toBeDisabled(),
     );
   }
@@ -1260,6 +1275,7 @@ describe('DataProcessing page', () => {
     expect(formatArtifactByteSize(2 * 1024 * 1024)).toBe('2.00 MB');
     expect(formatNumericValue('bad')).toBe('-');
     expect(formatNumericValue('12.5')).toBe('12.5');
+    expect(formatNumericValue(12.5)).toBe('12.5');
     expect(formatTimestamp(undefined)).toBe('-');
     expect(formatTimestamp('2026-06-24T09:10:11Z')).toBe('2026-06-24 09:10');
     expect(formatTimestamp('not-iso')).toBe('not-iso');
@@ -1357,10 +1373,16 @@ describe('DataProcessing page', () => {
     );
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Use this check to start calculation' }),
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
       ).not.toBeDisabled(),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Use this check to start calculation|Start a new calculation with this check/,
+      }),
+    );
 
     await waitFor(() =>
       expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith(
@@ -1544,12 +1566,12 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     const generationButton = await screen.findByRole(
       'button',
-      { name: 'Use this check to start calculation' },
+      { name: /Use this check to start calculation|Start a new calculation with this check/ },
       { timeout: 5000 },
     );
     expect(generationButton).toBeDisabled();
-    expect(await screen.findByText('blocked', undefined, { timeout: 5000 })).toBeInTheDocument();
-    expect(screen.getByText('2 blockers')).toBeInTheDocument();
+    expect(await screen.findByText('Blocked', undefined, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.getByText('2 blocking issues')).toBeInTheDocument();
     expect(generationButton).toBeDisabled();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
@@ -1565,7 +1587,9 @@ describe('DataProcessing page', () => {
       render(<DataProcessing />);
       await waitForValidCertificate();
       expect(
-        screen.getByRole('button', { name: 'Use this check to start calculation' }),
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
       ).not.toBeDisabled();
 
       // The lightweight Form mock validates every registered field even when
@@ -1585,7 +1609,9 @@ describe('DataProcessing page', () => {
       ).toBeInTheDocument();
       await waitFor(() =>
         expect(
-          screen.getByRole('button', { name: 'Use this check to start calculation' }),
+          screen.getByRole('button', {
+            name: /Use this check to start calculation|Start a new calculation with this check/,
+          }),
         ).toBeDisabled(),
       );
       expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
@@ -1809,10 +1835,16 @@ describe('DataProcessing page', () => {
     fireEvent.change(screen.getByLabelText('Result set name'), {
       target: { value: 'Large payload package' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Use this check to start calculation|Start a new calculation with this check/,
+      }),
+    );
 
     expect(await screen.findByText('Result generation request submitted')).toBeInTheDocument();
-    const successAlert = screen.getByRole('alert');
+    const successAlert = screen
+      .getByText('Result generation request submitted')
+      .closest('[role=alert]') as HTMLElement;
     expect(within(successAlert).getByText('build-with-large-payload')).toBeInTheDocument();
     expect(within(successAlert).getByText('worker-job-with-large-payload')).toBeInTheDocument();
     expect(screen.queryByText(/input_manifest/)).not.toBeInTheDocument();
@@ -1837,7 +1869,11 @@ describe('DataProcessing page', () => {
       fireEvent.change(screen.getByLabelText('Result set name'), {
         target: { value: 'Pending package' },
       });
-      fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
+      );
       await waitFor(() => expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledTimes(1));
       const guard = mockCreateLciaResultBuildRequest.mock.calls[0][1].taskSession;
       expect(guard.ownerId).toBe('owner-a');
@@ -1887,7 +1923,11 @@ describe('DataProcessing page', () => {
         await pending;
         return values;
       };
-      fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
+      );
       await waitFor(() => expect(validationStarted).toHaveBeenCalledTimes(1));
       mockTaskGeneration = null;
       await act(async () => {
@@ -1922,7 +1962,11 @@ describe('DataProcessing page', () => {
     fireEvent.change(screen.getByLabelText('Result set name'), {
       target: { value: 'Pending package' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Use this check to start calculation|Start a new calculation with this check/,
+      }),
+    );
 
     expect(await screen.findByText('Result generation request submitted')).toBeInTheDocument();
     await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2));
@@ -2069,13 +2113,19 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Use this check to start calculation' }),
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
       ).not.toBeDisabled(),
     );
     fireEvent.change(screen.getByLabelText('Result set name'), {
       target: { value: 'Missing LCIA method build' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Use this check to start calculation|Start a new calculation with this check/,
+      }),
+    );
 
     expect(
       await screen.findByText('The reviewed LCIA method catalog is unavailable.'),
@@ -2242,7 +2292,7 @@ describe('DataProcessing page', () => {
     expect(screen.queryByText('process-b@01.00.001')).not.toBeInTheDocument();
     expect(screen.queryByText('Input data')).not.toBeInTheDocument();
     expect(screen.queryByText('Calculation results')).not.toBeInTheDocument();
-    expect(screen.getByText('Result details')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Result details' })).toBeInTheDocument();
     const processLink = screen.getByRole('link', { name: 'Portland cement production' });
     expect(processLink).toHaveAttribute(
       'href',
@@ -2276,6 +2326,13 @@ describe('DataProcessing page', () => {
     expect(
       screen.getByText('unique_match=9.15 any_match=35.44 singular_risk=medium'),
     ).toBeInTheDocument();
+
+    expect(screen.queryByRole('dialog', { name: 'Process results' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'View results' })[0]);
+    expect(screen.getByTestId('selected-result-process')).toHaveTextContent('process-a@01.00.000');
+    expect(screen.getByTestId('calculation-bundle-panel')).toHaveTextContent('package-1');
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByTestId('calculation-bundle-panel')).not.toBeInTheDocument();
 
     const reads = mockPreviewLciaResultPackage.mock.calls.length;
     fireEvent.click(screen.getByRole('button', { name: 'Export all results' }));
@@ -2311,7 +2368,7 @@ describe('DataProcessing page', () => {
               processId: 'process-without-version',
               processName: 'Process without version',
               stateCode: 100,
-              value: 1.5,
+              value: null,
             },
             {
               rowNumber: offset + 2,
@@ -2534,7 +2591,11 @@ describe('DataProcessing page', () => {
     fireEvent.change(screen.getByLabelText('Result set name'), {
       target: { value: 'Sparse package' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Use this check to start calculation|Start a new calculation with this check/,
+      }),
+    );
 
     await waitFor(() =>
       expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith(
@@ -2943,7 +3004,11 @@ describe('DataProcessing page', () => {
     fireEvent.change(screen.getByLabelText('Result set name'), {
       target: { value: 'Throwing package' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Use this check to start calculation|Start a new calculation with this check/,
+      }),
+    );
 
     expect(await screen.findByText('build exploded')).toBeInTheDocument();
 
@@ -2977,13 +3042,19 @@ describe('DataProcessing page', () => {
     expect(await screen.findByText('task feed exploded')).toBeInTheDocument();
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Use this check to start calculation' }),
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
       ).not.toBeDisabled(),
     );
     fireEvent.change(screen.getByLabelText('Result set name'), {
       target: { value: 'Unbound certificate' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Use this check to start calculation|Start a new calculation with this check/,
+      }),
+    );
 
     expect(
       await screen.findByText(
@@ -3067,10 +3138,16 @@ describe('DataProcessing page', () => {
       );
       await waitFor(() =>
         expect(
-          screen.getByRole('button', { name: 'Use this check to start calculation' }),
+          screen.getByRole('button', {
+            name: /Use this check to start calculation|Start a new calculation with this check/,
+          }),
         ).not.toBeDisabled(),
       );
-      fireEvent.click(screen.getByRole('button', { name: 'Use this check to start calculation' }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
+      );
       await waitFor(() =>
         expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith(
           expect.objectContaining({ coverageMode: 'global_eligible' }),
@@ -3092,7 +3169,9 @@ describe('DataProcessing page', () => {
         ),
       ).not.toBeInTheDocument();
       expect(
-        screen.getByRole('button', { name: 'Use this check to start calculation' }),
+        screen.getByRole('button', {
+          name: /Use this check to start calculation|Start a new calculation with this check/,
+        }),
       ).not.toBeDisabled();
     } finally {
       Object.defineProperty(globalThis.crypto, 'randomUUID', {
@@ -3812,7 +3891,7 @@ describe('DataProcessing page', () => {
     expect(screen.getByTestId('tab-preview')).toHaveTextContent('结果预览');
     expect(screen.getByTestId('tab-publication')).toHaveTextContent('发布');
     expect(screen.getByLabelText('默认影响类别')).toHaveTextContent('气候变化');
-    expect(screen.getByRole('button', { name: '使用此检查开始计算' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /使用此检查开始(新)?计算/ })).toBeInTheDocument();
   });
 
   it('renders access denied when role lookup fails', async () => {
@@ -3823,6 +3902,43 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('access-denied')).toBeInTheDocument();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
+  it('localizes the matrix diagnostic while retaining evidence and existing calculation decisions', async () => {
+    mockListClosureCheckIssues.mockResolvedValue({
+      data: {
+        issues: [
+          {
+            issueId: 'matrix-1',
+            code: 'matrix_readiness_singular_risk_medium',
+            severity: 'warning',
+            title: 'Raw matrix token',
+            summary: 'Raw matrix detail',
+            suggestedAction: 'Raw action',
+          },
+        ],
+      },
+      error: null,
+    });
+    render(<DataProcessing />);
+    expect(await screen.findByText('Review calculation matrix stability')).toBeInTheDocument();
+    expect(screen.getByText('Raw matrix detail')).toBeInTheDocument();
+    expect(screen.getByText('Raw action')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'View results' }));
+    expect(mockHistoryReplace).toHaveBeenLastCalledWith(
+      expect.objectContaining({ search: expect.stringContaining('tab=preview') }),
+    );
+    expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
+  });
+
+  it('opens an exact process/version deep link without selecting an arbitrary process', async () => {
+    mockLocation.search =
+      '?tab=preview&packageId=package-1&processId=process-a&processVersion=01.00.000';
+    render(<DataProcessing />);
+    expect(await screen.findByTestId('selected-result-process')).toHaveTextContent(
+      'process-a@01.00.000',
+    );
+    expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
+  });
+
   it('keeps directory filters on entry and return without exposing workflow tabs in the list', async () => {
     mockInjectResultSet = false;
     mockLocation = { pathname: '/data-processing', search: '?rsQuery=Test&rsPage=2' };
@@ -3843,7 +3959,8 @@ describe('DataProcessing page', () => {
     );
     mockLocation.search = `?rsQuery=Test&rsPage=2&resultSetId=${TEST_RESULT_SET_ID}&tab=preview&packageId=package-1`;
     view.rerender(<DataProcessing />);
-    expect(await screen.findByTestId('calculation-bundle-panel')).toHaveTextContent('package-1');
+    await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalled());
+    expect(screen.queryByTestId('calculation-bundle-panel')).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Search loaded names or IDs')).not.toBeInTheDocument();
     expect(mockCreateClosureCheck).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId('tab-exports'));
@@ -3987,7 +4104,7 @@ describe('DataProcessing page', () => {
     mockLocation.search = '?tab=preview&packageId=recovered';
     view.rerender(<DataProcessing />);
     await waitFor(() =>
-      expect(screen.getByTestId('calculation-bundle-panel')).toHaveTextContent('recovered'),
+      expect(screen.queryByText('Previous version unavailable')).not.toBeInTheDocument(),
     );
     expect(screen.queryByText('Previous version unavailable')).not.toBeInTheDocument();
     mockPreviewLciaResultPackage.mockClear();
