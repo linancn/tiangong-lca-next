@@ -15,8 +15,8 @@ checkPaths:
   - .github/workflows/dependency-pr.yml
   - docs/agents/dependency-maintenance.md
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: c08c66edd935d42f8aa258b76dd52727e269a701
-lastReviewedNote: "Platform #1315: reviewed the exact combined candidate and test-only workflow-boundary correction at c08c66ed. Named-job extraction preserves all compatibility no-install/no-aggregate/no-auth/no-release and global permission guards;29 focused tests and lint pass. Main's first ordinary full gate failed solely on the prior unbounded test slice before transport; a new ordinary full checked push and hosted browser/capacity/artifact/cleanup acceptance remain Main-owned. Workflow/runtime/package/coverage/release policies are unchanged."
+lastReviewedCommit: b1fa7a6d62b334df1206302a71a45e98c630203e
+lastReviewedNote: 'Platform #1315: reviewed native navigation-aware identity observation at b1fa7a6d after hosted380 Chromium context-loss failure. Fresh non-null generation and exact stored owner are observed atomically before/after held-response release; existing45s authenticated/15s public budget,120s test limit, routes and dispatch/logout checks remain.160 focused checks, lint, types and locale checks pass.380 hosted result remains68pass/1fail/30skip with separate verified cleanup success. New ordinary full checked push and real three-browser qualification remain Main-owned; workflow/runtime/package/coverage/release policies are unchanged.'
 related:
   - ../../AGENTS.md
   - repo-validation.md
