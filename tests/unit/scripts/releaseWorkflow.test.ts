@@ -104,6 +104,8 @@ const versionDocuments = (version: string) => ({
 });
 
 const installFakeCommands = (fixture: Fixture) => {
+  // Extensionless CommonJS executables must not inherit an ESM temporary ancestor.
+  writeJson(path.join(fixture.bin, 'package.json'), { private: true, type: 'commonjs' });
   writeExecutable(
     path.join(fixture.bin, 'gh'),
     `#!/usr/bin/env node
@@ -224,8 +226,8 @@ if (args[0] === 'lint') {
   );
 };
 
-const createFixture = (devVersion = '1.0.0'): Fixture => {
-  const container = fs.mkdtempSync(path.join(os.tmpdir(), 'release-workflow-'));
+const createFixture = (devVersion = '1.0.0', temporaryRoot = os.tmpdir()): Fixture => {
+  const container = fs.mkdtempSync(path.join(temporaryRoot, 'release-workflow-'));
   const root = path.join(container, 'repo');
   const origin = path.join(container, 'origin.git');
   const fork = path.join(container, 'fork.git');
@@ -391,6 +393,68 @@ afterEach(() => {
 });
 
 describe('release automation public contracts', () => {
+  it('runs CommonJS fixture commands beneath an explicit ESM ancestor', () => {
+    const ancestor = fs.mkdtempSync(path.join(os.tmpdir(), 'release-workflow-esm-'));
+    writeJson(path.join(ancestor, 'package.json'), { private: true, type: 'module' });
+    try {
+      const fixture = createFixture('1.0.0', ancestor);
+      const commands = [
+        {
+          name: 'gh',
+          args: [
+            'pr',
+            'list',
+            '--head',
+            'codex/fixture',
+            '--json',
+            'headRepository,headRepositoryOwner',
+          ],
+          output: [],
+        },
+        { name: 'pnpm', args: ['run', 'release:static-preflight'], output: '' },
+        {
+          name: 'docpact',
+          args: ['lint', '--output', path.join(fixture.container, 'docpact-report.json')],
+          output: {
+            schema_version: 'docpact.lint-report.v1',
+            diagnostics: [],
+            summary: { total_count: 0 },
+          },
+        },
+      ];
+      const execute = (command: (typeof commands)[number]) =>
+        spawnSync(path.join(fixture.bin, command.name), command.args, {
+          cwd: fixture.root,
+          encoding: 'utf8',
+          env: isolatedEnvironment({
+            PATH: `${fixture.bin}${path.delimiter}${process.env.PATH}`,
+            FAKE_GH_PR_LIST: '[]',
+            FAKE_RELEASE_PREFLIGHT_FAIL: '0',
+            FAKE_DOCPACT_MODE: 'pass',
+          }),
+        });
+
+      commands.forEach((command) => {
+        const result = execute(command);
+        expect({ status: result.status, stderr: result.stderr }).toEqual({ status: 0, stderr: '' });
+        const output = result.stdout === '' ? '' : JSON.parse(result.stdout);
+        expect(output).toEqual(command.output);
+      });
+
+      fs.unlinkSync(path.join(fixture.bin, 'package.json'));
+      commands.forEach((command) => {
+        const result = execute(command);
+        expect(result.status).toBe(1);
+        expect(result.stdout).toBe('');
+        expect(result.stderr).toContain(
+          'ReferenceError: require is not defined in ES module scope',
+        );
+      });
+    } finally {
+      fs.rmSync(ancestor, { recursive: true, force: true });
+    }
+  });
+
   it.each(['release-to-dev', 'promote-dev-to-main'])(
     '%s requires apply for prepare-only',
     (command) => {
