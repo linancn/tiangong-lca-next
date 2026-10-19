@@ -320,6 +320,40 @@ describe('app runtime config', () => {
       },
       token: { borderRadius: 12, colorPrimary: '#5C246A' },
     });
+    expect(result.message.styles({ props: {} })).toEqual({
+      listContent: { pointerEvents: 'none' },
+    });
+  });
+
+  it('keeps message content interactive and preserves unrelated feedback configuration', () => {
+    const { antd } = require('@/app');
+    const notification = { styles: { listContent: { pointerEvents: 'auto' } } };
+    const appConfig = { message: { duration: 5 }, notification: { duration: 8 } };
+    const incomingStyles = {
+      listContent: { gap: 9, pointerEvents: 'auto' },
+      root: { pointerEvents: 'auto', color: 'red' },
+    };
+    const objectResult = antd({
+      appConfig,
+      notification,
+      message: { className: 'existing-message', styles: incomingStyles },
+    });
+    expect(objectResult.message.className).toBe('existing-message');
+    expect(objectResult.message.styles({ props: {} })).toEqual({
+      ...incomingStyles,
+      listContent: { gap: 9, pointerEvents: 'none' },
+    });
+    expect(objectResult.appConfig).toBe(appConfig);
+    expect(objectResult.notification).toBe(notification);
+
+    const styleCallback = jest.fn(() => incomingStyles);
+    const functionResult = antd({ appConfig: {}, message: { styles: styleCallback } });
+    const info = { props: { content: 'notice' } };
+    expect(functionResult.message.styles(info)).toEqual(objectResult.message.styles(info));
+    expect(styleCallback).toHaveBeenCalledWith(info);
+    expect(antd({ appConfig: {}, message: {} }).message.styles(info)).toEqual({
+      listContent: { pointerEvents: 'none' },
+    });
   });
 
   it('wraps every Umi route in the global boot and render-failure boundary', () => {

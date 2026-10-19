@@ -104,6 +104,8 @@ const versionDocuments = (version: string) => ({
 });
 
 const installFakeCommands = (fixture: Fixture) => {
+  // Extensionless CommonJS executables must not inherit an ESM temporary ancestor.
+  writeJson(path.join(fixture.bin, 'package.json'), { private: true, type: 'commonjs' });
   writeExecutable(
     path.join(fixture.bin, 'gh'),
     `#!/usr/bin/env node
@@ -224,8 +226,8 @@ if (args[0] === 'lint') {
   );
 };
 
-const createFixture = (devVersion = '1.0.0'): Fixture => {
-  const container = fs.mkdtempSync(path.join(os.tmpdir(), 'release-workflow-'));
+const createFixture = (devVersion = '1.0.0', temporaryRoot = os.tmpdir()): Fixture => {
+  const container = fs.mkdtempSync(path.join(temporaryRoot, 'release-workflow-'));
   const root = path.join(container, 'repo');
   const origin = path.join(container, 'origin.git');
   const fork = path.join(container, 'fork.git');
@@ -297,8 +299,8 @@ const runCli = (
   args: string[],
   environment: Record<string, string> = {},
   cwd = fixture.root,
-) =>
-  spawnSync(process.execPath, [script, ...args], {
+) => {
+  const result = spawnSync(process.execPath, [script, ...args], {
     cwd,
     encoding: 'utf8',
     env: {
@@ -311,6 +313,38 @@ const runCli = (
       ...environment,
     },
   });
+  if (result.status === workflow.EXIT.external) {
+    const boundedText = (value: unknown, maximum = 2000) => {
+      const text = String(value ?? '');
+      return { text: text.slice(0, maximum), truncated: text.length > maximum };
+    };
+    let cliError: Record<string, any> | undefined;
+    try {
+      cliError = JSON.parse(result.stdout)?.error;
+    } catch {
+      // Preserve malformed CLI output below without hiding the original test failure.
+    }
+    // Only this controlled fixture's CLI output is logged; never include its environment.
+    // JSON escaping keeps control characters inert, and every output field is bounded.
+    process.stderr.write(
+      `${JSON.stringify({
+        event: 'release-workflow-fixture-external-failure',
+        fixture: path.basename(fixture.container),
+        script: path.basename(script),
+        status: result.status,
+        error: {
+          code: boundedText(cliError?.code, 200),
+          command: boundedText(JSON.stringify(cliError?.details?.command)),
+          exit_code: boundedText(cliError?.details?.exit_code, 100),
+          stderr: boundedText(cliError?.details?.stderr),
+        },
+        stdout: boundedText(result.stdout, 4000),
+        stderr: boundedText(result.stderr),
+      })}\n`,
+    );
+  }
+  return result;
+};
 
 const promotionPr = (fixture: Fixture, mergeSha = fixture.devSha) =>
   JSON.stringify({
@@ -359,6 +393,68 @@ afterEach(() => {
 });
 
 describe('release automation public contracts', () => {
+  it('runs CommonJS fixture commands beneath an explicit ESM ancestor', () => {
+    const ancestor = fs.mkdtempSync(path.join(os.tmpdir(), 'release-workflow-esm-'));
+    writeJson(path.join(ancestor, 'package.json'), { private: true, type: 'module' });
+    try {
+      const fixture = createFixture('1.0.0', ancestor);
+      const commands = [
+        {
+          name: 'gh',
+          args: [
+            'pr',
+            'list',
+            '--head',
+            'codex/fixture',
+            '--json',
+            'headRepository,headRepositoryOwner',
+          ],
+          output: [],
+        },
+        { name: 'pnpm', args: ['run', 'release:static-preflight'], output: '' },
+        {
+          name: 'docpact',
+          args: ['lint', '--output', path.join(fixture.container, 'docpact-report.json')],
+          output: {
+            schema_version: 'docpact.lint-report.v1',
+            diagnostics: [],
+            summary: { total_count: 0 },
+          },
+        },
+      ];
+      const execute = (command: (typeof commands)[number]) =>
+        spawnSync(path.join(fixture.bin, command.name), command.args, {
+          cwd: fixture.root,
+          encoding: 'utf8',
+          env: isolatedEnvironment({
+            PATH: `${fixture.bin}${path.delimiter}${process.env.PATH}`,
+            FAKE_GH_PR_LIST: '[]',
+            FAKE_RELEASE_PREFLIGHT_FAIL: '0',
+            FAKE_DOCPACT_MODE: 'pass',
+          }),
+        });
+
+      commands.forEach((command) => {
+        const result = execute(command);
+        expect({ status: result.status, stderr: result.stderr }).toEqual({ status: 0, stderr: '' });
+        const output = result.stdout === '' ? '' : JSON.parse(result.stdout);
+        expect(output).toEqual(command.output);
+      });
+
+      fs.unlinkSync(path.join(fixture.bin, 'package.json'));
+      commands.forEach((command) => {
+        const result = execute(command);
+        expect(result.status).toBe(1);
+        expect(result.stdout).toBe('');
+        expect(result.stderr).toContain(
+          'ReferenceError: require is not defined in ES module scope',
+        );
+      });
+    } finally {
+      fs.rmSync(ancestor, { recursive: true, force: true });
+    }
+  });
+
   it.each(['release-to-dev', 'promote-dev-to-main'])(
     '%s requires apply for prepare-only',
     (command) => {

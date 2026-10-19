@@ -84,6 +84,21 @@ export const antd: RuntimeAntdConfig = (memo) => {
   const themeConfig = createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary);
   return {
     ...memo,
+    message: {
+      ...memo.message,
+      styles: (info) => {
+        const styles =
+          typeof memo.message?.styles === 'function'
+            ? memo.message.styles(info)
+            : memo.message?.styles;
+        return {
+          ...styles,
+          // Messages are non-modal feedback. Keep their transparent full-width
+          // list clear of header input; individual notices retain native hover.
+          listContent: { ...styles?.listContent, pointerEvents: 'none' },
+        };
+      },
+    },
     theme: {
       ...memo.theme,
       ...themeConfig,

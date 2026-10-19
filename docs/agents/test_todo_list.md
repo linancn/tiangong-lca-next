@@ -44,8 +44,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: b1fa7a6d62b334df1206302a71a45e98c630203e
-lastReviewedNote: 'Platform #1315: reviewed native navigation-aware identity observation at b1fa7a6d after hosted380 Chromium context-loss failure. Fresh non-null generation and exact stored owner are observed atomically before/after held-response release; existing45s authenticated/15s public budget,120s test limit, routes and dispatch/logout checks remain.160 focused checks, lint, types and locale checks pass.380 hosted result remains68pass/1fail/30skip with separate verified cleanup success. New ordinary full checked push and real three-browser qualification remain Main-owned; workflow/runtime/package/coverage/release policies are unchanged.'
+lastReviewedCommit: a5d188b2318c9d897e9af56e95869bfb8b7a29d5
+lastReviewedNote: 'Platform #1316: reviewed the canonical17-file locale-artifact refresh at a5d188b after the4b7 ordinary gate rejected stale generated evidence. Independent review verifies all168 scalar changes:141 derived digests and27 app callsite line shifts of15, with304 digest-chain checks. No translation, count, activation state, production blocker, threshold, test inventory or generator changed. Message hit-through and advancing-clock behavior retain the reviewed user interaction and session-race assertions. Original failed gates remain failed; fresh focused checks, ordinary full push and hosted browser qualification remain required.'
 ---
 
 # Testing Execution State
