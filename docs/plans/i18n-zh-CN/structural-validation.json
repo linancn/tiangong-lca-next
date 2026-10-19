@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "9f03eddd313acc0eff15aad6d76adcf9c329fcbc176586ff15fa46582987c540",
+    "auditedInputDigest": "0c011ee9031e77c571e780dcf69fa257744492f6823fb64242f1ba58b90a59c7",
     "validatedMessageCount": 3612,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1692,
     "highRiskMessageDigest": "0cc0db33e51a65019407721252765b9280c6e7452df642419bf913d790f470fe",
     "catalogDigest": "ac73c6d2de1bb37537c667d83ba0058fee0febd7e28f9007ebf44722f325542f",
-    "dossierDigest": "c3e49ac066ad0fe78a5f86c1035af00882c27d4ff27b3ec5a319e7adc3bf6632",
+    "dossierDigest": "66624d7e3933db3a1f37ff6d00c436ce6a5da1eb357989a3677899ade855cdbb",
     "typedContentDossierDigest": "cea189a77b03f66042197c8383d684813c09e3a0356684d325e62eaf73af4c99",
-    "routeEvidenceDigest": "ef4b245ecdb30c2f12bdadd10d27ec54265df11b0489fe71f2cff65579e2b8ee",
+    "routeEvidenceDigest": "6500dde689131a6e24d04d811fb74f4fe932bde626954dd8ede697e3ed35f41c",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "f9c0c5dadd50fde909c6033c39ff3d80f4fbdc5086f099c81e25a02bd21423ab",
         "highRiskMessageCount": 1692,
         "highRiskMessageDigest": "0cc0db33e51a65019407721252765b9280c6e7452df642419bf913d790f470fe",
-        "dossierDigest": "c3e49ac066ad0fe78a5f86c1035af00882c27d4ff27b3ec5a319e7adc3bf6632",
+        "dossierDigest": "66624d7e3933db3a1f37ff6d00c436ce6a5da1eb357989a3677899ade855cdbb",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "0029b34ac276dd6d35a580990c7a2755dc980a3cf78d3ce0a38bcc0c754077e5"
+  "validationDigest": "882adb94db0be83314e6e8d91b9677071bfe36e32b4b20a9f713a6163c666bcb"
 }

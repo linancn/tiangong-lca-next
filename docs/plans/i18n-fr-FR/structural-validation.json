@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "9f03eddd313acc0eff15aad6d76adcf9c329fcbc176586ff15fa46582987c540",
+    "auditedInputDigest": "0c011ee9031e77c571e780dcf69fa257744492f6823fb64242f1ba58b90a59c7",
     "validatedMessageCount": 3612,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1692,
     "highRiskMessageDigest": "0cc0db33e51a65019407721252765b9280c6e7452df642419bf913d790f470fe",
     "catalogDigest": "779e6aaec72e524b676e91fcbb853da0090804e778ffb8459b8235199fa0fc63",
-    "dossierDigest": "8d95a064133fb15a478ff863f83cad52d70e189e4706f0a0e2251ed7370ab749",
+    "dossierDigest": "590b31fa6840855ebcd1517b299303ccd1b904ea6c5a44337ec290ed44e98c12",
     "typedContentDossierDigest": "381b7b7af87d349151ab51d77de2402d93629029efa5ff964e45d5e00cddf454",
-    "routeEvidenceDigest": "ef4b245ecdb30c2f12bdadd10d27ec54265df11b0489fe71f2cff65579e2b8ee",
+    "routeEvidenceDigest": "6500dde689131a6e24d04d811fb74f4fe932bde626954dd8ede697e3ed35f41c",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "f9c0c5dadd50fde909c6033c39ff3d80f4fbdc5086f099c81e25a02bd21423ab",
         "highRiskMessageCount": 1692,
         "highRiskMessageDigest": "0cc0db33e51a65019407721252765b9280c6e7452df642419bf913d790f470fe",
-        "dossierDigest": "8d95a064133fb15a478ff863f83cad52d70e189e4706f0a0e2251ed7370ab749",
+        "dossierDigest": "590b31fa6840855ebcd1517b299303ccd1b904ea6c5a44337ec290ed44e98c12",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "4c074b93ea28f9bbd583d2e8c429810492fa9fd8af7cf6d82a453085e4a81661"
+  "validationDigest": "a185eb3f01fa8c29c91c7b48fe196643e0cf049d870ea90df27c0e99ae479243"
 }
