@@ -46,8 +46,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: c3ce88e3bf92c19c5b3db6eeb13a78dc163beb27
-lastReviewedNote: 'Platform #1316: reviewed the coherent UI graph, bounded fixture diagnostics and explicit CommonJS executable boundary. Actual ordinary gate diagnosed require-not-defined under an ESM temporary ancestor; both original failed runs remain failed. New real-command regression preserves all48 old assertions and command bodies; focused49cases and independent18module-scope scenarios pass. Production guards, dependencies, original temporary-path defaults, coverage and browser policy remain unchanged. Fresh complete ordinary checked push and exact-head hosted qualification remain required; no delivery or release claim.'
+lastReviewedCommit: 474e0da1e876af360948af494cb47c6621a6995c
+lastReviewedNote: 'Platform #1316: reviewed Message-only semantic hit-through and advancing session-fixture wall time at474e0da. Incoming message styles and native notice/Notification behavior remain; original ownership/generation/stale-dispatch assertions and99-case browser inventory are unchanged. Paired component and isolated actual-App Chromium proof pass, with meaningful interception/fixed-Date negatives. Independent code and full governed-document reviews found no remaining issue after removing the new private-DOM CSS assertion. Original665 hosted browser failures remain failed; successor full ordinary push and hosted qualification are pending. Dependency, coverage, release and production policies are unchanged.'
 ---
 
 # Pre-Push Gate Policy
