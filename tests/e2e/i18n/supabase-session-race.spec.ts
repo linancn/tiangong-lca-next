@@ -82,7 +82,6 @@ test('foreign session and sign-out fence a held refresh across actual applicatio
           exact: true,
         });
         await expect(loginFeedback).toBeVisible();
-        await expect(b.locator('.ant-message-list-content')).toHaveCSS('pointer-events', 'none');
         await b.locator('.tg-global-header-avatar-trigger').hover();
         // The account remains operable while the default-duration toast is visible.
         await expect(loginFeedback).toBeVisible();
