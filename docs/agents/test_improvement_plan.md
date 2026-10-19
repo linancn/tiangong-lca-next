@@ -46,8 +46,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-19
-lastReviewedCommit: 474e0da1e876af360948af494cb47c6621a6995c
-lastReviewedNote: 'Platform #1316: reviewed Message-only semantic hit-through and advancing session-fixture wall time at474e0da. Incoming message styles and native notice/Notification behavior remain; original ownership/generation/stale-dispatch assertions and99-case browser inventory are unchanged. Paired component and isolated actual-App Chromium proof pass, with meaningful interception/fixed-Date negatives. Independent code and full governed-document reviews found no remaining issue after removing the new private-DOM CSS assertion. Original665 hosted browser failures remain failed; successor full ordinary push and hosted qualification are pending. Dependency, coverage, release and production policies are unchanged.'
+lastReviewedCommit: a5d188b2318c9d897e9af56e95869bfb8b7a29d5
+lastReviewedNote: 'Platform #1316: reviewed the canonical17-file locale-artifact refresh at a5d188b after the4b7 ordinary gate rejected stale generated evidence. Independent review verifies all168 scalar changes:141 derived digests and27 app callsite line shifts of15, with304 digest-chain checks. No translation, count, activation state, production blocker, threshold, test inventory or generator changed. Message hit-through and advancing-clock behavior retain the reviewed user interaction and session-race assertions. Original failed gates remain failed; fresh focused checks, ordinary full push and hosted browser qualification remain required.'
 ---
 
 # Testing Strategy
