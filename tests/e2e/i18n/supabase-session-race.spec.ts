@@ -68,14 +68,24 @@ test('foreign session and sign-out fence a held refresh across actual applicatio
       const nativeBeforeWinner = race.taskRequests.length;
       // Playwright advances the whole context clock. With A observed visible,
       // the SDK timer enters the shared refresh gate; B may also refresh.
-      // Restore context wall time so B's new token stays valid on reload.
-      await a.clock.setFixedTime(new Date());
+      // Restore running wall time so B's new token stays valid on reload and
+      // feedback's Date-based dismissal timer can continue measuring elapsed time.
+      await a.clock.setSystemTime(new Date());
+      const restoredWallTime = await b.evaluate(() => Date.now());
       await b.bringToFront();
       await expect.poll(() => b.evaluate(() => document.visibilityState)).toBe('visible');
       await controls.submit.click();
       await expect.poll(() => new URL(b.url()).hash).toBe('#/welcome');
+      await expect.poll(() => b.evaluate(() => Date.now())).toBeGreaterThan(restoredWallTime);
       if (scenario === 'sign-out') {
+        const loginFeedback = b.getByText(getLocaleMessage('en-US', 'pages.login.success'), {
+          exact: true,
+        });
+        await expect(loginFeedback).toBeVisible();
+        await expect(b.locator('.ant-message-list-content')).toHaveCSS('pointer-events', 'none');
         await b.locator('.tg-global-header-avatar-trigger').hover();
+        // The account remains operable while the default-duration toast is visible.
+        await expect(loginFeedback).toBeVisible();
         await b
           .getByText(getLocaleMessage('en-US', 'menu.account.logout'), { exact: true })
           .click();
