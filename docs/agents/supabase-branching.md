@@ -138,3 +138,5 @@ They depend on branch-specific Vault secrets on the active Supabase branch:
 - `project_x_key` only for legacy `generate_flow_embedding()` compatibility
 
 Do not hardcode branch URLs or service keys in app code, SQL, or dumped baseline files.
+
+Review final approval with pending opinions requires Database #857 (`review_one_current_approval`): one current assigned approving Comment is required by finalization and batch eligibility. Deploy that migration to the selected backend before qualifying this UI change; rejection remains independent of opinion completion.

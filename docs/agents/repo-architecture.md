@@ -27,9 +27,9 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: 474e0da1e876af360948af494cb47c6621a6995c
-lastReviewedNote: 'Platform #1316: reviewed Message-only semantic hit-through and advancing session-fixture wall time at474e0da. Incoming message styles and native notice/Notification behavior remain; original ownership/generation/stale-dispatch assertions and99-case browser inventory are unchanged. Paired component and isolated actual-App Chromium proof pass, with meaningful interception/fixed-Date negatives. Independent code and full governed-document reviews found no remaining issue after removing the new private-DOM CSS assertion. Original665 hosted browser failures remain failed; successor full ordinary push and hosted qualification are pending. Dependency, coverage, release and production policies are unchanged.'
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: a25d26143d72817e1b841a1f4b7859f0a602d57f
+lastReviewedNote: 'Platform #1319: reviewed matching single, expanded-Reference and batch one-approval controls, four-locale messages and focused regressions. Exact-dev frozen installation and all 127 focused tests pass after network recovery. Team/profile authorization, rejection, selection and gate ownership remain unchanged; final checked-push qualification is recorded on the PR.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -175,6 +175,7 @@ export type RootReviewReferenceProgress = {
   state_code: number;
   reviewer_count: number;
   completed_reviewer_count: number;
+  approve_opinion_count?: number;
   reject_opinion_count?: number;
   actor_comment_state_code?: number | null;
   actor_comment_modified_at?: string | null;

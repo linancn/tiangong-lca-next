@@ -307,7 +307,7 @@ describe('BatchReviewActions', () => {
           ordinal: 1,
           review_id: 'mixed-opinions',
           eligible: true,
-          reviewer_count: 2,
+          reviewer_count: 3,
           submitted_opinion_count: 2,
           approve_opinion_count: 1,
           reject_opinion_count: 1,
@@ -340,7 +340,7 @@ describe('BatchReviewActions', () => {
     const preview = mockConfirm.mock.calls[0][0].content;
     const { container } = render(preview);
     expect(container).toHaveTextContent(
-      'All reviewers rejected this task; approval is unavailable.',
+      'At least one assigned reviewer must approve before final approval.',
     );
   });
 
@@ -540,6 +540,10 @@ describe('BatchReviewActions', () => {
       ['REVIEW_NOT_IN_PROGRESS', 'This review is not in progress.'],
       ['REVIEWER_REQUIRED', 'No reviewer is assigned, or you are not assigned to this review.'],
       ['REVIEWER_OPINIONS_PENDING', 'Some reviewers have not submitted their opinions.'],
+      [
+        'REVIEWER_APPROVAL_REQUIRED',
+        'At least one assigned reviewer must approve before final approval.',
+      ],
     ] as const;
     eligibilityMock.mockResolvedValueOnce({
       data: reasons.map(([reason_code], ordinal) => ({
@@ -566,7 +570,9 @@ describe('BatchReviewActions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Batch reject' }));
 
-    const dialog = await screen.findByRole('region', { name: 'Reject 4 selected reviews' });
+    const dialog = await screen.findByRole('region', {
+      name: `Reject ${reasons.length} selected reviews`,
+    });
     const rows = within(dialog).getAllByRole('listitem');
     reasons.forEach(([, description], index) => {
       expect(rows[index]).toHaveTextContent(`${index + 1}.Data ${index + 1}${description}`);

@@ -38,6 +38,7 @@ export default {
   'pages.review.assignment.current': 'Current reviewers',
   'pages.review.assignment.cannotRevokeSubmitted': 'A submitted reviewer cannot be revoked.',
   'pages.review.approve.disabled.noReviewers': 'Assign at least one reviewer before final approval.',
+  'pages.review.approve.disabled.approvalRequired': 'At least one assigned reviewer must approve before final approval.',
   'pages.review.approve.disabled.pendingOpinions': '{count} reviewer opinions are still pending.',
   'pages.review.approve.disabled.allRejected': 'All reviewers rejected this task; approval is unavailable.',
   'pages.review.approve.disabled.opinionsUnavailable': 'Unable to verify reviewer opinions. Refresh and try again.',
