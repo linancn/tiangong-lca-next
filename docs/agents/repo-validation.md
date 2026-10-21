@@ -47,7 +47,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: a25d26143d72817e1b841a1f4b7859f0a602d57f
+lastReviewedCommit: f82e55ede3729f6781192c325a958a0003ff3d27
 lastReviewedNote: 'Platform #1319: reviewed matching single, expanded-Reference and batch one-approval controls, four-locale messages and focused regressions. Exact-dev frozen installation and all 127 focused tests pass after network recovery. Team/profile authorization, rejection, selection and gate ownership remain unchanged; final checked-push qualification is recorded on the PR.'
 related:
   - ../AGENTS.md
