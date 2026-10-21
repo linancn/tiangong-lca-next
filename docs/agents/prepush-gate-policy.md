@@ -45,9 +45,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: a5d188b2318c9d897e9af56e95869bfb8b7a29d5
-lastReviewedNote: 'Platform #1316: reviewed the canonical17-file locale-artifact refresh at a5d188b after the4b7 ordinary gate rejected stale generated evidence. Independent review verifies all168 scalar changes:141 derived digests and27 app callsite line shifts of15, with304 digest-chain checks. No translation, count, activation state, production blocker, threshold, test inventory or generator changed. Message hit-through and advancing-clock behavior retain the reviewed user interaction and session-race assertions. Original failed gates remain failed; fresh focused checks, ordinary full push and hosted browser qualification remain required.'
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: a25d26143d72817e1b841a1f4b7859f0a602d57f
+lastReviewedNote: 'Platform #1319: reviewed matching single, expanded-Reference and batch one-approval controls, four-locale messages and focused regressions. Exact-dev frozen installation and all 127 focused tests pass after network recovery. Team/profile authorization, rejection, selection and gate ownership remain unchanged; final checked-push qualification is recorded on the PR.'
 ---
 
 # Pre-Push Gate Policy

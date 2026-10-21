@@ -7,7 +7,7 @@ import {
   type ReviewBatchDecisionResult,
 } from '@/services/reviews/api';
 import { getCommentApi } from '@/services/comments/api';
-import { areAllCurrentReviewerOpinionsRejected } from '@/services/reviews/util';
+import { hasCurrentReviewerApproval } from '@/services/reviews/util';
 import { FileExcelOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import { App, Button, Form, Input, Modal, Space, theme, Tooltip } from 'antd';
@@ -55,12 +55,8 @@ const BatchReviewActions = ({
         role === 'admin' &&
         decision === 'approve' &&
         item.eligible &&
-        areAllCurrentReviewerOpinionsRejected(
-          item.reviewer_count,
-          item.submitted_opinion_count,
-          item.reject_opinion_count,
-        )
-          ? { ...item, eligible: false, reason_code: 'ALL_REVIEWERS_REJECTED' }
+        !hasCurrentReviewerApproval(item.reviewer_count, item.approve_opinion_count)
+          ? { ...item, eligible: false, reason_code: 'REVIEWER_APPROVAL_REQUIRED' }
           : item,
       );
       const submittedOpinions: Record<string, number | null> = {};
@@ -132,10 +128,10 @@ const BatchReviewActions = ({
         });
       }
       switch (item.reason_code) {
-        case 'ALL_REVIEWERS_REJECTED':
+        case 'REVIEWER_APPROVAL_REQUIRED':
           return intl.formatMessage({
-            id: 'pages.review.approve.disabled.allRejected',
-            defaultMessage: 'All reviewers rejected this task; approval is unavailable.',
+            id: 'pages.review.approve.disabled.approvalRequired',
+            defaultMessage: 'At least one assigned reviewer must approve before final approval.',
           });
         case 'REVIEW_NOT_FOUND':
           return intl.formatMessage({

@@ -22,7 +22,7 @@ import {
   type RootReviewReferenceProgress,
 } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
-import { areAllCurrentReviewerOpinionsRejected } from '@/services/reviews/util';
+import { hasCurrentReviewerApproval } from '@/services/reviews/util';
 import { ExperimentOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
@@ -516,23 +516,21 @@ const AssignmentReview = ({
         if (result.error) throw result.error;
         let currentTabData = result.data.filter(isReferenceMatchingCurrentTab);
         if (tableType === 'in-progress' || tableType === 'assigned') {
-          const completedReferences = currentTabData.filter(
-            (item) =>
-              item.reviewer_count > 0 && item.completed_reviewer_count >= item.reviewer_count,
-          );
-          if (completedReferences.length > 0) {
+          const assignedReferences = currentTabData.filter((item) => item.reviewer_count > 0);
+          if (assignedReferences.length > 0) {
             try {
               const eligibility = await getReviewBatchEligibility(
-                completedReferences.map((item) => item.reference_review_id),
+                assignedReferences.map((item) => item.reference_review_id),
                 'admin-approve',
               );
               if (eligibility.error) throw eligibility.error;
-              const rejectedCountById = new Map(
-                eligibility.data.map((item) => [item.review_id, item.reject_opinion_count]),
-              );
+              const opinionsById = new Map(eligibility.data.map((item) => [item.review_id, item]));
               currentTabData = currentTabData.map((item) => ({
                 ...item,
-                reject_opinion_count: rejectedCountById.get(item.reference_review_id),
+                approve_opinion_count: opinionsById.get(item.reference_review_id)
+                  ?.approve_opinion_count,
+                reject_opinion_count: opinionsById.get(item.reference_review_id)
+                  ?.reject_opinion_count,
               }));
             } catch (error) {
               console.error('Failed to verify reference reviewer opinions:', error);
@@ -710,42 +708,23 @@ const AssignmentReview = ({
     }
   };
 
-  const getApproveDisabledReason = (
-    reviewerCount: number,
-    completedReviewerCount: number,
-    rejectOpinionCount?: number,
-  ) => {
+  const getApproveDisabledReason = (reviewerCount: number, approveOpinionCount?: number) => {
     if (reviewerCount === 0) {
       return intl.formatMessage({
         id: 'pages.review.approve.disabled.noReviewers',
         defaultMessage: 'Assign at least one reviewer before final approval.',
       });
     }
-    if (completedReviewerCount < reviewerCount) {
-      return intl.formatMessage(
-        {
-          id: 'pages.review.approve.disabled.pendingOpinions',
-          defaultMessage: '{count} reviewer opinions are still pending.',
-        },
-        { count: reviewerCount - completedReviewerCount },
-      );
-    }
-    if (rejectOpinionCount === undefined) {
+    if (approveOpinionCount === undefined) {
       return intl.formatMessage({
         id: 'pages.review.approve.disabled.opinionsUnavailable',
         defaultMessage: 'Unable to verify reviewer opinions. Refresh and try again.',
       });
     }
-    if (
-      areAllCurrentReviewerOpinionsRejected(
-        reviewerCount,
-        completedReviewerCount,
-        rejectOpinionCount,
-      )
-    ) {
+    if (!hasCurrentReviewerApproval(reviewerCount, approveOpinionCount)) {
       return intl.formatMessage({
-        id: 'pages.review.approve.disabled.allRejected',
-        defaultMessage: 'All reviewers rejected this task; approval is unavailable.',
+        id: 'pages.review.approve.disabled.approvalRequired',
+        defaultMessage: 'At least one assigned reviewer must approve before final approval.',
       });
     }
     return undefined;
@@ -874,8 +853,7 @@ const AssignmentReview = ({
                 actionRef={childActionRef}
                 approveDisabledReason={getApproveDisabledReason(
                   record.reviewer_count,
-                  record.completed_reviewer_count,
-                  record.reject_opinion_count,
+                  record.approve_opinion_count,
                 )}
                 dataVersion={record.data_version}
               />
@@ -1154,8 +1132,7 @@ const AssignmentReview = ({
                   actionRef={actionRef}
                   approveDisabledReason={getApproveDisabledReason(
                     record.reviewerCount ?? 0,
-                    record.completedReviewerCount ?? 0,
-                    record.rejectOpinionCount,
+                    record.approveOpinionCount,
                   )}
                   dataVersion={record.json?.data?.version}
                   approveOpinionCount={record.approveOpinionCount}

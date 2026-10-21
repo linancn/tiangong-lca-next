@@ -39,6 +39,7 @@ export default {
   'pages.review.assignment.current': '当前审核员',
   'pages.review.assignment.cannotRevokeSubmitted': '已提交意见的审核员不能撤销。',
   'pages.review.approve.disabled.noReviewers': '终审通过前至少需要分配一名审核员。',
+  'pages.review.approve.disabled.approvalRequired': '至少一名当前分配的审核员提交通过意见后，才能终审通过。',
   'pages.review.approve.disabled.pendingOpinions': '仍有 {count} 名审核员未提交意见。',
   'pages.review.approve.disabled.allRejected': '所有审核员均已驳回，无法审核通过。',
   'pages.review.approve.disabled.opinionsUnavailable': '无法核实审核意见，请刷新后重试。',
