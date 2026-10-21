@@ -539,6 +539,7 @@ describe('BatchReviewActions', () => {
       ['REVIEW_NOT_FOUND', 'Review not found or unavailable.'],
       ['REVIEW_NOT_IN_PROGRESS', 'This review is not in progress.'],
       ['REVIEWER_REQUIRED', 'No reviewer is assigned, or you are not assigned to this review.'],
+      ['REVIEWER_OPINIONS_PENDING', 'Some reviewers have not submitted their opinions.'],
       [
         'REVIEWER_APPROVAL_REQUIRED',
         'At least one assigned reviewer must approve before final approval.',
@@ -569,7 +570,9 @@ describe('BatchReviewActions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Batch reject' }));
 
-    const dialog = await screen.findByRole('region', { name: 'Reject 4 selected reviews' });
+    const dialog = await screen.findByRole('region', {
+      name: `Reject ${reasons.length} selected reviews`,
+    });
     const rows = within(dialog).getAllByRole('listitem');
     reasons.forEach(([, description], index) => {
       expect(rows[index]).toHaveTextContent(`${index + 1}.Data ${index + 1}${description}`);
