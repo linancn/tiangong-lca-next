@@ -2476,6 +2476,9 @@ function OrganizationContributionRanking({
               id: 'pages.home.nationalCarbon.organization.column.unassignedReviewer',
             })}
           </span>
+          <span role='columnheader'>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.draft' })}
+          </span>
         </div>
         {rows.length === 0 ? (
           <OrganizationContributionEmptyState />
@@ -2495,6 +2498,7 @@ function OrganizationContributionRanking({
               <span role='cell'>{formatNumber(ranking.publishedDatasetCount)}</span>
               <span role='cell'>{formatNumber(ranking.assignedReviewerDatasetCount)}</span>
               <span role='cell'>{formatNumber(ranking.unassignedReviewerDatasetCount)}</span>
+              <span role='cell'>{formatNumber(ranking.draftDatasetCount)}</span>
             </div>
           ))
         )}

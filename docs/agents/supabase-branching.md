@@ -24,9 +24,9 @@ checkPaths:
   - playwright.dataset-lists.config.ts
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: b1fa7a6d62b334df1206302a71a45e98c630203e
-lastReviewedNote: 'Platform #1315: reviewed native navigation-aware identity observation at b1fa7a6d after hosted380 Chromium context-loss failure. Fresh non-null generation and exact stored owner are observed atomically before/after held-response release; existing45s authenticated/15s public budget,120s test limit, routes and dispatch/logout checks remain.160 focused checks, lint, types and locale checks pass.380 hosted result remains68pass/1fail/30skip with separate verified cleanup success. New ordinary full checked push and real three-browser qualification remain Main-owned; workflow/runtime/package/coverage/release policies are unchanged.'
+lastReviewedAt: 2026-10-23
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -140,3 +140,7 @@ They depend on branch-specific Vault secrets on the active Supabase branch:
 Do not hardcode branch URLs or service keys in app code, SQL, or dumped baseline files.
 
 Review final approval with pending opinions requires Database #857 (`review_one_current_approval`): one current assigned approving Comment is required by finalization and batch eligibility. Deploy that migration to the selected backend before qualifying this UI change; rejection remains independent of opinion completion.
+
+### National carbon draft reporting dependency
+
+The organization screen requires Database #860's `api.qry_national_carbon_organization_contributions_v6(integer)` and v6 snapshot with `draftDatasetCount`. Apply and verify that migration in the matching environment before publishing Platform #1328. The original RPC remains v5 for old strict clients; the new frontend does not fall back to a missing draft metric.

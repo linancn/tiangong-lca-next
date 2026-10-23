@@ -88,6 +88,7 @@ export default {
   'pages.home.nationalCarbon.connectivity.unclosed': 'Connexions non bouclées',
   'pages.home.nationalCarbon.connectivity.writeRateHint': 'Connexions inscrites dans la matrice A / nombre total d’arêtes d’entrée',
   'pages.home.nationalCarbon.organization.column.assignedReviewer': 'Réviseur attribué',
+  'pages.home.nationalCarbon.organization.column.draft': 'En cours de saisie',
   'pages.home.nationalCarbon.organization.column.name': 'Organisation',
   'pages.home.nationalCarbon.organization.column.published': 'Publiés',
   'pages.home.nationalCarbon.organization.column.rank': 'Rang',

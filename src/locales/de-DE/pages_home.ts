@@ -88,6 +88,7 @@ export default {
   'pages.home.nationalCarbon.connectivity.unclosed': 'Offene Verbindungen',
   'pages.home.nationalCarbon.connectivity.writeRateHint': 'In die A-Matrix geschriebene Verbindungen / Gesamtzahl der Eingangskanten',
   'pages.home.nationalCarbon.organization.column.assignedReviewer': 'Prüfer zugewiesen',
+  'pages.home.nationalCarbon.organization.column.draft': 'In Bearbeitung',
   'pages.home.nationalCarbon.organization.column.name': 'Organisation',
   'pages.home.nationalCarbon.organization.column.published': 'Veröffentlicht',
   'pages.home.nationalCarbon.organization.column.rank': 'Rang',

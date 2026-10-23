@@ -88,6 +88,7 @@ export default {
   'pages.home.nationalCarbon.connectivity.unclosed': 'Unclosed connections',
   'pages.home.nationalCarbon.connectivity.writeRateHint': 'Connections written to the A matrix / total input edges',
   'pages.home.nationalCarbon.organization.column.assignedReviewer': 'Reviewer assigned',
+  'pages.home.nationalCarbon.organization.column.draft': 'Drafts',
   'pages.home.nationalCarbon.organization.column.name': 'Organization',
   'pages.home.nationalCarbon.organization.column.published': 'Published',
   'pages.home.nationalCarbon.organization.column.rank': 'Rank',

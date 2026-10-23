@@ -88,6 +88,7 @@ export default {
   'pages.home.nationalCarbon.connectivity.unclosed': '未闭合连接',
   'pages.home.nationalCarbon.connectivity.writeRateHint': 'A 矩阵已写入连接 / 输入边总量',
   'pages.home.nationalCarbon.organization.column.assignedReviewer': '已分配审核员',
+  'pages.home.nationalCarbon.organization.column.draft': '填报中',
   'pages.home.nationalCarbon.organization.column.name': '单位',
   'pages.home.nationalCarbon.organization.column.published': '已发布',
   'pages.home.nationalCarbon.organization.column.rank': '排名',

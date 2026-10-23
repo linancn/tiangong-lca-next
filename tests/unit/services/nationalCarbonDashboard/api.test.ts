@@ -32,6 +32,7 @@ const makeProcessStatistics = (publishedDatasetCount: number) => ({
             publishedDatasetCount,
             assignedReviewerDatasetCount: 1,
             unassignedReviewerDatasetCount: 1,
+            draftDatasetCount: 4,
           },
         ]
       : [],
@@ -44,7 +45,7 @@ const dailyActivityDays = Array.from({ length: 366 }, (_, index) => {
 });
 
 const validSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v5',
+  schemaVersion: 'national_carbon_organization_contribution_v6',
   datasetScope: 'process',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
@@ -81,7 +82,7 @@ describe('nationalCarbonDashboard organization contribution service', () => {
 
     expect(mockSchema).toHaveBeenCalledWith('api');
     expect(mockRpc).toHaveBeenCalledTimes(1);
-    expect(mockRpc).toHaveBeenCalledWith('qry_national_carbon_organization_contributions', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_national_carbon_organization_contributions_v6', {
       p_limit: 10,
     });
   });
@@ -133,6 +134,36 @@ describe('nationalCarbonDashboard organization contribution service', () => {
       code: 'INVALID_SNAPSHOT',
     });
     expect(organizationContributionSnapshotSchema.safeParse(validSnapshot).success).toBe(true);
+  });
+
+  it.each([undefined, null, -1, 1.5, '4'])(
+    'rejects a missing or invalid draft count (%s) in either row collection',
+    (draftDatasetCount) => {
+      for (const collection of ['organizations', 'rankings'] as const) {
+        const snapshot = {
+          ...validSnapshot,
+          [collection]: [{ ...validSnapshot[collection][0], draftDatasetCount }],
+        };
+        expect(organizationContributionSnapshotSchema.safeParse(snapshot).success).toBe(false);
+      }
+    },
+  );
+
+  it('accepts zero drafts and rejects the v5 contract', () => {
+    const row = { ...validSnapshot.organizations[0], draftDatasetCount: 0 };
+    expect(
+      organizationContributionSnapshotSchema.safeParse({
+        ...validSnapshot,
+        organizations: [row],
+        rankings: [row],
+      }).success,
+    ).toBe(true);
+    expect(
+      organizationContributionSnapshotSchema.safeParse({
+        ...validSnapshot,
+        schemaVersion: 'national_carbon_organization_contribution_v5',
+      }).success,
+    ).toBe(false);
   });
 
   it('accepts all organizations independently of the chart limit and rejects truncation', () => {

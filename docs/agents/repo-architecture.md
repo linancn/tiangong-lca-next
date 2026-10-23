@@ -27,9 +27,9 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-21
-lastReviewedCommit: a25d26143d72817e1b841a1f4b7859f0a602d57f
-lastReviewedNote: 'Platform #1319: reviewed matching single, expanded-Reference and batch one-approval controls, four-locale messages and focused regressions. Exact-dev frozen installation and all 127 focused tests pass after network recovery. Team/profile authorization, rejection, selection and gate ownership remain unchanged; final checked-push qualification is recorded on the PR.'
+lastReviewedAt: 2026-10-23
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -183,7 +183,7 @@ The companion self-hosted `data.sql` is a generated fresh-install artifact, not 
 
 ### National Carbon Organization Screen
 
-The fifth screen uses the process-only v5 snapshot decoded and cached by `src/services/nationalCarbonDashboard/api.ts`. It has no dataset-scope switch and does not derive or request LifecycleModel metrics. Its four cards show registered units, organization-attributed published/reviewing processes, and platform review experts. The middle row contains a Top 10 unit chart, the full unit reporting table, and regional open-process distribution. The table slices the returned `organizations` array into ten-row client pages; page changes never trigger RPCs. Review-only and zero-data units remain in this table, not the Top 10 chart.
+The fifth screen uses the process-only v6 snapshot from `api.qry_national_carbon_organization_contributions_v6`, decoded and cached by `src/services/nationalCarbonDashboard/api.ts`. Deploy Database v6 before this frontend; Database retains the original v5 RPC unchanged for older strict clients. Missing draft fields are invalid snapshots, never zero drafts. It has no dataset-scope switch and does not derive or request LifecycleModel metrics. Its four cards show registered units, organization-attributed published/reviewing processes, and platform review experts. The middle row contains a Top 10 unit chart, the full unit reporting table, and regional open-process distribution. The table slices the returned `organizations` array into ten-row client pages; page changes never trigger RPCs. Pending-only, draft-only and zero-data units remain in this table. The sixth column, after awaiting reviewer assignment, shows `draftDatasetCount`: processes whose latest version is at state 0. Database ranks by published, assigned, unassigned and draft counts descending, then display name and normalized key in `C` order. The Top 10 chart shares that order and includes only positive-published units.
 
 Region counts come from the database and include open processes without a unit. Names use the existing locale-aware location service; unknown codes remain visible, and a name-resource failure shows a diagnostic plus codes, not an empty dataset result. Global and unspecified locations have separate summary rows. The daily heatmap is labelled “每日数据动态” (Daily data activity) and consumes only `dailyActivity` / `dataset_version_activity_count`, with the existing square-cell layout. Database counts each retained Process version on its creation and latest-modification dates in Asia/Shanghai, once per version/day. The yearly total sums those version-days; it is not a count of unique versions or all edit operations. NULL dates contribute nothing, deletions remove counts, and later edits replace the previous modification date. The service rejects older creation-only snapshots rather than mislabelling them. Database-engine owns deduplication, state predicates, reviewer-role membership, and current-profile attribution.
 
