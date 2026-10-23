@@ -1,3 +1,6 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import { dataListPagination, dataListSearchStyle } from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AlignedNumber from '@/components/AlignedNumber';
 import {
   applyLcaContributionPathProcessMeta,
@@ -48,8 +51,10 @@ import {
   Col,
   Descriptions,
   Form,
+  Flex,
   Input,
   InputNumber,
+  Pagination,
   Row,
   Select,
   Space,
@@ -453,6 +458,10 @@ const LcaAnalysisPage = () => {
   const [processSearchKeyword, setProcessSearchKeyword] = useState('');
   const [appliedProcessSearchKeyword, setAppliedProcessSearchKeyword] = useState('');
   const [processCurrentPage, setProcessCurrentPage] = useState(1);
+  const [processPageSize, setProcessPageSize] = useState(DEFAULT_ANALYSIS_PAGE_SIZE);
+  const [processClassification, setProcessClassification] = useState<
+    DatasetClassificationFilterValue[]
+  >([]);
   const [processTotalCount, setProcessTotalCount] = useState(0);
   const [processOptionsLoading, setProcessOptionsLoading] = useState(false);
   const [processOptionsError, setProcessOptionsError] = useState<string | null>(null);
@@ -497,7 +506,15 @@ const LcaAnalysisPage = () => {
   >(new Map());
   const processOptionsRequestIdRef = useRef(0);
   const initializedProcessQueryKeyRef = useRef('');
-  const processQueryKey = `${lang}:${selectedDataScope}:${appliedProcessSearchKeyword}`;
+  const analysisScopeEpochRef = useRef(0);
+  const processQueryKey = JSON.stringify([
+    lang,
+    selectedDataScope,
+    appliedProcessSearchKeyword,
+    processClassification,
+  ]);
+  const currentProcessQueryKeyRef = useRef(processQueryKey);
+  currentProcessQueryKeyRef.current = processQueryKey;
   const processOptions = useMemo(
     () => buildLcaProcessOptions(processRows, { dedupeByProcessId: false }),
     [processRows],
@@ -507,15 +524,9 @@ const LcaAnalysisPage = () => {
     [knownProcessRows],
   );
   const processPageCount = useMemo(
-    () => Math.max(1, Math.ceil(processTotalCount / DEFAULT_ANALYSIS_PAGE_SIZE)),
-    [processTotalCount],
+    () => Math.max(1, Math.ceil(processTotalCount / processPageSize)),
+    [processTotalCount, processPageSize],
   );
-  const processRangeStart =
-    processTotalCount === 0 ? 0 : (processCurrentPage - 1) * DEFAULT_ANALYSIS_PAGE_SIZE + 1;
-  const processRangeEnd =
-    processTotalCount === 0
-      ? 0
-      : Math.min(processTotalCount, processCurrentPage * DEFAULT_ANALYSIS_PAGE_SIZE);
 
   const processOptionMap = useMemo(
     () => new Map(knownProcessOptions.map((item) => [getProcessOptionSelectionKey(item), item])),
@@ -726,6 +737,11 @@ const LcaAnalysisPage = () => {
   }, [lang]);
 
   const clearAnalysisResults = () => {
+    analysisScopeEpochRef.current += 1;
+    setProfileLoading(false);
+    setCompareLoading(false);
+    setGroupedLoading(false);
+    setPathLoading(false);
     setProfileResult(null);
     setCompareResult(null);
     setGroupedResult(null);
@@ -740,8 +756,15 @@ const LcaAnalysisPage = () => {
     keyword: string,
     dataScope: LcaAnalysisDataScope,
     currentPage: number,
-    options: { resetKnownRows?: boolean } = {},
+    options: {
+      resetKnownRows?: boolean;
+      pageSize?: number;
+      classification?: DatasetClassificationFilterValue[];
+    } = {},
   ) => {
+    const classification = options.classification ?? processClassification;
+    const pageSize = options.pageSize ?? processPageSize;
+    const requestQueryKey = JSON.stringify([lang, dataScope, keyword, classification]);
     const requestId = processOptionsRequestIdRef.current + 1;
     processOptionsRequestIdRef.current = requestId;
     setProcessOptionsLoading(true);
@@ -751,7 +774,8 @@ const LcaAnalysisPage = () => {
       const result = await listProcessesForLcaAnalysis(
         {
           current: currentPage,
-          pageSize: DEFAULT_ANALYSIS_PAGE_SIZE,
+          pageSize,
+          ...(classification.length ? { classification } : {}),
         },
         lang,
         dataScope,
@@ -764,12 +788,16 @@ const LcaAnalysisPage = () => {
       if (result?.success === false) {
         throw new Error('load_processes_for_analysis_failed');
       }
-      if (requestId !== processOptionsRequestIdRef.current) {
+      if (
+        requestId !== processOptionsRequestIdRef.current ||
+        currentProcessQueryKeyRef.current !== requestQueryKey
+      ) {
         return;
       }
 
       const rows = Array.isArray(result?.data) ? result.data : [];
       setProcessCurrentPage(currentPage);
+      setProcessPageSize(pageSize);
       setProcessTotalCount(typeof result?.total === 'number' ? result.total : rows.length);
       setProcessRows(rows);
       setKnownProcessRows((current) =>
@@ -784,7 +812,10 @@ const LcaAnalysisPage = () => {
         );
       }
     } catch (_error) {
-      if (requestId !== processOptionsRequestIdRef.current) {
+      if (
+        requestId !== processOptionsRequestIdRef.current ||
+        currentProcessQueryKeyRef.current !== requestQueryKey
+      ) {
         return;
       }
       if (options.resetKnownRows) {
@@ -799,38 +830,73 @@ const LcaAnalysisPage = () => {
         }),
       );
     } finally {
-      if (requestId === processOptionsRequestIdRef.current) {
+      if (
+        requestId === processOptionsRequestIdRef.current &&
+        currentProcessQueryKeyRef.current === requestQueryKey
+      ) {
         setProcessOptionsLoading(false);
       }
     }
   };
 
-  const loadFirstProcessPage = async (keyword: string, dataScope: LcaAnalysisDataScope) => {
+  const loadFirstProcessPage = async (
+    keyword: string,
+    dataScope: LcaAnalysisDataScope,
+    classification = processClassification,
+  ) => {
     initializedProcessQueryKeyRef.current = '';
     setProcessCurrentPage(1);
     setProcessRows([]);
     setKnownProcessRows([]);
     setProcessTotalCount(0);
+    setSelectedProfileProcessId('');
+    setSelectedCompareProcessIds([]);
+    setSelectedGroupedProcessIds([]);
+    setSelectedPathProcessId('');
     clearAnalysisResults();
-    await loadProcessOptions(keyword, dataScope, 1, { resetKnownRows: true });
+    await loadProcessOptions(keyword, dataScope, 1, { resetKnownRows: true, classification });
   };
 
-  const changeProcessPage = async (nextPage: number) => {
-    await loadProcessOptions(appliedProcessSearchKeyword, selectedDataScope, nextPage);
+  const changeProcessPage = (nextPage: number, nextPageSize: number) => {
+    const current = nextPageSize !== processPageSize ? 1 : nextPage;
+    setProcessPageSize(nextPageSize);
+    void loadProcessOptions(appliedProcessSearchKeyword, selectedDataScope, current, {
+      pageSize: nextPageSize,
+    });
   };
 
   const processSelectionPagination = {
+    ...dataListPagination,
     current: processCurrentPage,
-    totalPages: processPageCount,
-    rangeStart: processRangeStart,
-    rangeEnd: processRangeEnd,
-    loading: processOptionsLoading,
-    onPrevious: () => {
-      void changeProcessPage(processCurrentPage - 1);
-    },
-    onNext: () => {
-      void changeProcessPage(processCurrentPage + 1);
-    },
+    pageSize: processPageSize,
+    total: processTotalCount,
+    disabled: processOptionsLoading,
+    onChange: changeProcessPage,
+    showTotal: (_total: number, range: [number, number]) =>
+      intl.formatMessage(
+        {
+          id: 'pages.process.lca.page.processes.range',
+          defaultMessage: 'Showing {start}-{end} on page {current} of {totalPages}.',
+        },
+        {
+          start: range[0],
+          end: range[1],
+          current: processCurrentPage,
+          totalPages: processPageCount,
+        },
+      ),
+  };
+
+  const onProcessSearch = (value: string) => {
+    const keyword = String(value);
+    setProcessSearchKeyword(keyword);
+    setAppliedProcessSearchKeyword(keyword);
+    void loadFirstProcessPage(keyword, selectedDataScope);
+  };
+
+  const onProcessClassificationChange = (classification: DatasetClassificationFilterValue[]) => {
+    setProcessClassification(classification);
+    void loadFirstProcessPage(appliedProcessSearchKeyword, selectedDataScope, classification);
   };
 
   const loadAnalysisOptions = async () => {
@@ -863,6 +929,10 @@ const LcaAnalysisPage = () => {
 
   useEffect(() => {
     void loadFirstProcessPage(appliedProcessSearchKeyword, selectedDataScope);
+    return () => {
+      processOptionsRequestIdRef.current += 1;
+      analysisScopeEpochRef.current += 1;
+    };
   }, [lang, selectedDataScope]);
 
   useEffect(() => {
@@ -997,6 +1067,7 @@ const LcaAnalysisPage = () => {
       return;
     }
 
+    const analysisEpoch = analysisScopeEpochRef.current;
     setProfileLoading(true);
     setProfileError(null);
 
@@ -1053,12 +1124,14 @@ const LcaAnalysisPage = () => {
         methodMetaById,
       );
 
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setProfileResult({
         process: selectedProcess,
         rows: mergedRows,
         ...queryMeta,
       });
     } catch (error: unknown) {
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setProfileResult(null);
       setProfileError(
         resolveQueuedSnapshotMessage(
@@ -1071,11 +1144,12 @@ const LcaAnalysisPage = () => {
         ),
       );
     } finally {
-      setProfileLoading(false);
+      if (analysisEpoch === analysisScopeEpochRef.current) setProfileLoading(false);
     }
   };
 
   const runCompareAnalysis = async () => {
+    const analysisEpoch = analysisScopeEpochRef.current;
     setCompareLoading(true);
     setCompareError(null);
 
@@ -1124,6 +1198,7 @@ const LcaAnalysisPage = () => {
       }
       const selectedImpact = impactOptions.find((item) => item.value === selectedCompareImpactId);
 
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setCompareResult({
         impactId: selectedCompareImpactId,
         impactLabel: selectedImpact?.label || selectedCompareImpactId,
@@ -1132,6 +1207,7 @@ const LcaAnalysisPage = () => {
         model: buildLcaImpactCompareModel(selectedCompareProcesses, valuesByProcessId),
       });
     } catch (error: unknown) {
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setCompareResult(null);
       setCompareError(
         resolveQueuedSnapshotMessage(
@@ -1144,11 +1220,12 @@ const LcaAnalysisPage = () => {
         ),
       );
     } finally {
-      setCompareLoading(false);
+      if (analysisEpoch === analysisScopeEpochRef.current) setCompareLoading(false);
     }
   };
 
   const runGroupedAnalysis = async () => {
+    const analysisEpoch = analysisScopeEpochRef.current;
     setGroupedLoading(true);
     setGroupedError(null);
 
@@ -1197,6 +1274,7 @@ const LcaAnalysisPage = () => {
       }
       const selectedImpact = impactOptions.find((item) => item.value === selectedGroupedImpactId);
 
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setGroupedResult({
         impactId: selectedGroupedImpactId,
         impactLabel: selectedImpact?.label || selectedGroupedImpactId,
@@ -1218,6 +1296,7 @@ const LcaAnalysisPage = () => {
         }),
       });
     } catch (error: unknown) {
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setGroupedResult(null);
       setGroupedError(
         resolveQueuedSnapshotMessage(
@@ -1230,7 +1309,7 @@ const LcaAnalysisPage = () => {
         ),
       );
     } finally {
-      setGroupedLoading(false);
+      if (analysisEpoch === analysisScopeEpochRef.current) setGroupedLoading(false);
     }
   };
 
@@ -1247,6 +1326,7 @@ const LcaAnalysisPage = () => {
       return;
     }
 
+    const analysisEpoch = analysisScopeEpochRef.current;
     setPathLoading(true);
     setPathError(null);
 
@@ -1266,6 +1346,7 @@ const LcaAnalysisPage = () => {
         },
       });
 
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       if (submitted.mode === 'snapshot_building') {
         setPathResult(null);
         setPathError(
@@ -1332,6 +1413,7 @@ const LcaAnalysisPage = () => {
       }
       const selectedImpact = impactOptions.find((item) => item.value === selectedPathImpactId);
 
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setPathResult({
         process: pathProcess,
         impactId: model.impact.impactId,
@@ -1345,6 +1427,7 @@ const LcaAnalysisPage = () => {
         model,
       });
     } catch (error: unknown) {
+      if (analysisEpoch !== analysisScopeEpochRef.current) return;
       setPathResult(null);
       setPathError(
         resolveQueuedSnapshotMessage(
@@ -1357,7 +1440,7 @@ const LcaAnalysisPage = () => {
         ),
       );
     } finally {
-      setPathLoading(false);
+      if (analysisEpoch === analysisScopeEpochRef.current) setPathLoading(false);
     }
   };
 
@@ -1888,62 +1971,68 @@ const LcaAnalysisPage = () => {
                 defaultMessage='Use the existing LCA query API to review the LCIA profile of a single process, compare selected processes by impact category, aggregate selected processes into grouped results, or run contribution path analysis for a selected process-impact pair across current-user, open-data, or all-data scopes. Charts support quick interpretation; tables preserve exact values.'
               />
             </Typography.Paragraph>
-            <Row gutter={[16, 16]}>
-              <Col xs={24} md={8}>
-                <Form layout='vertical'>
-                  <Form.Item
-                    label={
-                      <FormattedMessage
-                        id='pages.process.lca.page.dataScope.label'
-                        defaultMessage='Data scope'
-                      />
-                    }
-                  >
-                    <Select
-                      aria-label={intl.formatMessage({
-                        id: 'pages.process.lca.page.dataScope.label',
-                        defaultMessage: 'Data scope',
-                      })}
-                      value={selectedDataScope}
-                      options={dataScopeOptions}
-                      onChange={(value) => {
-                        setSelectedDataScope(value as LcaAnalysisDataScope);
-                      }}
+            <Form layout='vertical'>
+              <Flex wrap align='flex-end' gap='small' className='lca-analysis-input-toolbar'>
+                <Form.Item
+                  style={{ width: 220, maxWidth: '100%', marginBottom: 0 }}
+                  label={
+                    <FormattedMessage
+                      id='pages.process.lca.page.dataScope.label'
+                      defaultMessage='Data scope'
                     />
-                  </Form.Item>
-                </Form>
-              </Col>
-              <Col xs={24} md={16}>
-                <Form layout='vertical'>
-                  <Form.Item
-                    label={
-                      <FormattedMessage
-                        id='pages.process.lca.page.processes.searchLabel'
-                        defaultMessage='Process search'
+                  }
+                >
+                  <Select
+                    aria-label={intl.formatMessage({
+                      id: 'pages.process.lca.page.dataScope.label',
+                      defaultMessage: 'Data scope',
+                    })}
+                    value={selectedDataScope}
+                    options={dataScopeOptions}
+                    onChange={(value) => {
+                      processOptionsRequestIdRef.current += 1;
+                      clearAnalysisResults();
+                      setSelectedDataScope(value as LcaAnalysisDataScope);
+                    }}
+                  />
+                </Form.Item>
+                {activeTabKey === 'profile' ? (
+                  <>
+                    <Form.Item
+                      style={{ ...dataListSearchStyle, marginBottom: 0 }}
+                      label={
+                        <FormattedMessage
+                          id='pages.process.lca.page.processes.searchLabel'
+                          defaultMessage='Process search'
+                        />
+                      }
+                    >
+                      <Input.Search
+                        style={{ width: '100%' }}
+                        allowClear={true}
+                        enterButton={true}
+                        loading={processOptionsLoading}
+                        placeholder={intl.formatMessage({
+                          id: 'pages.process.lca.page.processes.searchPlaceholder',
+                          defaultMessage: 'Search processes in the selected data scope',
+                        })}
+                        value={processSearchKeyword}
+                        onChange={(event) => setProcessSearchKeyword(event.target.value)}
+                        onSearch={onProcessSearch}
                       />
-                    }
-                  >
-                    <Input.Search
-                      allowClear={true}
-                      enterButton={true}
-                      loading={processOptionsLoading}
-                      placeholder={intl.formatMessage({
-                        id: 'pages.process.lca.page.processes.searchPlaceholder',
-                        defaultMessage: 'Search processes in the selected data scope',
-                      })}
-                      value={processSearchKeyword}
-                      onChange={(event) => setProcessSearchKeyword(event.target.value)}
-                      onSearch={(value) => {
-                        const nextKeyword = String(value);
-                        setProcessSearchKeyword(nextKeyword);
-                        setAppliedProcessSearchKeyword(nextKeyword);
-                        void loadFirstProcessPage(nextKeyword, selectedDataScope);
-                      }}
-                    />
-                  </Form.Item>
-                </Form>
-              </Col>
-            </Row>
+                    </Form.Item>
+                    <Form.Item style={{ maxWidth: '100%', marginBottom: 0 }}>
+                      <DatasetClassificationFilter
+                        datasetKind='process'
+                        lang={lang}
+                        value={processClassification}
+                        onChange={onProcessClassificationChange}
+                      />
+                    </Form.Item>
+                  </>
+                ) : null}
+              </Flex>
+            </Form>
             <Space align='center' wrap={true}>
               <Typography.Text type='secondary'>
                 <FormattedMessage
@@ -2004,48 +2093,7 @@ const LcaAnalysisPage = () => {
                         />
                       </Form.Item>
                       {processTotalCount > 0 ? (
-                        <Space
-                          align='center'
-                          style={{ width: '100%', justifyContent: 'space-between' }}
-                          wrap={true}
-                        >
-                          <Typography.Text type='secondary'>
-                            <FormattedMessage
-                              id='pages.process.lca.page.processes.range'
-                              defaultMessage='Showing {start}-{end} on page {current} of {totalPages}.'
-                              values={{
-                                start: processRangeStart,
-                                end: processRangeEnd,
-                                current: processCurrentPage,
-                                totalPages: processPageCount,
-                              }}
-                            />
-                          </Typography.Text>
-                          <Space size='small'>
-                            <Button
-                              size='small'
-                              disabled={processOptionsLoading || processCurrentPage <= 1}
-                              onClick={processSelectionPagination.onPrevious}
-                            >
-                              <FormattedMessage
-                                id='pages.process.lca.page.processes.action.previousPage'
-                                defaultMessage='Previous page'
-                              />
-                            </Button>
-                            <Button
-                              size='small'
-                              disabled={
-                                processOptionsLoading || processCurrentPage >= processPageCount
-                              }
-                              onClick={processSelectionPagination.onNext}
-                            >
-                              <FormattedMessage
-                                id='pages.process.lca.page.processes.action.nextPage'
-                                defaultMessage='Next page'
-                              />
-                            </Button>
-                          </Space>
-                        </Space>
+                        <Pagination {...processSelectionPagination} />
                       ) : null}
                       <Button
                         type='primary'
@@ -2221,7 +2269,13 @@ const LcaAnalysisPage = () => {
                         selectedProcessIds={selectedCompareProcessIds}
                         selectedProcessOptions={selectedCompareProcesses}
                         totalProcessCount={processTotalCount}
-                        pagination={processSelectionPagination}
+                        loading={processOptionsLoading}
+                        tablePagination={processSelectionPagination}
+                        lang={lang}
+                        searchKeyword={appliedProcessSearchKeyword}
+                        onSearch={onProcessSearch}
+                        classification={processClassification}
+                        onClassificationChange={onProcessClassificationChange}
                         onSelectionChange={(selectedProcessIds) => {
                           setSelectedCompareProcessIds(selectedProcessIds);
                           setCompareResult(null);
@@ -2466,7 +2520,13 @@ const LcaAnalysisPage = () => {
                           .map((processId) => processOptionMap.get(processId))
                           .filter((item): item is LcaProcessOption => !!item)}
                         totalProcessCount={processTotalCount}
-                        pagination={processSelectionPagination}
+                        loading={processOptionsLoading}
+                        tablePagination={processSelectionPagination}
+                        lang={lang}
+                        searchKeyword={appliedProcessSearchKeyword}
+                        onSearch={onProcessSearch}
+                        classification={processClassification}
+                        onClassificationChange={onProcessClassificationChange}
                         onSelectionChange={(selectedProcessIds) => {
                           setSelectedGroupedProcessIds(selectedProcessIds);
                           setGroupedResult(null);
@@ -2805,7 +2865,13 @@ const LcaAnalysisPage = () => {
                         selectedProcessIds={selectedPathProcessId ? [selectedPathProcessId] : []}
                         selectedProcessOptions={selectedPathProcess ? [selectedPathProcess] : []}
                         totalProcessCount={processTotalCount}
-                        pagination={processSelectionPagination}
+                        loading={processOptionsLoading}
+                        tablePagination={processSelectionPagination}
+                        lang={lang}
+                        searchKeyword={appliedProcessSearchKeyword}
+                        onSearch={onProcessSearch}
+                        classification={processClassification}
+                        onClassificationChange={onProcessClassificationChange}
                         selectionType='radio'
                         onSelectionChange={(selectedProcessIds) => {
                           setSelectedPathProcessId(selectedProcessIds[0] ?? '');

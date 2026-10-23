@@ -1,3 +1,10 @@
+import {
+  ResponsiveDataListViewport,
+  dataListTooltipContent,
+  dataListPagination,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
@@ -80,7 +87,11 @@ const IoPortSelect: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+        <Tooltip
+          key={0}
+          placement='topLeft'
+          title={dataListTooltipContent(row.referenceToFlowDataSet, row.generalComment)}
+        >
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
@@ -246,6 +257,19 @@ const IoPortSelect: FC<Props> = ({
     }
   }, [drawerVisible, exchangeTableParams.contentLanguage]);
 
+  const displayColumns = orderDataListColumns<ProcessExchangeTable>(
+    processExchangeColumns.map((column) => {
+      if (column.dataIndex === 'referenceToFlowDataSet') return { ...column, dataIndex: 'name' };
+      if (column.dataIndex === 'referenceToFlowDataSetVersion')
+        return {
+          ...column,
+          dataIndex: 'version',
+          render: (_, row) => row.referenceToFlowDataSetVersion,
+        };
+      return column;
+    }),
+    { dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' /> },
+  );
   return (
     <>
       <Drawer
@@ -288,65 +312,69 @@ const IoPortSelect: FC<Props> = ({
           </Space>
         }
       >
-        <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
-          actionRef={actionRefSelect}
-          params={exchangeTableParams}
-          loading={dataLoading}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (params) => {
-            const requestEpoch = exchangeRequestEpochRef.current + 1;
-            exchangeRequestEpochRef.current = requestEpoch;
-            const detailSnapshot = detailRequestSnapshotRef.current;
-            const contentLanguage = params.contentLanguage ?? exchangeTableParams.contentLanguage;
+        <ResponsiveDataListViewport columns={displayColumns}>
+          {({ scroll }) => (
+            <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              scroll={scroll}
+              actionRef={actionRefSelect}
+              params={exchangeTableParams}
+              loading={dataLoading}
+              search={false}
+              pagination={dataListPagination}
+              request={async (params) => {
+                const requestEpoch = exchangeRequestEpochRef.current + 1;
+                exchangeRequestEpochRef.current = requestEpoch;
+                const detailSnapshot = detailRequestSnapshotRef.current;
+                const contentLanguage =
+                  params.contentLanguage ?? exchangeTableParams.contentLanguage;
 
-            try {
-              const res = await getProcessExchange(
-                genProcessExchangeTableData(exchangeDataSource, contentLanguage),
-                direction,
-                params,
-              );
-              const unitRes = await getUnitData('flow', res?.data);
+                try {
+                  const res = await getProcessExchange(
+                    genProcessExchangeTableData(exchangeDataSource, contentLanguage),
+                    direction,
+                    params,
+                  );
+                  const unitRes = await getUnitData('flow', res?.data);
 
-              if (
-                exchangeRequestEpochRef.current !== requestEpoch ||
-                detailRequestSnapshotRef.current !== detailSnapshot ||
-                currentContentLanguageRef.current !== contentLanguage
-              ) {
-                return {
-                  ...res,
-                  data: [],
-                  success: false,
-                };
-              }
+                  if (
+                    exchangeRequestEpochRef.current !== requestEpoch ||
+                    detailRequestSnapshotRef.current !== detailSnapshot ||
+                    currentContentLanguageRef.current !== contentLanguage
+                  ) {
+                    return {
+                      ...res,
+                      data: [],
+                      success: false,
+                    };
+                  }
 
-              return {
-                ...res,
-                data: (unitRes ?? []) as ProcessExchangeTable[],
-                success: true,
-              };
-            } finally {
-              if (
-                exchangeRequestEpochRef.current === requestEpoch &&
-                detailRequestSnapshotRef.current === detailSnapshot &&
-                currentContentLanguageRef.current === contentLanguage
-              ) {
-                setDataLoading(false);
-              }
-            }
-          }}
-          columns={processExchangeColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            alwaysShowAlert: true,
-            preserveSelectedRowKeys: true,
-            selectedRowKeys: selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+                  return {
+                    ...res,
+                    data: (unitRes ?? []) as ProcessExchangeTable[],
+                    success: true,
+                  };
+                } finally {
+                  if (
+                    exchangeRequestEpochRef.current === requestEpoch &&
+                    detailRequestSnapshotRef.current === detailSnapshot &&
+                    currentContentLanguageRef.current === contentLanguage
+                  ) {
+                    setDataLoading(false);
+                  }
+                }
+              }}
+              columns={displayColumns}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                alwaysShowAlert: true,
+                preserveSelectedRowKeys: true,
+                selectedRowKeys: selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </Drawer>
     </>
   );

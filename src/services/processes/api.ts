@@ -20,6 +20,11 @@ import {
 import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
+import { hasDatasetCatalogFilters, queryMappedDatasetCatalog } from '../datasetCatalog/api';
+import {
+  withDatasetClassification,
+  type DatasetTableParams,
+} from '../general/datasetClassification';
 import {
   normalizeDeleteCommandResult,
   type SupabaseMutationResult,
@@ -46,17 +51,21 @@ import {
   jsonToList,
 } from '../general/util';
 import { getCachedLocationData } from '../locations/cache';
-import {
-  addOpenDataHybridFilters,
-  queryMappedOpenDataCatalog,
-  type OpenDataCatalogFilters,
-} from '../openDataCatalog/api';
+import { addOpenDataCatalogScope, queryMappedOpenDataCatalog } from '../openDataCatalog/api';
 import {
   toProcessModelVersionField,
   type ProcessDetailByVersionResponse,
   type ProcessTable,
 } from './data';
 import { genProcessJsonOrdered, genProcessName } from './util';
+import {
+  matchesProcessExactSetClassification,
+  matchesProcessExactSetKeyword,
+  validateProcessExactSetFilters,
+  type ProcessExactSetFilters,
+} from './exactSetFilters';
+
+export type { ProcessExactSetFilters } from './exactSetFilters';
 
 const selectStr4Table = `
     id,
@@ -99,10 +108,7 @@ export type LcaMyProcessOption = {
 export type LcaAnalysisProcessScope =
   'public_plus_owner_draft' | 'current_user' | 'open_data' | 'all_data';
 
-type ProcessTableQueryParams = {
-  current?: number;
-  pageSize?: number;
-};
+type ProcessTableQueryParams = DatasetTableParams;
 
 type ProcessTableResponse = {
   data: ProcessTable[];
@@ -531,26 +537,25 @@ export async function updateProcessApi(id: string, version: string, data: any) {
 }
 
 export async function getProcessTableAll(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   tid: string | [],
   stateCode?: string | number,
   typeOfDataSet?: string,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
+  const filterCondition = withDatasetClassification(params, {
+    typeOfDataSet: typeOfDataSet ?? 'all',
+  });
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'process',
-        filterCondition: { typeOfDataSet: typeOfDataSet ?? 'all' },
-        filters: openDataFilters,
+        filterCondition,
         mode: 'list',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -570,6 +575,24 @@ export async function getProcessTableAll(
   const teamId = await getProcessTeamFilter(dataSource, tid);
   if (dataSource === 'te' && !teamId) {
     return { data: [], success: true };
+  }
+
+  if (hasDatasetCatalogFilters(params)) {
+    return queryMappedDatasetCatalog(
+      {
+        datasetKind: 'process',
+        dataSource,
+        filterCondition,
+        stateCode,
+        teamId,
+        pageCurrent: params.current,
+        pageSize: params.pageSize,
+        sortBy: normalizeProcessSortBy(sortBy),
+        sortDirection: normalizeProcessSortDirection(orderBy),
+      },
+      // eslint-disable-next-line no-use-before-define
+      (rows) => mapProcessListRows(rows, lang),
+    );
   }
 
   const rpcResult = await supabase.rpc('get_latest_process_versions', {
@@ -614,10 +637,7 @@ export async function getProcessTableAll(
 }
 
 async function getProcessTableAllData(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   typeOfDataSet?: string,
@@ -631,6 +651,26 @@ async function getProcessTableAllData(
   }
 
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
+  if (hasDatasetCatalogFilters(params)) {
+    return queryMappedDatasetCatalog(
+      {
+        datasetKind: 'process',
+        dataSource: 'all_data',
+        filterCondition: withDatasetClassification(params, {
+          typeOfDataSet: typeOfDataSet ?? 'all',
+        }),
+        ownerDraftOnly,
+        versionScope: 'all',
+        pageCurrent: params.current,
+        pageSize: params.pageSize,
+        sortBy: normalizeProcessSortBy(sortBy),
+        sortDirection: normalizeProcessSortDirection(orderBy),
+      },
+      // eslint-disable-next-line no-use-before-define
+      (rows) => mapProcessListRows(rows, lang),
+    );
+  }
+
   let query = publicEntity('processes')
     .select(selectStr4Table, { count: 'exact' })
     .or(
@@ -677,10 +717,7 @@ async function getProcessTableAllData(
 }
 
 export async function getConnectableProcessesTable(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
@@ -695,183 +732,80 @@ export async function getConnectableProcessesTable(
     modifiedAt: 'modified_at',
     modified_at: 'modified_at',
   };
-  const sortBy = connectableSortFieldMap[requestedSort.field] ?? 'modified_at';
-  const orderBy = requestedSort.order;
   const direction = portId.split(':')[0];
   const flowId = portId.split(':').pop();
   if (!flowId) {
-    return { data: [], success: true };
+    return { data: [], success: true, page: params.current ?? 1, total: 0 };
   }
-
-  const selectStr = `
-      id,
-      json->processDataSet->processInformation->dataSetInformation->name,
-      json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-      json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
-      json->processDataSet->processInformation->time->>"common:referenceYear",
-      json->processDataSet->modellingAndValidation->LCIMethodAndAllocation->typeOfDataSet,
-      json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
-      json->processDataSet->exchanges->exchange,
-      version,
-      modified_at,
-      team_id
-    `;
-
-  const tableName = 'processes';
-
-  let query = publicEntity(tableName)
-    .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' });
-  // .range(
-  //   ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-  //   (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-  // );
-
-  const baseFlowRef = flowVersion
-    ? { '@refObjectId': flowId, '@version': flowVersion }
-    : { '@refObjectId': flowId };
-
-  query = query.filter(
-    'json->processDataSet->exchanges->exchange',
-    'cs',
-    JSON.stringify([{ referenceToFlowDataSet: baseFlowRef }]),
-  );
-
-  if (dataSource === 'ex') {
-    query = query.eq('state_code', -1);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'my') {
+  if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return { data: [], success: false };
-    }
-  } else if (dataSource === 'te') {
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return { data: [], success: true };
+    if (!session.data.session) {
+      return { data: [], success: false, page: params.current ?? 1, total: 0 };
     }
   }
-
-  const result = await query;
-
-  if (result?.error) {
-    console.error('error', result?.error);
-    return { data: [], success: false, error: result?.error };
+  const teamId = await getProcessTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return { data: [], success: true, page: params.current ?? 1, total: 0 };
   }
-
-  if (!result?.data || result?.data.length === 0) {
-    return { data: [], success: true };
-  }
-  const exchangeDirection = direction.toLowerCase() === 'input' ? 'output' : 'input';
-  const filteredData = result.data.filter((i: any) =>
-    i.exchange.find(
-      (j: any) =>
-        j?.exchangeDirection?.toLowerCase() === exchangeDirection &&
-        j?.referenceToFlowDataSet?.['@refObjectId'] === flowId &&
-        (flowVersion ? j?.referenceToFlowDataSet?.['@version'] === flowVersion : true),
-    ),
+  const result = await queryMappedDatasetCatalog(
+    {
+      datasetKind: 'process',
+      dataSource,
+      filterCondition: {
+        ...withDatasetClassification(params),
+        flowReference: {
+          id: flowId,
+          version: flowVersion,
+          direction: direction.toLowerCase() === 'input' ? 'Output' : 'Input',
+        },
+      },
+      stateCode: null,
+      teamId,
+      pageCurrent: params.current,
+      pageSize: params.pageSize,
+      sortBy: connectableSortFieldMap[requestedSort.field] ?? 'modified_at',
+      sortDirection: normalizeProcessSortDirection(requestedSort.order),
+      versionScope: 'all',
+    },
+    // eslint-disable-next-line no-use-before-define
+    (rows) => mapProcessListRows(rows, lang),
   );
-  result.data = [...filteredData];
-
-  const locations = Array.from(
-    new Set<string>(result.data.map((i: any) => String(i['@location'] ?? ''))),
-  ).filter(Boolean);
-  const processIdsAndVersions = result.data.map((i: any) => ({ id: i.id, version: i.version }));
-  const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
-    getCachedLocationData(lang, locations),
-    getCachedClassificationData('Process', lang, ['all']),
-    getLifeCyclesByIdAndVersion(processIdsAndVersions),
-  ]);
-  const locationMap = new Map(locationRes.map((l: any) => [l['@value'], l['#text']]));
-  const classificationData = classificationRes ?? [];
-
-  let data: any[] = result.data.map((i: any) => {
-    try {
-      const classification = getLocalizedProcessClassification(
-        i['common:class'],
-        classificationData,
-      );
-      let location = i['@location'];
-      if (locationMap.has(location)) {
-        location = locationMap.get(location);
-      }
-      return {
-        key: i.id + ':' + i.version,
-        id: i.id,
-        version: i.version,
-        lang: lang,
-        name: genProcessName(i.name ?? {}, lang),
-        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-        classification,
-        typeOfDataSet: i.typeOfDataSet ?? '-',
-        referenceYear: i['common:referenceYear'] ?? '-',
-        location: location ?? '-',
-        modifiedAt: new Date(i.modified_at),
-        teamId: i.team_id,
-      };
-    } catch (e) {
-      console.error(e);
-      return { id: i.id };
-    }
-  });
-
-  if (lifeCycleResult.data && lifeCycleResult.data.length > 0) {
-    const lifeCycleMap = new Map(
-      lifeCycleResult.data.map((i: any) => [i.id + ':' + i.version, true]),
-    );
-    data.forEach((i) => {
-      if (lifeCycleMap.has(i.id + ':' + i.version)) {
-        i.isFromLifeCycle = true;
-      }
-    });
+  if (!result.success || result.data.length === 0) {
+    return result;
   }
-
+  const lifeCycleResult = await getLifeCyclesByIdAndVersion(
+    result.data.map((row) => ({ id: row.id, version: row.version })),
+  );
+  const lifecycleKeys = new Set(
+    (lifeCycleResult.data ?? []).map((row: any) => `${row.id}:${row.version}`),
+  );
   return {
-    data,
-    // page: params?.current ?? 1,
-    success: true,
-    // total: result?.count ?? 0,
+    ...result,
+    data: result.data.map((row) =>
+      lifecycleKeys.has(`${row.id}:${row.version}`) ? { ...row, isFromLifeCycle: true } : row,
+    ),
   };
 }
 export async function getProcessTablePgroongaSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: any,
+  rawFilterCondition: any,
   stateCode?: string | number,
   typeOfDataSet?: string,
   _orderBy?: ProcessSearchOrderBy,
   tid: string | [] = [],
   ownerDraftOnly = false,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
-  if (dataSource === 'tg' && openDataFilters) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'process',
         filterCondition: { ...filterCondition, typeOfDataSet: typeOfDataSet ?? 'all' },
-        filters: openDataFilters,
         mode: 'lexical',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -1057,14 +991,16 @@ export async function getProcessTableUuidMentionSearch(
   stateCode?: string | number,
   typeOfDataSet?: string,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ): Promise<ProcessTableResponse & { capped?: boolean }> {
-  if (dataSource === 'tg' && openDataFilters) {
+  const filterCondition = withDatasetClassification(params, {
+    typeOfDataSet: typeOfDataSet ?? 'all',
+  });
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'process',
-        filterCondition: { typeOfDataSet: typeOfDataSet ?? 'all' },
-        filters: openDataFilters,
+        filterCondition,
         mode: 'uuid',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -1075,6 +1011,7 @@ export async function getProcessTableUuidMentionSearch(
   }
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
+    filterCondition,
     pageCurrent: params.current,
     pageSize: params.pageSize,
     sourceEntityKinds: ['process'],
@@ -1086,16 +1023,7 @@ export async function getProcessTableUuidMentionSearch(
     return { ...result, data: [] };
   }
 
-  const rows = mapDatasetUuidMentionRowsToListRows(result.data).filter((row) => {
-    if (!typeOfDataSet || typeOfDataSet === 'all') {
-      return true;
-    }
-    const sourceJson = row.json as any;
-    return (
-      sourceJson?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ===
-      typeOfDataSet
-    );
-  }) as ProcessListRpcRow[];
+  const rows = mapDatasetUuidMentionRowsToListRows(result.data) as ProcessListRpcRow[];
 
   return {
     ...result,
@@ -1116,11 +1044,11 @@ async function listAllDataSearchProcessPage(
   const pageSize = Math.max(1, params.pageSize ?? 10);
   const loadSearchBySource = async (
     dataSource: 'my' | 'tg',
-    pageParams: Required<ProcessTableQueryParams>,
+    pageParams: { current: number; pageSize: number },
   ) =>
     normalizeProcessTableResponse(
       await getProcessTablePgroongaSearch(
-        pageParams,
+        { ...params, ...pageParams },
         lang,
         dataSource,
         queryText,
@@ -1312,20 +1240,18 @@ export async function listProcessesForLcaAnalysis(
 }
 
 export async function process_hybrid_search(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: any,
+  rawFilterCondition: any,
   stateCode?: string | number,
   typeOfDataSet?: string,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
   const teamId = await getProcessTeamFilter(dataSource, tid);
   if (dataSource === 'te' && !teamId) {
     return {
@@ -1336,7 +1262,7 @@ export async function process_hybrid_search(
     };
   }
   let result: any = {};
-  const bodyParams: { [key: string]: any } = addOpenDataHybridFilters(
+  const bodyParams: { [key: string]: any } = addOpenDataCatalogScope(
     {
       query: queryText,
       version_scope: 'matched',
@@ -1346,7 +1272,7 @@ export async function process_hybrid_search(
       page_size: params.pageSize ?? 10,
       page_current: params.current ?? 1,
     },
-    openDataFilters,
+    useOpenDataCatalog,
   );
   if (typeof stateCode === 'number') {
     bodyParams['state_code'] = stateCode;
@@ -1479,10 +1405,7 @@ export async function deleteProcess(id: string, version: string) {
 export async function getProcessExchange(
   exchangeData: any[],
   direction: string,
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
 ) {
   const data = exchangeData.filter(
     (i) => i.exchangeDirection.toUpperCase() === direction.toUpperCase(),
@@ -1519,6 +1442,7 @@ export async function getProcessDetailByIdsAndVersion(ids: string[], version: st
 export async function getProcessesByIdAndVersion(
   params: { id: string; version: string }[],
   lang?: string,
+  filters: ProcessExactSetFilters = {},
 ) {
   if (!params || params.length === 0) {
     return {
@@ -1528,55 +1452,146 @@ export async function getProcessesByIdAndVersion(
       total: 0,
     };
   }
-  const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
-  const result = await publicEntity('processes').select(selectStr4Table).or(orConditions);
+  try {
+    validateProcessExactSetFilters(filters);
+  } catch (error) {
+    return { data: [], success: false, page: 1, total: 0, error };
+  }
+  const references = Array.from(
+    new Map(
+      params.map((reference) => [`${reference.id}:${reference.version}`, reference]),
+    ).values(),
+  );
+  const rows = new Map<string, any>();
+  const batchSize = 50;
+  for (let batchStart = 0; batchStart < references.length; batchStart += batchSize) {
+    const batch = references.slice(batchStart, batchStart + batchSize);
+    const exactKeys = new Set(batch.map((reference) => `${reference.id}:${reference.version}`));
+    const quote = (value: string) => `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+    const orConditions = batch
+      .map(
+        (reference) => `and(id.eq.${quote(reference.id)},version.eq.${quote(reference.version)})`,
+      )
+      .join(',');
+    const batchRows = new Map<string, any>();
+    let offset = 0;
+    while (true) {
+      const result = await publicEntity('processes')
+        .select(
+          `${selectStr4Table},json->processDataSet->processInformation->dataSetInformation->classificationInformation`,
+          { count: 'exact' },
+        )
+        .or(orConditions)
+        .order('id', { ascending: true })
+        .order('version', { ascending: true })
+        .range(offset, offset + batch.length - 1);
+      if (result.error) {
+        return { data: [], success: false, page: 1, total: 0, error: result.error };
+      }
+      const pageRows = result.data ?? [];
+      const count = typeof result.count === 'number' ? result.count : undefined;
+      const previousSize = batchRows.size;
+      for (const row of pageRows) {
+        const key = `${row.id}:${row.version}`;
+        if (!exactKeys.has(key)) {
+          return {
+            data: [],
+            success: false,
+            page: 1,
+            total: 0,
+            error: new Error('Unexpected exact-process identity'),
+          };
+        }
+        batchRows.set(key, row);
+      }
+      if (count !== undefined && (count < batchRows.size || count > batch.length)) {
+        return {
+          data: [],
+          success: false,
+          page: 1,
+          total: 0,
+          error: new Error('Invalid exact-process count'),
+        };
+      }
+      if (
+        (count !== undefined && batchRows.size === count) ||
+        batchRows.size === batch.length ||
+        (count === undefined && pageRows.length === 0)
+      ) {
+        break;
+      }
+      if (pageRows.length === 0 || batchRows.size === previousSize) {
+        return {
+          data: [],
+          success: false,
+          page: 1,
+          total: 0,
+          error: new Error('Incomplete exact-process response'),
+        };
+      }
+      offset += pageRows.length;
+    }
+    batchRows.forEach((row, key) => rows.set(key, row));
+  }
+  const matchedRows = Array.from(rows.values()).filter(
+    (row) =>
+      matchesProcessExactSetClassification(row.classificationInformation, filters.classification) &&
+      matchesProcessExactSetKeyword(row, filters.keyword),
+  );
+  const locations = Array.from(
+    new Set(matchedRows.map((row) => row['@location']).filter(Boolean)),
+  ) as string[];
+  const locationData =
+    lang && locations.length > 0 ? await getCachedLocationData(lang, locations) : [];
+  const locationMap = new Map(
+    locationData.map((location: any) => [location['@value'], location['#text']]),
+  );
 
   let data: any[] = [];
   if (lang) {
-    data =
-      result?.data?.map((i: any) => {
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          version: i.version,
-          lang: lang,
-          name: genProcessName(i.name ?? {}, lang),
-          generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-          // classification,
-          typeOfDataSet: i.typeOfDataSet ?? '-',
-          referenceYear: i['common:referenceYear'] ?? '-',
-          // location: location ?? '-',
-          modifiedAt: new Date(i.modified_at),
-          teamId: i.team_id,
-          modelId: i.model_id,
-          ...toProcessModelVersionField(i.model_version),
-        };
-      }) ?? [];
+    data = matchedRows.map((i: any) => {
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        lang: lang,
+        name: genProcessName(i.name ?? {}, lang),
+        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+        // classification,
+        typeOfDataSet: i.typeOfDataSet ?? '-',
+        referenceYear: i['common:referenceYear'] ?? '-',
+        location: locationMap.get(i['@location']) ?? i['@location'] ?? '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i.team_id,
+        modelId: i.model_id,
+        ...toProcessModelVersionField(i.model_version),
+      };
+    });
   } else {
-    data =
-      result?.data?.map((i: any) => {
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          version: i.version,
-          lang: lang,
-          name: i.name,
-          typeOfDataSet: i.typeOfDataSet ?? '-',
-          referenceYear: i['common:referenceYear'] ?? '-',
-          modifiedAt: new Date(i.modified_at),
-          teamId: i.team_id,
-          modelId: i.model_id,
-          ...toProcessModelVersionField(i.model_version),
-          userId: i.user_id,
-        };
-      }) ?? [];
+    data = matchedRows.map((i: any) => {
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        lang: lang,
+        name: i.name,
+        typeOfDataSet: i.typeOfDataSet ?? '-',
+        referenceYear: i['common:referenceYear'] ?? '-',
+        location: i['@location'] ?? '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i.team_id,
+        modelId: i.model_id,
+        ...toProcessModelVersionField(i.model_version),
+        userId: i.user_id,
+      };
+    });
   }
 
   return {
     data: data,
     success: true,
     page: 1,
-    total: result.data?.length ?? 0,
+    total: matchedRows.length,
   };
 }
 

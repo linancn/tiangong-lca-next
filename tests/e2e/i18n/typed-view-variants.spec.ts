@@ -41,9 +41,16 @@ const DATA_PROCESSING_VARIANTS = [
   {
     assertionId: 'vv.data-processing.preview',
     id: 'preview',
-    markerMessageId: 'pages.dataProcessing.form.previewPackageId',
+    markerMessageId: 'pages.dataProcessing.workspace.version',
     markerRole: 'combobox',
     tabMessageId: 'pages.dataProcessing.tabs.preview',
+  },
+  {
+    assertionId: 'vv.data-processing.exports',
+    id: 'exports',
+    markerMessageId: 'pages.dataProcessing.workspace.selectVersion',
+    markerRole: 'text',
+    tabMessageId: 'pages.dataProcessing.workspace.exports',
   },
   {
     assertionId: 'vv.data-processing.publication',
@@ -283,9 +290,11 @@ async function expectSelectedDataProcessingTab(
   await expect(tab).toHaveAttribute('aria-selected', 'true');
   const markerName = getLocaleMessage(locale, variant.markerMessageId);
   const marker =
-    variant.markerRole === 'textbox'
-      ? page.getByRole('textbox', { name: markerName, exact: true })
-      : page.getByRole('combobox', { name: markerName, exact: true });
+    variant.markerRole === 'text'
+      ? page.getByText(markerName, { exact: true })
+      : variant.markerRole === 'textbox'
+        ? page.getByRole('textbox', { name: markerName, exact: true })
+        : page.getByRole('combobox', { name: markerName, exact: true });
   await expect(marker).toBeVisible();
   await expect(page.locator("[data-testid='access-denied']")).toHaveCount(0);
 }
@@ -429,8 +438,8 @@ async function expectNativeOptionsRemainHorizontal(page: Page, tableRoot: Locato
   await expect(table).toBeVisible();
 
   // Native ProTable options are currently non-focusable spans in the upstream beta. Scope the
-  // visual check through the project-owned table root, then select only visible SVG controls
-  // positioned above the table. Read every rectangle in one browser evaluation so a Drawer
+  // visual check through the project-owned table root and the native setting-item wrappers,
+  // then select visible SVG controls positioned above the table. Read every rectangle in one browser evaluation so a Drawer
   // transition cannot compare controls sampled from different animation frames. Visual order,
   // rather than upstream DOM order, owns the horizontal non-overlap contract.
   const readGeometry = () =>
@@ -463,7 +472,10 @@ async function expectNativeOptionsRemainHorizontal(page: Page, tableRoot: Locato
       const optionBoxes = Array.from(element.querySelectorAll('svg'))
         .map((icon, svgIndex) => ({ bounds: icon.getBoundingClientRect(), icon, svgIndex }))
         .filter(
-          ({ bounds, icon }) => isVisible(icon) && bounds.y + bounds.height / 2 < tableBounds.y,
+          ({ bounds, icon }) =>
+            isVisible(icon) &&
+            Boolean(icon.closest('.ant-pro-table-list-toolbar-setting-item')) &&
+            bounds.y + bounds.height / 2 < tableBounds.y,
         )
         .map(({ bounds, svgIndex }) => ({
           bottom: bounds.bottom,

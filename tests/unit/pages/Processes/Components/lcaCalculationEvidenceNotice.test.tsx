@@ -163,7 +163,6 @@ describe('LcaCalculationEvidenceNotice', () => {
 
   it.each([
     ['complete', 'pages.process.lca.evidence.complete.title'],
-    ['incomplete_coverage', 'pages.process.lca.evidence.incomplete.title'],
     ['calculation_failure', 'pages.process.lca.evidence.failure.title'],
     ['method_source_drift', 'pages.process.lca.evidence.drift.title'],
   ])('renders localized English copy for %s', (status, titleKey) => {
@@ -173,7 +172,6 @@ describe('LcaCalculationEvidenceNotice', () => {
 
   it.each([
     ['complete', 'pages.process.lca.evidence.complete.title'],
-    ['incomplete_coverage', 'pages.process.lca.evidence.incomplete.title'],
     ['calculation_failure', 'pages.process.lca.evidence.failure.title'],
     ['method_source_drift', 'pages.process.lca.evidence.drift.title'],
   ])('renders localized Chinese copy for %s', (status, titleKey) => {
@@ -181,6 +179,28 @@ describe('LcaCalculationEvidenceNotice', () => {
     mockMessages = zhMessages;
     render(<LcaCalculationEvidenceNotice calculationEvidence={{ status }} />);
     expect(screen.getByText(zhMessages[titleKey])).toBeInTheDocument();
+  });
+
+  it('does not render a coverage warning, count, or replacement notice for uncharacterized pairs', () => {
+    const { container, rerender } = render(
+      <LcaCalculationEvidenceNotice
+        calculationEvidence={{
+          status: 'incomplete_coverage',
+          matrix: {
+            ...mockMatrix,
+            counts: { matched: 1, unmatched: 247452, invalid: 0, unsupported_direction: 0 },
+          },
+        }}
+      />,
+    );
+    expect(container).toBeEmptyDOMElement();
+    mockParseStaticLciaReport.mockReturnValue({
+      calculation_status: 'incomplete_coverage',
+      method_factor_coverage: mockMatrix,
+      source: { bundle_version: '1.2.4' },
+    });
+    rerender(<LcaCalculationEvidenceNotice staticEvidence={{}} />);
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('shows method description with its canonical ID', () => {
@@ -248,7 +268,7 @@ describe('LcaCalculationEvidenceNotice', () => {
     render(
       <LcaCalculationEvidenceNotice
         calculationEvidence={{
-          status: 'incomplete_coverage',
+          status: 'method_source_drift',
           reason: 'conflicting_parallel_method_coverage_source',
           matrix,
         }}
@@ -273,6 +293,24 @@ describe('LcaCalculationEvidenceNotice', () => {
     ).toBeInTheDocument();
   });
 
+  it('never presents a replay snapshot as a downloadable gap file', () => {
+    const matrix = {
+      ...mockMatrix,
+      uncharacterized_evidence: {
+        artifact_url: 'http://localhost/release.json.zst',
+        artifact_format: 'lcia-coverage-replay-snapshot:v1',
+        artifact_sha256: 'a'.repeat(64),
+        record_count: 25,
+      },
+    };
+    render(
+      <LcaCalculationEvidenceNotice
+        calculationEvidence={{ status: 'incomplete_coverage', matrix }}
+      />,
+    );
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
   it('exposes only loopback artifacts and tolerates an absent locale', () => {
     mockLocale = undefined as any;
     const matrix = {
@@ -286,7 +324,7 @@ describe('LcaCalculationEvidenceNotice', () => {
     };
     render(
       <LcaCalculationEvidenceNotice
-        calculationEvidence={{ status: 'incomplete_coverage', matrix }}
+        calculationEvidence={{ status: 'method_source_drift', matrix }}
       />,
     );
     expect(

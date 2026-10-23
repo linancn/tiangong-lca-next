@@ -31,17 +31,20 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - scripts/typescript-native-parser.*
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - scripts/e2e/**
   - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - package.json
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-23
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display, v6 strict RPC, four-locale labels and focused tests; existing ownership, dependency, validation and release gates remain unchanged.'
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 ---
 
 # Testing Troubleshooting
@@ -60,6 +63,15 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused semantic localization E2E | `pnpm e2e:dev <Playwright arguments>` |
 | release environment diagnosis | `pnpm e2e:env:doctor --format json` |
 | exact pre-fixture continuation | `pnpm e2e:release:resume` (no arguments) |
+
+## Atlas publication recovery
+
+- If dispatch returns `Unrecognized named-value: runner`, run Actions semantic lint and check context availability. Job-level `env` cannot read `runner.temp`; initialize paths in a runner step through `RUNNER_TEMP` and `GITHUB_ENV`. A rejected dispatch creates no deployment.
+
+- If exact project lookup fails, verify the configured token's access to `makers-dtpthotshhpt`; never substitute a name-only deployment or auto-create a project.
+- If a deployment ID is retained but waiting fails, query that exact ID and inspect its state before any rerun. Do not infer that the remote deployment stopped.
+- If hidden routing/assets disappear, inspect the ZIP layout and use SDK archive mode; ordinary directory mode at `dist-edgeone` excludes `.edgeone`.
+- If `atlas-web` admission fails, use the current version's real tag and exact SHA from Main, not a branch, current workflow SHA, older version or new tag. The safe command is in `DEV.md`.
 
 ## Failure Diagnosis
 
@@ -89,6 +101,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | a locale switch replaces the app with a `drawImage` zero-size canvas error | ProLayout received truthy but empty `waterMarkProps`, causing antd 6 Watermark to render without usable content | omit `waterMarkProps` entirely until the product owns real watermark content; prove the affected mounted locale and Drawer flows in the semantic browser harness |
 | a browser assertion finds the state marker but not its Drawer or Modal ancestor | the test still targets an antd 5/private structural class that changed in antd 6 | pass a project-owned class through the component's public semantic `classNames` slot and locate that class plus the state marker; do not rename the assertion to another private `.ant-*` class |
 | a full browser qualification reports overlapping horizontal toolbar icons but focused repeats pass | sequential `boundingBox()` calls sampled different Drawer-animation frames, or the assertion treated upstream DOM order as rendered left-to-right order | atomically read the root, table, and every icon rectangle in one browser evaluation; poll aligned/contained/non-overlapping as one invariant and sort by rendered x coordinate. Keep exact icon count, boundary, alignment, non-overlap, and tooltip checks; do not add retries or weaken the layout contract |
+| a tooltip geometry assertion passes but the screenshot lacks readable tooltip text | zero-size rectangles satisfied bounds, visibility or clipping was not checked, or capture crossed a transient state | follow the readability proof in `repo-validation.md` and the atomic observation pattern in `testing-patterns.md`; reject the invalid state with browser negative controls and bracket capture with the same settled check before diagnosing a product defect |
 | Jest 30 fails with `Cannot redefine property: window`, `location`, or a browser-navigation export | jsdom 26 owns non-configurable browser globals and Jest 30 exposes module exports as non-configurable bindings | keep the real global intact; route `assign`/`reload`/`replace` through `src/utils/browserNavigation.ts`, inject nullable window/storage/event targets into runtime helpers, and mock the module before importing the consumer. Do not use `delete`, `Object.defineProperty`, or `spyOn` against these platform-owned bindings |
 | jest-dom 7 reports a named color such as `red` while the computed style is `rgb(255, 0, 0)` | the matcher compares the browser-normalized computed value rather than preserving the source spelling | assert the normalized `rgb(...)` value while retaining every other style property; do not remove the style assertion or special-case production CSS |
 | Jest 30 reports 100% statements/functions/lines but about 98% raw branches after an otherwise green full suite | Babel/Istanbul added source-less synthetic alternate slots for `if` statements without `else`; the same Jest 29 candidate counts only source-mapped paths, while V8 coverage loses Umi/esbuild source-map fidelity across the full repo | retain Babel coverage and run `pnpm test:coverage:assert-full`. The repository normalizer excludes only the exact unmapped synthetic `if` alternate shape, reports the excluded count, rejects every other malformed map, and still requires every source-mapped branch at 100%; do not lower the product threshold, switch the full repo to V8, or pin an obsolete Jest |

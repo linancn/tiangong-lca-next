@@ -31,6 +31,8 @@ checkPaths:
   - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
   - scripts/release/**
@@ -42,12 +44,13 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-23
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display, v6 strict RPC, four-locale labels and focused tests; existing ownership, dependency, validation and release gates remain unchanged.'
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -126,14 +129,14 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - the compiler/tooling track is TypeScript `7.0.2` only: `pnpm tsc` checks the web project and `pnpm tsc:electron` checks the Electron project; there is no TypeScript 6 compatibility alias or `tsc6` command
-- the UI runtime is one exact React `19.2.8`, React DOM `19.2.8`, Ant Design `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6` generation. Umi's global ConfigProvider and App own theme plus feedback context for every route; there is no Ant Design 5 patch, split ProComponents package, legacy component-member API, or static feedback fallback. ProComponents v3 remains exact-pinned while upstream publishes it as a prerelease, and the existing `skipLibCheck: true` is the bounded declaration-quality exception rather than an application-typecheck bypass
+- the UI runtime is one exact React `19.3.1`, React DOM `19.3.1`, Ant Design `6.6.6`, icons `6.3.4`, and ProComponents `3.1.14-6` generation. Umi's global ConfigProvider and App own theme plus feedback context for every route; there is no Ant Design 5 patch, split ProComponents package, legacy component-member API, or static feedback fallback. ProComponents v3 remains exact-pinned while upstream publishes it as a prerelease, and the existing `skipLibCheck: true` is the bounded declaration-quality exception rather than an application-typecheck bypass
 - `scripts/typescript-native-parser.mjs` plus its `scripts/typescript-native-parser.d.mts` declaration are the sole allowed `typescript/unstable/*` import boundary; repository source-analysis consumers import that adapter, and a TypeScript upgrade must preserve its focused AST/traversal/diagnostic contract tests
 - Oxlint owns JavaScript/TypeScript correctness, including unused and deprecated API diagnostics. The repo-local `tiangong/no-invalid-this` Oxlint plugin preserves the one legacy rule that Oxlint does not yet implement natively. Prettier remains the formatter but no longer organizes imports; do not reintroduce ESLint, a standalone deprecated-API scanner, or a Compiler-API formatting plugin
 - Jest `30.5.0` uses the repository slow-first sequencer to start the three known process-heavy contract suites early without changing discovery or the test inventory. The pre-push receipt suite builds one reusable seed but copies an isolated repository and bare remote for every test case
 - on macOS, the shared Jest runner disables concurrent recompilation and Maglev after the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` crash reproduced inside those optimization tiers; the unit stage retains its 25% worker pool and `512MB` idle-memory recycle boundary without serializing the suite
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
-- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `pnpm e2e:dev`, while exact committed qualification uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the GitHub qualification is credential-free/read-only, hermetic, manually dispatched on an open business PR or chosen ref when change risk warrants browser evidence, and is not part of release proof
+- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `pnpm e2e:dev`, while exact committed qualification uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the GitHub qualification is credential-free/read-only, hermetic, manually dispatched on a chosen ref or run by the bounded ordinary dependency PR job documented in `docs/agents/dependency-maintenance.md`, and is not part of release proof
 - scope-closure qualification uses the executable adapter at `scripts/qualification/scope-closure-next-qualification.mjs`; it exports the exact clean commit to an isolated worktree, permits loopback targets only, and emits the Worker-owned provider result schema without sensitive browser data
 - documentation screenshots use the source-bound declarative profile at `config/docs-capture/profile.v1.json`; it records only this exact source version's runtime/readiness, login/identity, auth-mutation, denial-probe, and stable-locator facts. The generic executor, credentials, dynamic origin, process lifecycle, and evidence decisions belong to workspace tooling.
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
@@ -154,7 +157,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 
 - package manager: repository-pinned `pnpm` `11.24.0`; install with `pnpm install --frozen-lockfile`
 - Node baseline: exact `24.19.0` via `.nvmrc`; use `nvm install` and `nvm use`
-- UI baseline: exact React `19.2.8`, antd `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
+- UI baseline: exact React `19.3.1`, antd `6.6.6`, icons `6.3.4`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
 - shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent); it selects `.env.development*` over exact Umi-preloaded main-file defaults while retaining distinct explicit per-key build overrides
 - explicit main-environment run: `pnpm start:main`
 - default lint gate: `pnpm lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)
@@ -223,9 +226,10 @@ Route those tasks to:
 - marker-bound version PRs targeting `dev` run the non-browser Release Gate against their exact base/head and retain proof only after the complete gate succeeds; their restricted local push runs Docpact and static preflight, while browser E2E remains a separate manual business-PR-stage decision
 - promotion PRs targeting `main` verify the exact dev proof and tree-identical promotion; the deterministic promotion push also runs only Docpact and static preflight. A marked direct main hotfix instead proves exact base/head, unchanged version, static readiness, and the full non-browser gate
 - canonical version-changing `main` pushes reuse that dev proof only when the exact dev and main two-parent merges, main/dev bases, candidate tree/version, successful job, run attempt, and unexpired artifact payload all match; any direct, squash, rebase, ambiguous, expired, unavailable, or mismatched case fails before publication and requires a new dev candidate
-- canonical `main` branch pushes create or verify the matching `v*` tag only after proof verification, then deploy the web app and build draft Electron releases in the same workflow run
+- canonical `main` branch pushes create or verify the matching `v*` tag only after proof verification, then deploy TianGong and Atlas web bundles from the same exact qualified release commit and build TianGong draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump
 - manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases and always run the full reusable Release Gate
+- recovery dispatch uses the reviewed workflow on `main`; `publication_scope=atlas-web` additionally requires the current Main version's existing tag and exact expected SHA, preserves that tag, and skips TianGong/desktop publication. Atlas binds `APP_BRAND=atlas` to exact project `makers-dtpthotshhpt` / `atlas-lca-platform`; the release workflow owns the SDK, archive and receipt boundary
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 

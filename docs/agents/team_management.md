@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: reviewer rejection remains an advisory Comment transition; team ownership and Review Admin final-decision rules are unchanged.'
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: a25d26143d72817e1b841a1f4b7859f0a602d57f
+lastReviewedNote: 'Platform #1319: reviewed matching single, expanded-Reference and batch one-approval controls, four-locale messages and focused regressions. Exact-dev frozen installation and all 127 focused tests pass after network recovery. Team/profile authorization, rejection, selection and gate ownership remain unchanged; final checked-push qualification is recorded on the PR.'
 ---
 
 # Team Management Reference

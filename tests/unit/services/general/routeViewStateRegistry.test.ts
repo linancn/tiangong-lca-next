@@ -17,6 +17,7 @@ describe('route view state registry', () => {
     ['team-action', 'edit', 'edit'],
     ['data-processing-tab', 'builds', 'builds'],
     ['data-processing-tab', 'preview', 'preview'],
+    ['data-processing-tab', 'exports', 'exports'],
     ['data-processing-tab', 'publication', 'publication'],
     ['national-carbon-screen', 'flow_topology', 'flow_topology'],
     ['national-carbon-autoplay', '0', 'disabled'],

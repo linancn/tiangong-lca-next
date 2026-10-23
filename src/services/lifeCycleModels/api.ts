@@ -14,6 +14,11 @@ import {
 } from '@/services/general/api';
 import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { supabase } from '@/services/supabase';
+import { hasDatasetCatalogFilters, queryMappedDatasetCatalog } from '../datasetCatalog/api';
+import {
+  withDatasetClassification,
+  type DatasetTableParams,
+} from '../general/datasetClassification';
 import { publicEntity } from '@/services/supabase/public';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { FunctionRegion } from '@supabase/supabase-js';
@@ -33,11 +38,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getProcessDetailByIdsAndVersion } from '../processes/api';
-import {
-  addOpenDataHybridFilters,
-  queryMappedOpenDataCatalog,
-  type OpenDataCatalogFilters,
-} from '../openDataCatalog/api';
+import { addOpenDataCatalogScope, queryMappedOpenDataCatalog } from '../openDataCatalog/api';
 import { genProcessName } from '../processes/util';
 import type {
   LifeCycleModelGraphData,
@@ -792,23 +793,21 @@ export async function deleteLifeCycleModel(
 }
 
 export async function getLifeCycleModelTableAll(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   tid: string,
   stateCode?: string | number,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
+  const filterCondition = withDatasetClassification(params, {});
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'lifecyclemodel',
-        filters: openDataFilters,
+        filterCondition,
         mode: 'list',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -834,6 +833,24 @@ export async function getLifeCycleModelTableAll(
       data: [],
       success: true,
     });
+  }
+
+  if (hasDatasetCatalogFilters(params)) {
+    return queryMappedDatasetCatalog(
+      {
+        datasetKind: 'lifecyclemodel',
+        dataSource,
+        filterCondition,
+        stateCode,
+        teamId,
+        pageCurrent: params.current,
+        pageSize: params.pageSize,
+        sortBy: normalizeLifeCycleModelSortBy(sortBy),
+        sortDirection: normalizeLifeCycleModelSortDirection(orderBy),
+      },
+      // eslint-disable-next-line no-use-before-define
+      (rows) => mapLifeCycleModelMentionRows(rows, lang),
+    );
   }
 
   const rpcResult = await supabase.rpc('get_latest_lifecyclemodel_versions', {
@@ -924,26 +941,23 @@ export async function getLifeCycleModelTableAll(
 }
 
 export async function getLifeCycleModelTablePgroongaSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: any,
+  rawFilterCondition: any,
   stateCode?: string | number,
   _orderBy?: LifeCycleModelSearchOrderBy,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
-  if (dataSource === 'tg' && openDataFilters) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'lifecyclemodel',
         filterCondition,
-        filters: openDataFilters,
         mode: 'lexical',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -1059,22 +1073,20 @@ async function mapLifeCycleModelMentionRows(
 }
 
 export async function getLifeCycleModelTableUuidMentionSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   lang: string,
   dataSource: string,
   uuid: string,
   stateCode?: string | number,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
-  if (dataSource === 'tg' && openDataFilters) {
+  const filterCondition = withDatasetClassification(params, {});
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'lifecyclemodel',
-        filters: openDataFilters,
+        filterCondition,
         mode: 'uuid',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -1085,6 +1097,7 @@ export async function getLifeCycleModelTableUuidMentionSearch(
   }
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
+    filterCondition,
     pageCurrent: params.current,
     pageSize: params.pageSize,
     sourceEntityKinds: ['lifecyclemodel'],
@@ -1105,20 +1118,23 @@ export async function getLifeCycleModelTableUuidMentionSearch(
   };
 }
 export async function lifeCycleModel_hybrid_search(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: any,
+  rawFilterCondition: any,
   stateCode?: string | number,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
+  tid: string | [] = [],
 ) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
+  const teamId = await getLifeCycleModelTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return { data: [], success: true, page: params.current ?? 1, total: 0 };
+  }
   let result: any = {};
-  const bodyParams: Record<string, any> = addOpenDataHybridFilters(
+  const bodyParams: Record<string, any> = addOpenDataCatalogScope(
     {
       query: queryText,
       filter_condition: filterCondition,
@@ -1126,10 +1142,13 @@ export async function lifeCycleModel_hybrid_search(
       page_size: params.pageSize ?? 10,
       page_current: params.current ?? 1,
     },
-    openDataFilters,
+    useOpenDataCatalog,
   );
   if (typeof stateCode === 'number') {
     bodyParams.state_code = stateCode;
+  }
+  if (teamId) {
+    bodyParams.team_id = teamId;
   }
   const session = await supabase.auth.getSession();
   if (session.data.session) {

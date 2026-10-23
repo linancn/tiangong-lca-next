@@ -1,3 +1,5 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import { contributeLifeCycleModel } from '@/services/lifeCycleModels/api';
 import {
   contributeProcess,
@@ -8,12 +10,11 @@ import {
 } from '@/services/processes/api';
 import { BarChartOutlined } from '@ant-design/icons';
 
-import { App, Card, Checkbox, Col, Input, Row, Select, Space } from 'antd';
+import { App, Checkbox, Input, Select, Space } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
-import OpenDataCatalogFilters from '@/components/OpenDataCatalogFilters';
 import ContributeData from '@/components/ContributeData';
 import {
   extractContributeDataError,
@@ -29,11 +30,11 @@ import {
   dataListTextColumn,
   ResponsiveDataListActions,
   responsiveDataListTableProps,
+  ResponsiveDataListViewport,
+  dataListPagination,
+  getDataListToolbar,
+  orderDataListColumns,
   ResponsiveDataListToolbarMore,
-  responsiveSearchCardClassName,
-  responsiveSearchExtraColProps,
-  responsiveSearchPrimaryColProps,
-  responsiveSearchRowProps,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
@@ -58,11 +59,7 @@ import {
 } from '@/services/general/runtimeLocale';
 import { getActiveTableSort, mapActiveTableSort } from '@/services/general/tableSort';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
-import {
-  DEFAULT_OPEN_DATA_FILTERS,
-  getOpenDataCatalogFilterArgs,
-  type OpenDataCatalogFilters as OpenDataCatalogFilterValue,
-} from '@/services/openDataCatalog/types';
+import { getOpenDataCatalogArgs } from '@/services/openDataCatalog/types';
 import {
   ProcessImportData,
   ProcessTable,
@@ -73,9 +70,8 @@ import type { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, ReactElement } from 'react';
-import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import { getAllVersionsColumns } from '../Utils';
 import {
-  getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
   getReferenceLookupTeamId,
   getReferenceLookupUuid,
@@ -83,6 +79,7 @@ import {
   showReferenceLookupLimitMessage,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
+import { useSubmittedDatasetSearch } from '../Utils/useSubmittedDatasetSearch';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
@@ -110,18 +107,14 @@ type ProcessTableRequestParams = LocaleAwareTableParams & {
 
 const TableList: FC = () => {
   const { message } = App.useApp();
-  const [keyWord, setKeyWord] = useState('');
-  const [searchRevision, setSearchRevision] = useState(0);
   const [stateCode, setStateCode] = useState<string | number>('all');
   const [typeOfDataSet, setTypeOfDataSet] = useState<string>('all');
   const [tableDataSource, setTableDataSource] = useState<ProcessTable[]>([]);
-  const [openDataFilters, setOpenDataFilters] = useState<OpenDataCatalogFilterValue>({
-    ...DEFAULT_OPEN_DATA_FILTERS,
-  });
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ProcessImportData | null>(null);
-  const [openAI, setOpenAI] = useState<boolean>(false);
-  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
+  const { draftMode, setDraftMode, submitted, submitSearch } = useSubmittedDatasetSearch();
+  const openAI = draftMode === 'smart';
+  const referenceLookup = draftMode === 'reference';
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
@@ -147,6 +140,8 @@ const TableList: FC = () => {
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
   const actionRef = useRef<ActionType | undefined>(undefined);
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
+  const [listPage, setListPage] = useState({ current: 1, pageSize: 50 });
   const attachReviewState = async (result: {
     data?: ProcessTable[];
     page?: number;
@@ -197,18 +192,6 @@ const TableList: FC = () => {
       search: false,
       render: (_, row) => {
         return dataListText(row.name, row.generalComment);
-      },
-    },
-    {
-      ...dataListTextColumn<ProcessTable>(260, DATA_LIST_COLUMN_RESPONSIVE.wide),
-      title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
-      ),
-      dataIndex: 'classification',
-      sorter: true,
-      search: false,
-      render: (_, row) => {
-        return dataListText(row.classification);
       },
     },
     {
@@ -535,12 +518,14 @@ const TableList: FC = () => {
     setEditVersion('');
   };
 
-  const onSearch: SearchProps['onSearch'] = (value) => {
-    setKeyWord(value);
-    setSearchRevision((revision) => revision + 1);
-    if (referenceLookup && !getReferenceLookupUuid(value)) {
+  const onSearch: SearchProps['onSearch'] = (value, _event, info) => {
+    if (info?.source === 'clear') return;
+    if (!submitSearch(value)) {
       showInvalidReferenceLookupUuidMessage(intl);
+      return;
     }
+    tableRequestEpochRef.current += 1;
+    setListPage((page) => ({ ...page, current: 1 }));
   };
   const handleImportData = (jsonData: ProcessImportData) => {
     setImportData(jsonData);
@@ -562,351 +547,346 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card className={responsiveSearchCardClassName}>
-        <Row {...responsiveSearchRowProps}>
-          <Col {...responsiveSearchPrimaryColProps}>
-            <Search
-              size={'large'}
-              placeholder={
-                referenceLookup
-                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
-                  : openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-              }
-              onSearch={onSearch}
-              enterButton
-            />
-          </Col>
-          <Col {...responsiveSearchExtraColProps}>
-            <Checkbox
-              checked={openAI}
-              onChange={(e) => {
-                setOpenAI(e.target.checked);
-                if (e.target.checked) {
-                  setReferenceLookup(false);
-                }
-              }}
-            >
-              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-            </Checkbox>
-            <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
-              <Checkbox
-                checked={referenceLookup}
-                onChange={(e) => {
-                  setReferenceLookup(e.target.checked);
-                  if (e.target.checked) {
-                    setOpenAI(false);
+      <ResponsiveDataListViewport columns={processColumns}>
+        {({ scroll }) => (
+          <ProTable<ProcessTable, ProcessTableRequestParams>
+            key={`process-table:${dataSource}:${tid ?? ''}`}
+            {...responsiveDataListTableProps}
+            scroll={scroll}
+            toolbar={getDataListToolbar({
+              search: (
+                <Search
+                  allowClear
+                  style={{ width: '100%' }}
+                  placeholder={
+                    referenceLookup
+                      ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                      : openAI
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
                   }
-                }}
-              >
-                <FormattedMessage
-                  id='pages.search.referenceLookup'
-                  defaultMessage='Reference Lookup'
+                  onSearch={onSearch}
+                  enterButton
                 />
-              </Checkbox>
-              <ReferenceLookupHelpIcon />
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-      <ProTable<ProcessTable, ProcessTableRequestParams>
-        key={`process-table:${dataSource}:${tid ?? ''}`}
-        {...responsiveDataListTableProps}
-        rowKey={(record) => `${record.id}:${record.version}`}
-        headerTitle={
-          <>
-            {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
-          </>
-        }
-        actionRef={actionRef}
-        dataSource={tableDataSource}
-        onDataSourceChange={setTableDataSource}
-        params={{
-          locale: appLocale,
-          dataSource,
-          teamId: tid ?? '',
-          keyword: keyWord,
-          searchRevision,
-          searchMode: referenceLookup ? 'reference' : openAI ? 'ai' : 'keyword',
-          stateCode,
-          typeOfDataSet,
-          ...(dataSource === 'tg'
-            ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
-            : {}),
-        }}
-        search={false}
-        options={isMobileDataList ? false : { fullScreen: true }}
-        optionsRender={
-          isMobileDataList
-            ? undefined
-            : (_, defaultOptions) => {
-                const settings = (defaultOptions ?? []) as ReactElement[];
-                if (dataSource !== 'my') {
-                  return settings;
-                }
-                const calcOption = <LcaSolveToolbar key='lca-calc-option' placement='option' />;
-                const analysisPageOption = (
-                  <ToolBarButton
-                    key='lca-analysis-page-option'
-                    icon={<BarChartOutlined />}
-                    placement='option'
-                    tooltip={intl.formatMessage({
-                      id: 'pages.process.lca.page.title',
-                      defaultMessage: 'LCA Analysis',
-                    })}
-                    onClick={() => {
-                      history.push('/mydata/processes/analysis');
+              ),
+              filter: (
+                <Space wrap>
+                  <Checkbox
+                    checked={openAI}
+                    onChange={(e) => setDraftMode(e.target.checked ? 'smart' : 'normal')}
+                  >
+                    <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
+                  </Checkbox>
+                  <Space
+                    className='responsive-data-list-reference-lookup-option'
+                    size={4}
+                    align='center'
+                  >
+                    <Checkbox
+                      checked={referenceLookup}
+                      onChange={(e) => setDraftMode(e.target.checked ? 'reference' : 'normal')}
+                    >
+                      <FormattedMessage
+                        id='pages.search.referenceLookup'
+                        defaultMessage='Reference Lookup'
+                      />
+                    </Checkbox>
+                    <ReferenceLookupHelpIcon />
+                  </Space>
+                  <DatasetClassificationFilter
+                    datasetKind='process'
+                    lang={lang}
+                    value={classification}
+                    onChange={(next) => {
+                      setClassification(next);
+                      actionRef.current?.setPageInfo?.({ current: 1 });
                     }}
                   />
-                );
-                const reloadIndex = settings.findIndex((item) => item.key === 'reload');
-                if (reloadIndex < 0) {
-                  return [...settings, calcOption, analysisPageOption];
-                }
-                return [
-                  ...settings.slice(0, reloadIndex + 1),
-                  calcOption,
-                  analysisPageOption,
-                  ...settings.slice(reloadIndex + 1),
-                ];
-              }
-        }
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-          ...getReferenceLookupPaginationProps(referenceLookup),
-        }}
-        toolBarRender={() => {
-          if (dataSource === 'my') {
-            const filters = [
-              <span key={3}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>,
-              <TableFilter
-                key={2}
-                width={isMobileDataList ? 112 : 140}
-                onChange={(val) => {
-                  setStateCode(val);
-                }}
-              />,
-            ];
-            const mobileActions = isMobileDataList
-              ? [
-                  <ResponsiveDataListToolbarMore key='process-mobile-toolbar-more'>
-                    <ProcessCreate
-                      importData={importData}
-                      onClose={() => setImportData(null)}
-                      key='process-create-option'
-                      lang={lang}
-                      actionRef={actionRef}
-                    />
-                    <LcaSolveToolbar key='lca-calc-option' />
-                    <ToolBarButton
-                      key='lca-analysis-page-option'
-                      icon={<BarChartOutlined />}
-                      tooltip={intl.formatMessage({
-                        id: 'pages.process.lca.page.title',
-                        defaultMessage: 'LCA Analysis',
-                      })}
-                      onClick={() => {
-                        history.push('/mydata/processes/analysis');
-                      }}
-                    />
-                    <ImportData onJsonData={handleImportData} key='process-import-option' />
-                  </ResponsiveDataListToolbarMore>,
-                ]
-              : [];
-            const desktopActions = isMobileDataList
-              ? []
-              : [
-                  <ProcessCreate
-                    importData={importData}
-                    onClose={() => setImportData(null)}
-                    key={0}
-                    lang={lang}
-                    actionRef={actionRef}
-                  />,
-                  <ImportData onJsonData={handleImportData} key={1} />,
-                ];
-            return [...filters, ...mobileActions, ...desktopActions];
-          }
-          if (dataSource === 'tg') {
-            return [
-              <span key='process-type-filter'>
-                {typeOfDataSetFilter(isMobileDataList ? 120 : 160)}
-              </span>,
-              <OpenDataCatalogFilters
-                key='open-data-filters'
-                value={openDataFilters}
-                onChange={setOpenDataFilters}
-              />,
-            ];
-          }
-          return [<span key={0}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>];
-        }}
-        request={async (
-          params: ProcessTableRequestParams & { pageSize?: number; current?: number },
-          sort,
-        ) => {
-          const {
-            locale: requestedLocale,
-            dataSource: requestedDataSource,
-            teamId: requestedTeamId,
-            keyword: requestedKeyword,
-            searchRevision: _searchRevision,
-            searchMode,
-            stateCode: requestedStateCode,
-            typeOfDataSet: requestedTypeOfDataSet,
-            openDataFilterRevision: _openDataFilterRevision,
-            ...requestParams
-          } = params;
-          void _searchRevision;
-          void _openDataFilterRevision;
-          setTableDataSource([]);
-          return guardLocaleMaterializedTableRequest(
-            requestedLocale,
-            () => currentAppLocaleRef.current,
-            tableRequestEpochRef,
-            async ({ isCurrentRequest }) => {
-              try {
-                if (searchMode === 'reference') {
-                  const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword);
-                  if (!referenceLookupUuid) {
-                    return applyProcessTableResult(
-                      getReferenceLookupEmptyResult(requestParams.current),
-                    );
-                  }
-                  const referenceLookupTeamId = getReferenceLookupTeamId(requestedTeamId);
-
-                  const result = await getProcessTableUuidMentionSearch(
-                    requestParams,
-                    lang,
-                    requestedDataSource,
-                    referenceLookupUuid,
-                    requestedStateCode,
-                    requestedTypeOfDataSet,
-                    referenceLookupTeamId,
-                    ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
-                  );
-                  const noticeKey = [
-                    requestedDataSource,
-                    referenceLookupUuid,
-                    requestedStateCode,
-                    requestedTypeOfDataSet,
-                    referenceLookupTeamId,
-                    requestedLocale,
-                  ].join(':');
-                  if (
-                    isCurrentRequest() &&
-                    result.capped &&
-                    referenceLookupLimitNoticeRef.current !== noticeKey
-                  ) {
-                    referenceLookupLimitNoticeRef.current = noticeKey;
-                    showReferenceLookupLimitMessage(intl);
-                  }
-                  return applyProcessTableResult(result);
-                }
-                if (requestedKeyword.length > 0) {
-                  let orderBy:
-                    | {
-                        key: 'common:class' | 'baseName';
-                        lang?: SupportedServiceQueryLanguage;
-                        order: 'asc' | 'desc';
-                      }
-                    | undefined;
-                  const activeSort = getActiveTableSort(sort);
-                  if (activeSort) {
-                    const { field, order } = activeSort;
-                    if (field === 'name') {
-                      orderBy = {
-                        key: 'baseName',
-                        lang: getServiceQueryLanguage(lang),
-                        order: order === 'ascend' ? 'asc' : 'desc',
-                      };
-                    } else if (field === 'classification') {
-                      orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+                </Space>
+              ),
+            })}
+            rowKey={(record) => `${record.id}:${record.version}`}
+            headerTitle={false}
+            actionRef={actionRef}
+            dataSource={tableDataSource}
+            onDataSourceChange={setTableDataSource}
+            params={{
+              locale: appLocale,
+              classification,
+              dataSource,
+              teamId: tid ?? '',
+              keyword: submitted.keyword,
+              searchRevision: submitted.revision,
+              searchMode:
+                submitted.mode === 'reference'
+                  ? 'reference'
+                  : submitted.mode === 'smart'
+                    ? 'ai'
+                    : 'keyword',
+              stateCode,
+              typeOfDataSet,
+            }}
+            search={false}
+            options={isMobileDataList ? false : { fullScreen: true }}
+            optionsRender={
+              isMobileDataList
+                ? undefined
+                : (_, defaultOptions) => {
+                    const settings = (defaultOptions ?? []) as ReactElement[];
+                    if (dataSource !== 'my') {
+                      return settings;
                     }
+                    const calcOption = <LcaSolveToolbar key='lca-calc-option' placement='option' />;
+                    const analysisPageOption = (
+                      <ToolBarButton
+                        key='lca-analysis-page-option'
+                        icon={<BarChartOutlined />}
+                        placement='option'
+                        tooltip={intl.formatMessage({
+                          id: 'pages.process.lca.page.title',
+                          defaultMessage: 'LCA Analysis',
+                        })}
+                        onClick={() => {
+                          history.push('/mydata/processes/analysis');
+                        }}
+                      />
+                    );
+                    const reloadIndex = settings.findIndex((item) => item.key === 'reload');
+                    if (reloadIndex < 0) {
+                      return [...settings, calcOption, analysisPageOption];
+                    }
+                    return [
+                      ...settings.slice(0, reloadIndex + 1),
+                      calcOption,
+                      analysisPageOption,
+                      ...settings.slice(reloadIndex + 1),
+                    ];
                   }
-                  if (searchMode === 'ai') {
-                    return applyProcessTableResult(
-                      await process_hybrid_search(
+            }
+            pagination={{
+              ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
+              ...getReferenceLookupPaginationProps(submitted.mode === 'reference'),
+            }}
+            toolBarRender={() => {
+              if (dataSource === 'my') {
+                const filters = [
+                  <span key={3}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>,
+                  <TableFilter
+                    key={2}
+                    width={isMobileDataList ? 112 : 140}
+                    onChange={(val) => {
+                      setStateCode(val);
+                    }}
+                  />,
+                ];
+                const mobileActions = isMobileDataList
+                  ? [
+                      <ResponsiveDataListToolbarMore key='process-mobile-toolbar-more'>
+                        <ProcessCreate
+                          importData={importData}
+                          onClose={() => setImportData(null)}
+                          key='process-create-option'
+                          lang={lang}
+                          actionRef={actionRef}
+                        />
+                        <LcaSolveToolbar key='lca-calc-option' />
+                        <ToolBarButton
+                          key='lca-analysis-page-option'
+                          icon={<BarChartOutlined />}
+                          tooltip={intl.formatMessage({
+                            id: 'pages.process.lca.page.title',
+                            defaultMessage: 'LCA Analysis',
+                          })}
+                          onClick={() => {
+                            history.push('/mydata/processes/analysis');
+                          }}
+                        />
+                        <ImportData onJsonData={handleImportData} key='process-import-option' />
+                      </ResponsiveDataListToolbarMore>,
+                    ]
+                  : [];
+                const desktopActions = isMobileDataList
+                  ? []
+                  : [
+                      <ProcessCreate
+                        importData={importData}
+                        onClose={() => setImportData(null)}
+                        key={0}
+                        lang={lang}
+                        actionRef={actionRef}
+                      />,
+                      <ImportData onJsonData={handleImportData} key={1} />,
+                    ];
+                return [...filters, ...mobileActions, ...desktopActions];
+              }
+              return [<span key={0}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>];
+            }}
+            request={async (
+              params: ProcessTableRequestParams & { pageSize?: number; current?: number },
+              sort,
+            ) => {
+              const {
+                locale: requestedLocale,
+                dataSource: requestedDataSource,
+                teamId: requestedTeamId,
+                keyword: requestedKeyword,
+                searchRevision: _searchRevision,
+                searchMode,
+                stateCode: requestedStateCode,
+                typeOfDataSet: requestedTypeOfDataSet,
+                ...requestParams
+              } = params;
+              void _searchRevision;
+              setTableDataSource([]);
+              return guardLocaleMaterializedTableRequest(
+                requestedLocale,
+                () => currentAppLocaleRef.current,
+                tableRequestEpochRef,
+                async ({ isCurrentRequest }) => {
+                  try {
+                    if (searchMode === 'reference') {
+                      // Reference snapshots are published only after UUID validation.
+                      const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword)!;
+                      const referenceLookupTeamId = getReferenceLookupTeamId(requestedTeamId);
+
+                      const result = await getProcessTableUuidMentionSearch(
                         requestParams,
                         lang,
                         requestedDataSource,
-                        requestedKeyword,
-                        {},
+                        referenceLookupUuid,
                         requestedStateCode,
                         requestedTypeOfDataSet,
+                        referenceLookupTeamId,
+                        ...getOpenDataCatalogArgs(requestedDataSource),
+                      );
+                      const noticeKey = [
+                        requestedDataSource,
+                        referenceLookupUuid,
+                        requestedStateCode,
+                        requestedTypeOfDataSet,
+                        referenceLookupTeamId,
+                        requestedLocale,
+                      ].join(':');
+                      if (
+                        isCurrentRequest() &&
+                        result.capped &&
+                        referenceLookupLimitNoticeRef.current !== noticeKey
+                      ) {
+                        referenceLookupLimitNoticeRef.current = noticeKey;
+                        showReferenceLookupLimitMessage(intl);
+                      }
+                      return applyProcessTableResult(result);
+                    }
+                    if (requestedKeyword.length > 0) {
+                      let orderBy:
+                        | {
+                            key: 'common:class' | 'baseName';
+                            lang?: SupportedServiceQueryLanguage;
+                            order: 'asc' | 'desc';
+                          }
+                        | undefined;
+                      const activeSort = getActiveTableSort(sort);
+                      if (activeSort) {
+                        const { field, order } = activeSort;
+                        if (field === 'name') {
+                          orderBy = {
+                            key: 'baseName',
+                            lang: getServiceQueryLanguage(lang),
+                            order: order === 'ascend' ? 'asc' : 'desc',
+                          };
+                        } else if (field === 'classification') {
+                          orderBy = {
+                            key: 'common:class',
+                            order: order === 'ascend' ? 'asc' : 'desc',
+                          };
+                        }
+                      }
+                      if (searchMode === 'ai') {
+                        return applyProcessTableResult(
+                          await process_hybrid_search(
+                            requestParams,
+                            lang,
+                            requestedDataSource,
+                            requestedKeyword,
+                            {},
+                            requestedStateCode,
+                            requestedTypeOfDataSet,
+                            requestedTeamId,
+                            ...getOpenDataCatalogArgs(requestedDataSource),
+                          ),
+                        );
+                      }
+                      return applyProcessTableResult(
+                        requestedDataSource === 'tg'
+                          ? await getProcessTablePgroongaSearch(
+                              requestParams,
+                              lang,
+                              requestedDataSource,
+                              requestedKeyword,
+                              {},
+                              requestedStateCode,
+                              requestedTypeOfDataSet,
+                              orderBy,
+                              requestedTeamId,
+                              false,
+                              true,
+                            )
+                          : await getProcessTablePgroongaSearch(
+                              requestParams,
+                              lang,
+                              requestedDataSource,
+                              requestedKeyword,
+                              {},
+                              requestedStateCode,
+                              requestedTypeOfDataSet,
+                              orderBy,
+                              requestedTeamId,
+                            ),
+                      );
+                    }
+
+                    const sortFields: Record<string, string> = {
+                      name: 'json->processDataSet->processInformation->dataSetInformation->name',
+                      classification:
+                        'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
+                    };
+
+                    const convertedSort = mapActiveTableSort(sort, sortFields);
+
+                    return applyProcessTableResult(
+                      await getProcessTableAll(
+                        requestParams,
+                        convertedSort,
+                        lang,
+                        requestedDataSource,
                         requestedTeamId,
-                        ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                        requestedStateCode,
+                        requestedTypeOfDataSet,
+                        ...getOpenDataCatalogArgs(requestedDataSource),
                       ),
                     );
+                  } catch (error) {
+                    if (isCurrentRequest()) {
+                      message.error(
+                        intl.formatMessage({
+                          id: 'pages.process.list.loadError',
+                          defaultMessage: 'Failed to load process list.',
+                        }),
+                      );
+                    }
+                    return applyProcessTableResult();
                   }
-                  return applyProcessTableResult(
-                    requestedDataSource === 'tg'
-                      ? await getProcessTablePgroongaSearch(
-                          requestParams,
-                          lang,
-                          requestedDataSource,
-                          requestedKeyword,
-                          {},
-                          requestedStateCode,
-                          requestedTypeOfDataSet,
-                          orderBy,
-                          requestedTeamId,
-                          false,
-                          openDataFilters,
-                        )
-                      : await getProcessTablePgroongaSearch(
-                          requestParams,
-                          lang,
-                          requestedDataSource,
-                          requestedKeyword,
-                          {},
-                          requestedStateCode,
-                          requestedTypeOfDataSet,
-                          orderBy,
-                          requestedTeamId,
-                        ),
-                  );
-                }
-
-                const sortFields: Record<string, string> = {
-                  name: 'json->processDataSet->processInformation->dataSetInformation->name',
-                  classification:
-                    'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
-                };
-
-                const convertedSort = mapActiveTableSort(sort, sortFields);
-
-                return applyProcessTableResult(
-                  await getProcessTableAll(
-                    requestParams,
-                    convertedSort,
-                    lang,
-                    requestedDataSource,
-                    requestedTeamId,
-                    requestedStateCode,
-                    requestedTypeOfDataSet,
-                    ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
-                  ),
-                );
-              } catch (error) {
-                if (isCurrentRequest()) {
-                  message.error(
-                    intl.formatMessage({
-                      id: 'pages.process.list.loadError',
-                      defaultMessage: 'Failed to load process list.',
-                    }),
-                  );
-                }
-                return applyProcessTableResult();
-              }
-            },
-          );
-        }}
-        columns={processColumns}
-      />
+                },
+              );
+            }}
+            columns={orderDataListColumns(processColumns, {
+              dataType: <FormattedMessage id='menu.tgdata.processes' />,
+              pagination: listPage,
+            })}
+          />
+        )}
+      </ResponsiveDataListViewport>
 
       {editDrawerVisible && editId && editVersion && (
         <ProcessEdit

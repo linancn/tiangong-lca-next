@@ -38,6 +38,7 @@ export default {
   'pages.review.assignment.current': 'Réviseurs actuels',
   'pages.review.assignment.cannotRevokeSubmitted': 'Un réviseur ayant soumis son avis ne peut pas être retiré.',
   'pages.review.approve.disabled.noReviewers': 'Affectez au moins un réviseur avant l’approbation finale.',
+  'pages.review.approve.disabled.approvalRequired': 'Au moins un réviseur affecté doit avoir donné un avis favorable avant l’approbation finale.',
   'pages.review.approve.disabled.pendingOpinions': '{count} avis de réviseur sont encore attendus.',
   'pages.review.approve.disabled.allRejected': 'Tous les réviseurs ont rejeté cette tâche ; l’approbation est indisponible.',
   'pages.review.approve.disabled.opinionsUnavailable': 'Impossible de vérifier les avis des réviseurs. Actualisez la page et réessayez.',

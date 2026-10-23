@@ -9,6 +9,11 @@ import {
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
+import { hasDatasetCatalogFilters, queryMappedDatasetCatalog } from '../datasetCatalog/api';
+import {
+  withDatasetClassification,
+  type DatasetTableParams,
+} from '../general/datasetClassification';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import { publicEntity } from '@/services/supabase/public';
 import { FunctionRegion } from '@supabase/supabase-js';
@@ -36,11 +41,7 @@ import {
 import { resolveTableSort } from '../general/tableSort';
 import { getILCDLocationByValues } from '../locations/api';
 import { getCachedLocationData } from '../locations/cache';
-import {
-  addOpenDataHybridFilters,
-  queryMappedOpenDataCatalog,
-  type OpenDataCatalogFilters,
-} from '../openDataCatalog/api';
+import { addOpenDataCatalogScope, queryMappedOpenDataCatalog } from '../openDataCatalog/api';
 import type { FlowTable } from './data';
 import { genFlowJsonOrdered, genFlowName } from './util';
 
@@ -358,25 +359,22 @@ export async function deleteFlows(id: string, version: string) {
 }
 
 export async function getFlowTableAll(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   tid: string | [],
   filters?: FlowSearchFilters,
   stateCode?: string | number,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
+  const filterCondition = withDatasetClassification(params, filters);
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'flow',
-        filterCondition: filters,
-        filters: openDataFilters,
+        filterCondition,
         mode: 'list',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -404,6 +402,24 @@ export async function getFlowTableAll(
     });
   }
 
+  if (hasDatasetCatalogFilters(params)) {
+    return queryMappedDatasetCatalog(
+      {
+        datasetKind: 'flow',
+        dataSource,
+        filterCondition,
+        stateCode,
+        teamId,
+        pageCurrent: params.current,
+        pageSize: params.pageSize,
+        sortBy: normalizeFlowSortBy(sortBy),
+        sortDirection: normalizeFlowSortDirection(orderBy),
+      },
+      // eslint-disable-next-line no-use-before-define
+      (rows) => mapFlowMentionRows(rows, lang),
+    );
+  }
+
   const rpcResult = await supabase.rpc('get_latest_flow_versions', {
     page_size: params.pageSize ?? 10,
     page_current: params.current ?? 1,
@@ -411,7 +427,7 @@ export async function getFlowTableAll(
     this_user_id: session.data.session?.user?.id ?? '',
     team_id_filter: teamId,
     state_code_filter: typeof stateCode === 'number' ? stateCode : null,
-    filter_condition: filters ?? {},
+    filter_condition: filterCondition,
     sort_by: normalizeFlowSortBy(sortBy),
     sort_direction: normalizeFlowSortDirection(orderBy),
   });
@@ -510,26 +526,23 @@ export async function getFlowTableAll(
 }
 
 export async function getFlowTablePgroongaSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   queryText: string,
-  filter: FlowSearchFilters,
+  rawFilter: FlowSearchFilters,
   stateCode?: string | number,
   _orderBy?: FlowSearchOrderBy,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
-  if (dataSource === 'tg' && openDataFilters) {
+  const filter = withDatasetClassification(params, rawFilter);
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'flow',
         filterCondition: filter,
-        filters: openDataFilters,
         mode: 'lexical',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -704,22 +717,20 @@ async function mapFlowMentionRows(rows: FlowListRpcRow[], lang: string): Promise
 }
 
 export async function getFlowTableUuidMentionSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   lang: string,
   dataSource: string,
   uuid: string,
   stateCode?: string | number,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
-  if (dataSource === 'tg' && openDataFilters) {
+  const filterCondition = withDatasetClassification(params, {});
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'flow',
-        filters: openDataFilters,
+        filterCondition,
         mode: 'uuid',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -730,6 +741,7 @@ export async function getFlowTableUuidMentionSearch(
   }
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
+    filterCondition,
     pageCurrent: params.current,
     pageSize: params.pageSize,
     sourceEntityKinds: ['flow'],
@@ -748,10 +760,7 @@ export async function getFlowTableUuidMentionSearch(
 }
 
 export async function flow_hybrid_search(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
@@ -759,7 +768,7 @@ export async function flow_hybrid_search(
   filter: FlowSearchFilters,
   stateCode?: string | number,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ): Promise<{ data: FlowTable[]; success: boolean; total?: number; page?: number }> {
   const teamId = await getFlowTeamFilter(dataSource, tid);
   if (dataSource === 'te' && !teamId) {
@@ -770,7 +779,7 @@ export async function flow_hybrid_search(
       total: 0,
     };
   }
-  const filterCondition: FlowSearchFilters = { ...filter };
+  const filterCondition: FlowSearchFilters = withDatasetClassification(params, filter);
   if (!filterCondition.flowType?.trim()) {
     delete filterCondition.flowType;
   }
@@ -778,7 +787,7 @@ export async function flow_hybrid_search(
     delete filterCondition.classification;
   }
   let result: any = {};
-  const bodyParams: Record<string, any> = addOpenDataHybridFilters(
+  const bodyParams: Record<string, any> = addOpenDataCatalogScope(
     {
       query,
       version_scope: 'matched',
@@ -788,7 +797,7 @@ export async function flow_hybrid_search(
       page_size: params.pageSize ?? 10,
       page_current: params.current ?? 1,
     },
-    openDataFilters,
+    useOpenDataCatalog,
   );
   if (typeof stateCode === 'number') {
     bodyParams.state_code = stateCode;

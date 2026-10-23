@@ -4,6 +4,7 @@ export default {
   'component.globalHeader.search.example2': '搜索提示二',
   'component.globalHeader.search.example3': '搜索提示三',
   'component.globalHeader.help': '使用文档',
+  'component.globalHeader.helpAndAbout': '帮助与关于',
   'component.globalHeader.help.englishFallback': '帮助文档（英文）',
   'component.globalHeader.help.fallback': '帮助文档（{language}）',
   'component.globalHeader.openapiDocumentation': 'OpenAPI 文档',

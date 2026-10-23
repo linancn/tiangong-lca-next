@@ -176,6 +176,47 @@ ol {
   min-width: 0 !important;
 }
 
+.tg-data-navigation-header {
+  height: 100%;
+
+  &-aligned {
+    .ant-pro-top-nav-header-main-left {
+      // Native TopNavHeader has a 16px leading inset; the menu begins at the sider edge.
+      flex: 0 0 calc(var(--tg-header-sider-width) - 16px);
+      overflow: hidden;
+      transition: flex-basis 0.2s ease;
+    }
+
+    .ant-pro-top-nav-header-menu {
+      padding-inline-start: 0;
+    }
+
+    &[data-collapsed='true'] .ant-pro-top-nav-header-logo > *:first-child > h1 {
+      display: none;
+    }
+  }
+}
+
+.tg-data-navigation-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  &-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    color: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tg-data-navigation-header-aligned .ant-pro-top-nav-header-main-left {
+    transition: none;
+  }
+}
+
 .ant-pro-global-header-header-actions {
   min-width: 0;
 }
@@ -233,13 +274,7 @@ ol {
   }
 }
 
-.tg-pro-layout-collapse-trigger {
-  padding: 0;
-  color: inherit;
-  font: inherit;
-  background: transparent;
-  border: 0;
-
+[data-tg-pro-layout-collapse-trigger] {
   &:focus-visible {
     outline: 2px solid var(--ant-color-primary-border, #ad7db8);
     outline-offset: 2px;

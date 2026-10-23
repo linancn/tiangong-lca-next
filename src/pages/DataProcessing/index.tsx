@@ -5,6 +5,7 @@ import {
   closureCheckPollIntervalMs,
   closureCheckPollMaxAttempts,
 } from '@/components/ClosureTaskDetail';
+import { dataListPagination } from '@/components/ResponsiveDataList';
 import LcaReleaseReadPanel from '@/components/LcaReleaseReadPanel';
 import {
   createClosureCheck,
@@ -42,13 +43,12 @@ import { toCanonicalLciaMethodId } from '@/services/lciaMethods/evidence';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { taskProgressPercent, type TaskSummaryV2 } from '@/services/taskCenter/types';
 import {
-  ArrowRightOutlined,
+  ArrowLeftOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
   DownloadOutlined,
   EyeOutlined,
-  PlusOutlined,
   StopOutlined,
   SyncOutlined,
   WarningOutlined,
@@ -59,7 +59,10 @@ import {
   Alert,
   Button,
   Card,
+  Collapse,
+  Modal,
   Descriptions,
+  Drawer,
   Form,
   Input,
   Progress,
@@ -68,7 +71,6 @@ import {
   Spin,
   Table,
   Tabs,
-  Tag,
   Tooltip,
   Typography,
 } from 'antd';
@@ -81,8 +83,16 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import CalculationBundlePanel from './CalculationBundlePanel';
+import CalculationBundlePanel, { formatBundleNumber } from './CalculationBundlePanel';
+import { closureDisplayStatus } from './resultPresentation';
 import styles from './index.less';
+import ResultSetDirectory from './ResultSetDirectory';
+import { deriveResultSetWorkflowSummary } from './resultSetWorkflow';
+export {
+  deriveResultSetWorkflowSummary,
+  resultSetStatusMessage,
+  resultSetActionMessage,
+} from './resultSetWorkflow';
 
 type CommandStatus = {
   kind: 'success' | 'error';
@@ -133,21 +143,8 @@ type LciaResultPackageOption = {
 
 type StatusTone = 'success' | 'error' | 'processing' | 'warning' | 'default';
 
-export type ResultSetNextAction =
-  'start_closure' | 'view_closure' | 'start_build' | 'view_build' | 'preview' | 'view_publication';
-
-export type ResultSetWorkflowSummary = {
-  closureStatus: 'not_checked' | 'checking' | 'needs_attention' | 'ready' | 'failed';
-  buildStatus: 'not_started' | 'running' | 'ready' | 'failed';
-  publicationStatus: 'not_published' | 'published';
-  nextAction: ResultSetNextAction;
-  closureCheckId?: string;
-  packageId?: string;
-};
-
 const submittedBuildPendingPhase = 'waiting_for_worker_processing';
-const previewPageSize = 25;
-const previewExportPageSize = 100;
+const previewPageSize = dataListPagination.defaultPageSize;
 function isTerminalTaskStatus(status: TaskSummaryV2['workerStatus'] | undefined): boolean {
   return Boolean(
     status && ['completed', 'blocked', 'stale', 'failed', 'cancelled'].includes(status),
@@ -191,7 +188,7 @@ export function scopeSelectionKey(
 }
 
 export function parseDataProcessingDeepLink(search: string): {
-  activeTabKey: 'builds' | 'preview' | 'publication';
+  activeTabKey: 'builds' | 'preview' | 'exports' | 'publication';
   packageId?: string;
   processId?: string;
   processVersion?: string;
@@ -201,7 +198,7 @@ export function parseDataProcessingDeepLink(search: string): {
 } {
   const params = new URLSearchParams(search);
   const activeTabKey = resolveRouteViewState('data-processing-tab', params.get('tab')) as
-    'builds' | 'preview' | 'publication';
+    'builds' | 'preview' | 'exports' | 'publication';
   const value = (name: string) => params.get(name)?.trim() || undefined;
   return {
     activeTabKey,
@@ -212,170 +209,6 @@ export function parseDataProcessingDeepLink(search: string): {
     resultBuildId: value('resultBuildId'),
     resultSetId: value('resultSetId'),
   };
-}
-
-export function deriveResultSetWorkflowSummary(
-  resultSetId: string,
-  tasks: TaskSummaryV2[],
-  publications: LciaResultPublication[],
-): ResultSetWorkflowSummary {
-  const related = tasks
-    .filter((task) => task.resultSetId === resultSetId)
-    .sort((left, right) => right.projectionUpdatedAt.localeCompare(left.projectionUpdatedAt));
-  const closures = related.filter((task) => task.jobKind === 'lcia.scope_closure_check');
-  const builds = related.filter((task) => task.jobKind === 'lcia_result.package_build');
-  const latestClosure = closures[0];
-  const latestBuild = builds[0];
-  const packageIds = new Set(
-    builds.map((task) => task.resultPackageId).filter((value): value is string => Boolean(value)),
-  );
-  const currentPublication = publications.find(
-    (publication) =>
-      (publication.status === 'published' ||
-        publication.status === 'current' ||
-        publication.isCurrent === true) &&
-      Boolean(publication.packageId && packageIds.has(publication.packageId)),
-  );
-
-  const closureStatus: ResultSetWorkflowSummary['closureStatus'] = !latestClosure
-    ? 'not_checked'
-    : latestClosure.workerStatus === 'failed' || latestClosure.workerStatus === 'cancelled'
-      ? 'failed'
-      : latestClosure.runState === 'active' ||
-          latestClosure.workerStatus === 'queued' ||
-          latestClosure.workerStatus === 'running' ||
-          latestClosure.workerStatus === 'waiting'
-        ? 'checking'
-        : latestClosure.domainStatus === 'passed' && latestClosure.domainValidity === 'valid'
-          ? 'ready'
-          : 'needs_attention';
-  const buildStatus: ResultSetWorkflowSummary['buildStatus'] = !latestBuild
-    ? 'not_started'
-    : latestBuild.workerStatus === 'failed' || latestBuild.workerStatus === 'cancelled'
-      ? 'failed'
-      : latestBuild.resultPackageId
-        ? 'ready'
-        : latestBuild.runState === 'active' ||
-            latestBuild.workerStatus === 'queued' ||
-            latestBuild.workerStatus === 'running' ||
-            latestBuild.workerStatus === 'waiting'
-          ? 'running'
-          : 'failed';
-
-  if (currentPublication?.packageId) {
-    return {
-      closureStatus,
-      buildStatus,
-      publicationStatus: 'published',
-      nextAction: 'view_publication',
-      closureCheckId: latestClosure?.closureCheckId,
-      packageId: currentPublication.packageId,
-    };
-  }
-  if (latestBuild?.resultPackageId) {
-    return {
-      closureStatus,
-      buildStatus,
-      publicationStatus: 'not_published',
-      nextAction: 'preview',
-      closureCheckId: latestClosure?.closureCheckId,
-      packageId: latestBuild.resultPackageId,
-    };
-  }
-  if (
-    latestBuild?.runState === 'active' ||
-    latestBuild?.workerStatus === 'queued' ||
-    latestBuild?.workerStatus === 'running' ||
-    latestBuild?.workerStatus === 'waiting'
-  ) {
-    return {
-      closureStatus,
-      buildStatus,
-      publicationStatus: 'not_published',
-      nextAction: 'view_build',
-      closureCheckId: latestClosure?.closureCheckId,
-    };
-  }
-  if (closureStatus === 'ready') {
-    return {
-      closureStatus,
-      buildStatus,
-      publicationStatus: 'not_published',
-      nextAction: 'start_build',
-      closureCheckId: latestClosure?.closureCheckId,
-    };
-  }
-  if (latestClosure) {
-    return {
-      closureStatus,
-      buildStatus,
-      publicationStatus: 'not_published',
-      nextAction: 'view_closure',
-      closureCheckId: latestClosure.closureCheckId,
-    };
-  }
-  return {
-    closureStatus,
-    buildStatus,
-    publicationStatus: 'not_published',
-    nextAction: 'start_closure',
-  };
-}
-
-export function resultSetStatusMessage(
-  translate: (id: string, defaultMessage: string) => string,
-  kind: 'closure' | 'build' | 'publication',
-  value: string,
-): string {
-  switch (`${kind}:${value}`) {
-    case 'closure:not_checked':
-      return translate('pages.dataProcessing.resultSets.closure.notChecked', 'Not checked');
-    case 'closure:checking':
-      return translate('pages.dataProcessing.resultSets.closure.checking', 'Checking');
-    case 'closure:needs_attention':
-      return translate('pages.dataProcessing.resultSets.closure.needsAttention', 'Needs attention');
-    case 'closure:ready':
-      return translate('pages.dataProcessing.resultSets.closure.ready', 'Ready to calculate');
-    case 'closure:failed':
-      return translate('pages.dataProcessing.resultSets.closure.failed', 'Check failed');
-    case 'build:not_started':
-      return translate('pages.dataProcessing.resultSets.build.notStarted', 'Not calculated');
-    case 'build:running':
-      return translate('pages.dataProcessing.resultSets.build.running', 'Calculating');
-    case 'build:ready':
-      return translate('pages.dataProcessing.resultSets.build.ready', 'Ready to preview');
-    case 'build:failed':
-      return translate('pages.dataProcessing.resultSets.build.failed', 'Calculation failed');
-    case 'publication:not_published':
-      return translate('pages.dataProcessing.resultSets.publication.notPublished', 'Not published');
-    case 'publication:published':
-      return translate('pages.dataProcessing.resultSets.publication.published', 'Published');
-    default:
-      return value;
-  }
-}
-
-export function resultSetActionMessage(
-  translate: (id: string, defaultMessage: string) => string,
-  action: ResultSetNextAction,
-): string {
-  switch (action) {
-    case 'start_closure':
-      return translate('pages.dataProcessing.resultSets.action.startClosure', 'Start check');
-    case 'view_closure':
-      return translate('pages.dataProcessing.resultSets.action.viewClosure', 'View check');
-    case 'start_build':
-      return translate('pages.dataProcessing.resultSets.action.startBuild', 'Start calculation');
-    case 'view_build':
-      return translate('pages.dataProcessing.resultSets.action.viewBuild', 'View progress');
-    case 'preview':
-      return translate('pages.dataProcessing.resultSets.action.preview', 'Preview result');
-    case 'view_publication':
-      return translate(
-        'pages.dataProcessing.resultSets.action.viewPublication',
-        'View publication',
-      );
-  }
 }
 
 export function stringifyCommandData(value: unknown): string {
@@ -611,38 +444,6 @@ function processDetailHref(processId: string, processVersion: string): string {
   return `/mydata/processes?${params.toString()}`;
 }
 
-function escapeHtml(value: unknown): string {
-  return stringifyCommandData(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function downloadHtmlTableAsExcel(
-  filename: string,
-  headers: string[],
-  rows: Array<Array<unknown>>,
-): void {
-  const tableHeader = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('');
-  const tableRows = rows
-    .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`)
-    .join('');
-  const html = `\uFEFF<html><head><meta charset="utf-8" /></head><body><table><thead><tr>${tableHeader}</tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
-  const blob = new Blob([html], {
-    type: 'application/vnd.ms-excel;charset=utf-8',
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
 function lineFromSnapshotOutput(stdoutTail: unknown, prefix: string): string | undefined {
   if (typeof stdoutTail !== 'string') {
     return undefined;
@@ -809,6 +610,19 @@ const DataProcessing = () => {
   const [commandStatus, setCommandStatus] = useState<CommandStatus | null>(null);
   const [submittingAction, setSubmittingAction] = useState<CommandAction | null>(null);
   const commandSequenceRef = useRef(0);
+  const createResultSetInFlightRef = useRef(false);
+  const [resultProcess, setResultProcess] = useState<{
+    id: string;
+    version: string;
+    name?: string;
+  } | null>(null);
+  useEffect(() => {
+    setResultProcess(
+      deepLink.processId && deepLink.processVersion
+        ? { id: deepLink.processId, version: deepLink.processVersion }
+        : null,
+    );
+  }, [deepLink.resultSetId, deepLink.packageId, deepLink.processId, deepLink.processVersion]);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
   const dataProductTasks = useSyncExternalStore(
@@ -871,7 +685,13 @@ const DataProcessing = () => {
     deepLink.packageId,
   );
   const [previewImpactCategoryId, setPreviewImpactCategoryId] = useState<string | undefined>();
-  const [exportingPreview, setExportingPreview] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const resultSetLoadGeneration = useRef(0);
+  const previewReadGeneration = useRef(0);
+  const previewPageSizeRef = useRef(previewPageSize);
+  const previewRouteKey = `${deepLink.resultSetId ?? ''}:${deepLink.packageId ?? ''}`;
+  const previewRouteRef = useRef(previewRouteKey);
+  previewRouteRef.current = previewRouteKey;
   const [buildJobsLoading, setBuildJobsLoading] = useState(false);
   const [buildJobsError, setBuildJobsError] = useState<string | null>(null);
   const [publications, setPublications] = useState<LciaResultPublication[]>([]);
@@ -1014,11 +834,13 @@ const DataProcessing = () => {
   }, []);
 
   const loadResultSets = useCallback(async () => {
+    const generation = ++resultSetLoadGeneration.current;
     setResultSetsLoading(true);
     setResultSetsError(null);
     setResultSetContextError(null);
     try {
       const result = await listLciaResultSets(200);
+      if (!mountedRef.current || generation !== resultSetLoadGeneration.current) return;
       if (result.error || !result.data) {
         setResultSets([]);
         setResultSetsError(result.error?.message ?? 'Unable to load result sets.');
@@ -1030,6 +852,7 @@ const DataProcessing = () => {
         !rows.some((resultSet) => resultSet.resultSetId === deepLink.resultSetId)
       ) {
         const linkedResult = await getLciaResultSet(deepLink.resultSetId);
+        if (!mountedRef.current || generation !== resultSetLoadGeneration.current) return;
         if (linkedResult.data) {
           rows = [linkedResult.data, ...rows];
         } else {
@@ -1040,10 +863,12 @@ const DataProcessing = () => {
       }
       setResultSets(rows);
     } catch (error) {
+      if (!mountedRef.current || generation !== resultSetLoadGeneration.current) return;
       setResultSets([]);
       setResultSetsError(error instanceof Error ? error.message : String(error));
     } finally {
-      setResultSetsLoading(false);
+      if (mountedRef.current && generation === resultSetLoadGeneration.current)
+        setResultSetsLoading(false);
     }
   }, [deepLink.resultSetId]);
 
@@ -1242,10 +1067,10 @@ const DataProcessing = () => {
       closureTasks
         .filter((task) => Boolean(task.closureCheckId))
         .map((task) => ({
-          label: `${formatTimestamp(task.updatedAt)} · ${task.domainStatus ?? task.workerStatus}`,
+          label: `${formatTimestamp(task.updatedAt)} · ${closureDisplayStatus(task.domainStatus ?? task.workerStatus, t)}`,
           value: task.closureCheckId as string,
         })),
-    [closureTasks],
+    [closureTasks, t],
   );
 
   useEffect(() => {
@@ -1347,10 +1172,6 @@ const DataProcessing = () => {
           workerJob?.worker_job_id,
         ),
       );
-      return rows;
-    }
-
-    if (action === 'previewPackage') {
       return rows;
     }
 
@@ -1458,6 +1279,11 @@ const DataProcessing = () => {
       return;
     }
 
+    if (action === 'previewPackage') {
+      // Read state belongs to the result panel, including partially loaded responses.
+      setCommandStatus(null);
+      return;
+    }
     setCommandStatus({
       kind: 'success',
       message: commandSuccessMessage(action, result.data),
@@ -1473,11 +1299,13 @@ const DataProcessing = () => {
     setSubmittingAction(action);
     try {
       const result = await command();
-      if (!isCurrent()) return null;
+      if (!mountedRef.current || commandSequence !== commandSequenceRef.current || !isCurrent())
+        return null;
       showResult(action, result);
       return result;
     } catch (error) {
-      if (!isCurrent()) return null;
+      if (!mountedRef.current || commandSequence !== commandSequenceRef.current || !isCurrent())
+        return null;
       setCommandStatus({
         kind: 'error',
         message: error instanceof Error ? error.message : String(error),
@@ -1491,7 +1319,7 @@ const DataProcessing = () => {
   const navigateToResultSet = (
     resultSetId: string,
     options: {
-      tab?: 'builds' | 'preview' | 'publication';
+      tab?: 'builds' | 'preview' | 'exports' | 'publication';
       closureCheckId?: string;
       packageId?: string;
     } = {},
@@ -1500,43 +1328,71 @@ const DataProcessing = () => {
     const searchParams = new URLSearchParams(location.search);
     searchParams.set('resultSetId', resultSetId);
     searchParams.set('tab', tab);
-    ['closureCheckId', 'packageId', 'resultBuildId'].forEach((key) => searchParams.delete(key));
+    ['closureCheckId', 'packageId', 'resultBuildId', 'processId', 'processVersion'].forEach((key) =>
+      searchParams.delete(key),
+    );
     if (options.closureCheckId) searchParams.set('closureCheckId', options.closureCheckId);
     if (options.packageId) searchParams.set('packageId', options.packageId);
+    previewReadGeneration.current++;
+    commandSequenceRef.current++;
+    setSubmittingAction(null);
     setActiveTabKey(tab);
     setSelectedPackageId(options.packageId);
     setPreviewData(null);
+    setResultProcess(null);
     setCommandStatus(null);
     activateClosureCheckId(options.closureCheckId);
     closureCheckRef.current = null;
     setClosureCheck(null);
     setClosureSelectionKey(null);
-    history.replace({ pathname: location.pathname, search: `?${searchParams.toString()}` });
+    history.push({ pathname: location.pathname, search: `?${searchParams.toString()}` });
   };
 
   const handleCreateResultSet = async () => {
-    const values = await resultSetForm.validateFields();
-    const result = await runCommand('createResultSet', () => createLciaResultSet(values.name));
-    if (!result?.data || result.error) return;
-    const createdResultSet = result.data as LciaResultSetV1;
-    setResultSets([
-      createdResultSet,
-      ...resultSets.filter((item) => item.resultSetId !== createdResultSet.resultSetId),
-    ]);
-    resultSetForm.resetFields?.();
-    navigateToResultSet(result.data.resultSetId);
+    if (createResultSetInFlightRef.current) return;
+    createResultSetInFlightRef.current = true;
+    try {
+      const values = await resultSetForm.validateFields().catch(() => null);
+      if (!values) return;
+      const result = await runCommand('createResultSet', () => createLciaResultSet(values.name));
+      if (!result?.data || result.error) return;
+      const createdResultSet = result.data as LciaResultSetV1;
+      setResultSets([
+        createdResultSet,
+        ...resultSets.filter((item) => item.resultSetId !== createdResultSet.resultSetId),
+      ]);
+      resultSetForm.resetFields?.();
+      setCreateDialogOpen(false);
+      navigateToResultSet(result.data.resultSetId);
+    } finally {
+      createResultSetInFlightRef.current = false;
+    }
   };
 
   const clearResultSetContext = () => {
+    previewReadGeneration.current++;
+    commandSequenceRef.current++;
+    setSubmittingAction(null);
     setActiveTabKey('builds');
     setSelectedPackageId(undefined);
     setPreviewData(null);
+    setResultProcess(null);
     setCommandStatus(null);
     activateClosureCheckId(undefined);
     closureCheckRef.current = null;
     setClosureCheck(null);
     setClosureSelectionKey(null);
-    history.replace({ pathname: location.pathname });
+    const params = new URLSearchParams(location.search);
+    [
+      'resultSetId',
+      'closureCheckId',
+      'packageId',
+      'resultBuildId',
+      'processId',
+      'processVersion',
+      'tab',
+    ].forEach((key) => params.delete(key));
+    history.push({ pathname: location.pathname, search: params.size ? `?${params}` : '' });
   };
 
   const handleResultSetAction = (
@@ -1717,8 +1573,11 @@ const DataProcessing = () => {
     options: {
       impactCategoryId?: string;
       rowOffset: number;
+      rowLimit?: number;
     },
   ) => {
+    const generation = ++previewReadGeneration.current;
+    const route = previewRouteRef.current;
     setSelectedPackageId(packageId);
     if (deepLink.resultSetId) {
       const searchParams = new URLSearchParams(location.search);
@@ -1728,15 +1587,26 @@ const DataProcessing = () => {
       history.replace({ pathname: location.pathname, search: `?${searchParams.toString()}` });
     }
     const rowOffset = options.rowOffset;
+    const rowLimit = options.rowLimit ?? previewPageSizeRef.current;
+    previewPageSizeRef.current = rowLimit;
     const impactCategoryId = options.impactCategoryId ?? previewImpactCategoryId;
-    const result = await runCommand('previewPackage', () =>
-      previewLciaResultPackage({
-        packageId,
-        rowOffset,
-        rowLimit: previewPageSize,
-        ...(impactCategoryId ? { impactCategoryId } : {}),
-      }),
+    const result = await runCommand(
+      'previewPackage',
+      () =>
+        previewLciaResultPackage({
+          packageId,
+          rowOffset,
+          rowLimit,
+          ...(impactCategoryId ? { impactCategoryId } : {}),
+        }),
+      () => generation === previewReadGeneration.current && route === previewRouteRef.current,
     );
+    if (
+      !mountedRef.current ||
+      generation !== previewReadGeneration.current ||
+      route !== previewRouteRef.current
+    )
+      return null;
     const nextPreviewData = result?.error
       ? null
       : ((result?.data ?? null) as Record<string, any> | null);
@@ -1752,6 +1622,48 @@ const DataProcessing = () => {
     }
     return result;
   };
+
+  useEffect(() => {
+    setPreviewData(null);
+    previewPageSizeRef.current = previewPageSize;
+    setPreviewImpactCategoryId(undefined);
+    setCommandStatus(null);
+    setSelectedPackageId(deepLink.packageId);
+    if (!isAuthorized || !deepLink.packageId || (deepLink.resultSetId && !selectedResultSet))
+      return;
+    const generation = ++previewReadGeneration.current;
+    let cancelled = false;
+    setSubmittingAction('previewPackage');
+    void previewLciaResultPackage({
+      packageId: deepLink.packageId,
+      rowOffset: 0,
+      rowLimit: previewPageSize,
+    })
+      .then((result) => {
+        if (cancelled || generation !== previewReadGeneration.current) return;
+        setPreviewData(result.error ? null : result.data);
+        setPreviewImpactCategoryId(
+          result.error
+            ? undefined
+            : firstString(
+                isRecord(result.data?.detailPage) && result.data.detailPage.impactCategoryId,
+                isRecord(result.data?.summary) && result.data.summary.defaultImpactCategory,
+              ),
+        );
+        if (result.error) setCommandStatus({ kind: 'error', message: result.error.message });
+      })
+      .catch((error) => {
+        if (!cancelled && generation === previewReadGeneration.current)
+          setCommandStatus({ kind: 'error', message: String(error) });
+      })
+      .finally(() => {
+        if (!cancelled && generation === previewReadGeneration.current) setSubmittingAction(null);
+      });
+    return () => {
+      cancelled = true;
+      previewReadGeneration.current++;
+    };
+  }, [isAuthorized, deepLink.resultSetId, deepLink.packageId, selectedResultSet?.resultSetId]);
 
   const handlePreviewPackage = async () => {
     const values = await previewForm.validateFields();
@@ -1949,164 +1861,65 @@ const DataProcessing = () => {
     />
   );
 
-  const resultSetStatusLabel = (kind: 'closure' | 'build' | 'publication', value: string) => {
-    return resultSetStatusMessage(t, kind, value);
-  };
-
-  const resultSetActionLabel = (action: ResultSetNextAction) => {
-    return resultSetActionMessage(t, action);
-  };
-
-  const renderResultSetWorkspace = () => (
-    <Card
-      className={styles.resultSetWorkspace}
-      title={t('pages.dataProcessing.resultSets.title', 'Result sets')}
-      extra={
-        <Button onClick={loadResultSets} loading={resultSetsLoading}>
-          {t('pages.dataProcessing.resultSets.refresh', 'Refresh')}
-        </Button>
-      }
-    >
-      <Space orientation='vertical' size='middle' className={styles.resultSetWorkspaceContent}>
-        <Typography.Text type='secondary'>
-          {t(
-            'pages.dataProcessing.resultSets.description',
-            'Create a named result set before starting an asynchronous check. Return here at any time to continue its current step.',
-          )}
-        </Typography.Text>
+  const isWorkspace = Boolean(
+    deepLink.resultSetId || deepLink.closureCheckId || deepLink.packageId,
+  );
+  const renderResultSetWorkspace = () =>
+    isWorkspace ? (
+      <Space orientation='vertical' className={styles.resultSetWorkspaceContent}>
         <div className={styles.resultSetToolbar}>
-          <Form form={resultSetForm} layout='inline' className={styles.resultSetCreateForm}>
-            <Form.Item
-              className={styles.resultSetCreateFormItem}
-              name='name'
-              rules={[
-                {
-                  required: true,
-                  message: t(
-                    'pages.dataProcessing.validation.packageNameRequired',
-                    'Result set name is required',
-                  ),
-                },
-              ]}
-            >
-              <Input
-                aria-label={t('pages.dataProcessing.resultSets.newName', 'New result set name')}
-                className={styles.resultSetCreateInput}
-                maxLength={200}
-                placeholder={t(
-                  'pages.dataProcessing.resultSets.namePlaceholder',
-                  'Name this result set',
-                )}
-              />
-            </Form.Item>
-            <Button
-              type='primary'
-              icon={<PlusOutlined />}
-              loading={submittingAction === 'createResultSet'}
-              onClick={handleCreateResultSet}
-            >
-              {t('pages.dataProcessing.resultSets.create', 'Create result set')}
+          <Space wrap>
+            <Button icon={<ArrowLeftOutlined />} onClick={clearResultSetContext}>
+              {t('pages.dataProcessing.resultSets.backToList', 'Back to result sets')}
             </Button>
-          </Form>
+            <Typography.Title
+              level={4}
+              className={styles.workspaceTitle}
+              data-testid={
+                selectedResultSet ? `data-processing-result-set-${deepLink.resultSetId}` : undefined
+              }
+            >
+              {selectedResultSet?.name ?? t('pages.dataProcessing.resultSets.title', 'Result sets')}
+            </Typography.Title>
+          </Space>
           <Select
             aria-label={t('pages.dataProcessing.resultSets.select', 'Current result set')}
             className={styles.resultSetSelector}
             value={deepLink.resultSetId}
-            allowClear
             showSearch={{ optionFilterProp: 'label' }}
             options={resultSetOptions}
-            placeholder={t(
-              'pages.dataProcessing.resultSets.selectPlaceholder',
-              'Select an existing result set',
-            )}
-            onChange={(resultSetId) => {
-              if (!resultSetId) {
-                clearResultSetContext();
-                return;
-              }
-              const resultSet = resultSets.find((item) => item.resultSetId === resultSetId);
+            onChange={(id) => {
+              const resultSet = resultSets.find((item) => item.resultSetId === id);
               if (resultSet) handleResultSetAction(resultSet);
             }}
           />
         </div>
-        {resultSetsError ? <Alert type='error' title={resultSetsError} /> : null}
-        {resultSetContextError ? (
+        {resultSetContextError || resultSetsError ? (
           <Alert
             type='error'
-            title={resultSetContextError}
+            title={resultSetContextError ?? resultSetsError}
             action={
-              <Button size='small' onClick={clearResultSetContext}>
-                {t('pages.dataProcessing.resultSets.backToList', 'Back to result sets')}
+              <Button onClick={loadResultSets}>
+                {t('pages.dataProcessing.resultSets.refresh', 'Refresh')}
               </Button>
             }
           />
         ) : null}
-        <Spin spinning={resultSetsLoading}>
-          {resultSets.length === 0 && !resultSetsLoading ? (
-            <div className={styles.resultSetEmpty}>
-              <Typography.Text strong>
-                {t('pages.dataProcessing.resultSets.emptyTitle', 'No result sets yet')}
-              </Typography.Text>
-              <Typography.Text type='secondary'>
-                {t(
-                  'pages.dataProcessing.resultSets.emptyDescription',
-                  'Create the first result set to begin a completeness check.',
-                )}
-              </Typography.Text>
-            </div>
-          ) : (
-            <div className={styles.resultSetList} role='list'>
-              {resultSets.map((resultSet) => {
-                const summary = deriveResultSetWorkflowSummary(
-                  resultSet.resultSetId,
-                  dataProductTasks,
-                  publications,
-                );
-                const selected = resultSet.resultSetId === deepLink.resultSetId;
-                return (
-                  <section
-                    key={resultSet.resultSetId}
-                    className={`${styles.resultSetRow} ${selected ? styles.resultSetRowSelected : ''}`}
-                    data-testid={`data-processing-result-set-${resultSet.resultSetId}`}
-                    role='listitem'
-                  >
-                    <div className={styles.resultSetIdentity}>
-                      <Typography.Text strong ellipsis={{ tooltip: resultSet.name }}>
-                        {resultSet.name}
-                      </Typography.Text>
-                      <Typography.Text type='secondary'>
-                        {formatTimestamp(resultSet.createdAt)}
-                      </Typography.Text>
-                    </div>
-                    <div className={styles.resultSetStatuses}>
-                      <Tag>
-                        {`${t('pages.dataProcessing.resultSets.status.closure', 'Completeness')}: ${resultSetStatusLabel('closure', summary.closureStatus)}`}
-                      </Tag>
-                      <Tag>
-                        {`${t('pages.dataProcessing.resultSets.status.build', 'Calculation')}: ${resultSetStatusLabel('build', summary.buildStatus)}`}
-                      </Tag>
-                      <Tag
-                        color={summary.publicationStatus === 'published' ? 'success' : undefined}
-                      >
-                        {resultSetStatusLabel('publication', summary.publicationStatus)}
-                      </Tag>
-                    </div>
-                    <Button
-                      type={selected ? 'default' : 'primary'}
-                      icon={<ArrowRightOutlined />}
-                      onClick={() => handleResultSetAction(resultSet, summary)}
-                    >
-                      {resultSetActionLabel(summary.nextAction)}
-                    </Button>
-                  </section>
-                );
-              })}
-            </div>
-          )}
-        </Spin>
       </Space>
-    </Card>
-  );
+    ) : (
+      <ResultSetDirectory
+        resultSets={resultSets}
+        tasks={dataProductTasks}
+        publications={publications}
+        loading={resultSetsLoading}
+        error={resultSetsError}
+        search={location.search}
+        onQueryChange={(search) => history.replace({ pathname: location.pathname, search })}
+        onOpen={handleResultSetAction}
+        onCreate={() => setCreateDialogOpen(true)}
+        onRefresh={loadResultSets}
+      />
+    );
 
   const hasWorkflowContext = deepLink.resultSetId
     ? Boolean(selectedResultSet || resultSetsLoading)
@@ -2135,6 +1948,20 @@ const DataProcessing = () => {
 
   const renderBuildRequests = () => (
     <Space orientation='vertical' size='middle' className={styles.workbenchPanel}>
+      {packageOptions.length > 0 ? (
+        <Alert
+          type='info'
+          title={t(
+            'pages.dataProcessing.resultView.existing',
+            'Calculated results are available. The form below starts a new calculation; existing results remain available in Result preview.',
+          )}
+          action={
+            <Button onClick={() => handleTabChange('preview')}>
+              {t('pages.dataProcessing.resultView.open', 'View results')}
+            </Button>
+          }
+        />
+      ) : null}
       <Card>
         <Form
           form={buildForm}
@@ -2217,22 +2044,28 @@ const DataProcessing = () => {
                     {
                       key: 'status',
                       label: t('pages.dataProcessing.closure.status', 'Check status'),
-                      children: closureCheck.runStatus,
+                      children: closureDisplayStatus(closureCheck.runStatus, t),
                     },
                     {
                       key: 'certificate',
                       label: t('pages.dataProcessing.closure.certificate', 'Certificate'),
-                      children: closureCheck.certificateValidity,
+                      children: closureDisplayStatus(closureCheck.certificateValidity, t),
                     },
                     {
                       key: 'completeness',
                       label: t('pages.dataProcessing.closure.completeness', 'Scan completeness'),
-                      children: closureCheck.scanCompleteness,
+                      children: closureDisplayStatus(closureCheck.scanCompleteness, t),
                     },
                     {
                       key: 'issues',
                       label: t('pages.dataProcessing.closure.issues', 'Issues'),
-                      children: `${closureCheck.blockerCodes?.length ?? 0} blockers`,
+                      children: intl.formatMessage(
+                        {
+                          id: 'pages.dataProcessing.resultView.blockers',
+                          defaultMessage: '{count} blocking issues',
+                        },
+                        { count: closureCheck.blockerCodes?.length ?? 0 },
+                      ),
                     },
                   ]}
                 />
@@ -2311,10 +2144,51 @@ const DataProcessing = () => {
                   ) : null}
                   {closureIssues.map((issue) => (
                     <div key={issue.issueId} data-testid={`closure-issue-${issue.issueId}`}>
-                      <strong>{issue.title}</strong>
-                      <span>{` · ${issue.severity}`}</span>
-                      {issue.summary ? <div>{issue.summary}</div> : null}
-                      {issue.suggestedAction ? <div>{issue.suggestedAction}</div> : null}
+                      <strong>
+                        {issue.code === 'matrix_readiness_singular_risk_medium'
+                          ? t(
+                              'pages.dataProcessing.resultView.matrixReview',
+                              'Review calculation matrix stability',
+                            )
+                          : issue.title}
+                      </strong>
+                      <span>{` · ${closureDisplayStatus(issue.severity, t)}`}</span>
+                      {issue.code === 'matrix_readiness_singular_risk_medium' ? (
+                        <div>
+                          {t(
+                            'pages.dataProcessing.resultView.matrixReviewDetail',
+                            'The preflight detected a medium matrix singularity risk. Review process connections and the issue report; follow the check status before starting calculation.',
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          {issue.summary ? <div>{issue.summary}</div> : null}
+                          {issue.suggestedAction ? <div>{issue.suggestedAction}</div> : null}
+                        </>
+                      )}
+                      <Collapse
+                        size='small'
+                        items={[
+                          {
+                            key: 'diagnostic',
+                            label: t(
+                              'pages.dataProcessing.workspace.evidence',
+                              'Technical evidence',
+                            ),
+                            children: (
+                              <Space orientation='vertical'>
+                                <code>{issue.code}</code>
+                                {issue.code === 'matrix_readiness_singular_risk_medium' ? (
+                                  <>
+                                    <span>{issue.summary}</span>
+                                    <span>{issue.suggestedAction}</span>
+                                  </>
+                                ) : null}
+                              </Space>
+                            ),
+                          },
+                        ]}
+                      />
                     </div>
                   ))}
                   {closureIssuesAfterIssueId ? (
@@ -2365,12 +2239,17 @@ const DataProcessing = () => {
             }
             onClick={handleCreateBuild}
           >
-            {deepLink.resultSetId
+            {packageOptions.length > 0
               ? t(
-                  'pages.dataProcessing.action.calculateFromCheck',
-                  'Use this check to start calculation',
+                  'pages.dataProcessing.resultView.recalculate',
+                  'Start a new calculation with this check',
                 )
-              : t('pages.dataProcessing.action.createBuild', 'Generate result set')}
+              : deepLink.resultSetId
+                ? t(
+                    'pages.dataProcessing.action.calculateFromCheck',
+                    'Use this check to start calculation',
+                  )
+                : t('pages.dataProcessing.action.createBuild', 'Generate result set')}
           </Button>
         </Form>
       </Card>
@@ -2470,7 +2349,8 @@ const DataProcessing = () => {
   const previewResultReady = previewDetailPage.status === 'ready';
   const previewResultUnavailableReason = firstString(previewDetailPage.reason);
   const previewDetailTotal = numberField(previewDetailPage.totalCount);
-  const previewDetailReturned = numberField(previewDetailPage.returnedCount);
+  const previewDetailLimit = numberField(previewDetailPage.limit) || previewPageSizeRef.current;
+  const previewDetailOffset = numberField(previewDetailPage.offset);
   const selectedPreviewPackageId = firstString(previewSummary.packageId, selectedPackageId);
   const selectedPreviewImpactCategoryId = firstString(
     previewDetailPage.impactCategoryId,
@@ -2487,78 +2367,6 @@ const DataProcessing = () => {
   const previewValueTitle = previewValueUnit
     ? `${t('pages.dataProcessing.preview.value', 'Value')} (${previewValueUnit})`
     : t('pages.dataProcessing.preview.value', 'Value');
-
-  const handleExportPreview = async () => {
-    const packageId = selectedPreviewPackageId as string;
-
-    setExportingPreview(true);
-    try {
-      const allRows: Record<string, unknown>[] = [];
-      let rowOffset = 0;
-      let totalRows = previewDetailTotal || Number.MAX_SAFE_INTEGER;
-
-      while (rowOffset < totalRows) {
-        const result = await previewLciaResultPackage({
-          packageId,
-          ...(selectedPreviewImpactCategoryId
-            ? { impactCategoryId: selectedPreviewImpactCategoryId }
-            : {}),
-          rowOffset,
-          rowLimit: previewExportPageSize,
-        });
-
-        if (result.error) {
-          setCommandStatus({
-            kind: 'error',
-            message:
-              result.error.message ??
-              t('pages.dataProcessing.preview.exportFailed', 'Failed to export result details'),
-          });
-          return;
-        }
-
-        const detailPage = isRecord(result.data?.detailPage) ? result.data.detailPage : {};
-        const rows = recordArray(detailPage.rows);
-        const returned = numberField(detailPage.returnedCount) || rows.length;
-        const nextTotal = numberField(detailPage.totalCount);
-        allRows.push(...rows);
-
-        if (nextTotal > 0) {
-          totalRows = nextTotal;
-        }
-        if (returned <= 0 || (nextTotal <= 0 && returned < previewExportPageSize)) {
-          break;
-        }
-        rowOffset += returned;
-      }
-
-      const filenameBase = [packageId, selectedPreviewImpactCategoryId]
-        .filter(Boolean)
-        .join('-')
-        .replace(/[^a-zA-Z0-9._-]+/g, '-');
-      downloadHtmlTableAsExcel(
-        `${filenameBase}.xls`,
-        [
-          '#',
-          t('pages.dataProcessing.preview.processName', 'Process'),
-          t('pages.dataProcessing.preview.processUuid', 'Process UUID'),
-          t('pages.dataProcessing.preview.processVersion', 'Version'),
-          t('pages.dataProcessing.preview.stateCode', 'State code'),
-          previewValueTitle,
-        ],
-        allRows.map((row) => [
-          row.rowNumber,
-          firstString(row.processName, row.processId) ?? '-',
-          firstString(row.processId, row.process_id, row.id) ?? '-',
-          firstString(row.processVersion) ?? '-',
-          stringifyCommandData(row.stateCode),
-          formatNumericValue(row.value),
-        ]),
-      );
-    } finally {
-      setExportingPreview(false);
-    }
-  };
 
   const previewDetailColumns = [
     {
@@ -2599,56 +2407,44 @@ const DataProcessing = () => {
       width: 120,
     },
     {
-      title: t('pages.dataProcessing.preview.stateCode', 'State code'),
-      dataIndex: 'stateCode',
-      key: 'stateCode',
-      width: 120,
-      render: stringifyCommandData,
-    },
-    {
       title: previewValueTitle,
       dataIndex: 'value',
       key: 'value',
       width: 140,
-      render: formatNumericValue,
+      render: (value: unknown) =>
+        value === null || value === undefined || value === ''
+          ? t('pages.dataProcessing.preview.valueUnavailable', 'Unavailable')
+          : formatBundleNumber(Number(value)),
+    },
+    {
+      title: t('pages.dataProcessing.resultView.details', 'Result details'),
+      key: 'details',
+      width: 120,
+      render: (_: unknown, row: Record<string, unknown>) => (
+        <Button
+          type='link'
+          size='small'
+          disabled={!firstString(row.processId) || !firstString(row.processVersion)}
+          onClick={() =>
+            setResultProcess({
+              id: String(row.processId),
+              version: String(row.processVersion),
+              name: firstString(row.processName),
+            })
+          }
+        >
+          {t('pages.dataProcessing.resultView.open', 'View results')}
+        </Button>
+      ),
     },
   ];
 
-  const renderPreviewPager = (
-    page: Record<string, unknown>,
-    total: number,
-    returned: number,
-    onOffsetChange: (offset: number) => void,
-  ) => {
-    const offset = numberField(page.offset);
-    const limit = numberField(page.limit) || previewPageSize;
-    const start = total === 0 ? 0 : offset + 1;
-    const end = total === 0 ? 0 : offset + returned;
-    const canPrevious = offset > 0;
-    const canNext = offset + returned < total;
-
-    return (
-      <Space size='small' className={styles.previewPager}>
-        <Button
-          size='small'
-          disabled={!canPrevious}
-          onClick={() => onOffsetChange(Math.max(0, offset - limit))}
-        >
-          {t('pages.dataProcessing.preview.previousPage', 'Previous')}
-        </Button>
-        <span>{`${start}-${end} / ${total}`}</span>
-        <Button size='small' disabled={!canNext} onClick={() => onOffsetChange(offset + limit)}>
-          {t('pages.dataProcessing.preview.nextPage', 'Next')}
-        </Button>
-      </Space>
-    );
-  };
-
-  const reloadPreviewDetailPage = (rowOffset: number) => {
+  const reloadPreviewDetailPage = (rowOffset: number, rowLimit = previewDetailLimit) => {
     if (selectedPreviewPackageId) {
       void previewPackageById(selectedPreviewPackageId, {
         impactCategoryId: previewImpactCategoryId,
         rowOffset,
+        rowLimit,
       });
     }
   };
@@ -2676,167 +2472,78 @@ const DataProcessing = () => {
 
   const renderPackagePreview = () => (
     <Space orientation='vertical' size='middle' className={styles.workbenchPanel}>
-      <Card>
-        <Form form={previewForm}>
-          <Form.Item
-            label={t('pages.dataProcessing.form.previewPackageId', 'Select result set')}
-            name='packageId'
-            help={
-              packageOptions.length === 0
-                ? t(
-                    'pages.dataProcessing.form.packageSelect.empty',
-                    'No preview-ready result set yet. Refresh tasks or wait for the worker to complete.',
-                  )
-                : undefined
-            }
-            rules={[
-              {
-                required: true,
-                message: t(
-                  'pages.dataProcessing.validation.packageIdRequired',
-                  'Result set is required',
-                ),
-              },
-            ]}
-          >
-            {renderPackageSelect(
-              t('pages.dataProcessing.form.previewPackageId', 'Select result set'),
-            )}
-          </Form.Item>
-          <Button
-            type='primary'
-            disabled={
-              packageOptions.length === 0 || Boolean(deepLink.resultSetId && !selectedResultSet)
-            }
-            loading={submittingAction === 'previewPackage'}
-            onClick={handlePreviewPackage}
-          >
-            {t('pages.dataProcessing.action.previewPackage', 'Preview result set')}
-          </Button>
-        </Form>
-      </Card>
+      {!previewData?.summary || packageOptions.length > 1 ? (
+        <Card>
+          <Form form={previewForm}>
+            <Form.Item
+              label={t('pages.dataProcessing.workspace.version', 'Calculation version')}
+              name='packageId'
+              help={
+                packageOptions.length === 0
+                  ? t(
+                      'pages.dataProcessing.form.packageSelect.empty',
+                      'No preview-ready result set yet. Refresh tasks or wait for the worker to complete.',
+                    )
+                  : undefined
+              }
+              rules={[
+                {
+                  required: true,
+                  message: t(
+                    'pages.dataProcessing.validation.packageIdRequired',
+                    'Result set is required',
+                  ),
+                },
+              ]}
+            >
+              {renderPackageSelect(
+                t('pages.dataProcessing.workspace.version', 'Calculation version'),
+              )}
+            </Form.Item>
+            <Button
+              type='primary'
+              disabled={
+                packageOptions.length === 0 || Boolean(deepLink.resultSetId && !selectedResultSet)
+              }
+              loading={submittingAction === 'previewPackage'}
+              onClick={handlePreviewPackage}
+            >
+              {t('pages.dataProcessing.workspace.loadVersion', 'Load calculation version')}
+            </Button>
+          </Form>
+        </Card>
+      ) : null}
       {previewData ? (
         <Space orientation='vertical' size='middle' className={styles.previewDetails}>
-          <Card title={t('pages.dataProcessing.preview.summaryTitle', 'Result set overview')}>
-            <Descriptions
-              bordered
-              size='small'
-              column={1}
-              items={[
-                {
-                  key: 'package-id',
-                  label: t('pages.dataProcessing.preview.packageId', 'Result set ID'),
-                  children: stringifyCommandData(previewSummary.packageId),
-                },
-                {
-                  key: 'package-version',
-                  label: t('pages.dataProcessing.preview.packageVersion', 'Result set version'),
-                  children: stringifyCommandData(previewSummary.packageVersion),
-                },
-                {
-                  key: 'status',
-                  label: t('pages.dataProcessing.preview.status', 'Status'),
-                  children: stringifyCommandData(previewSummary.status),
-                },
-                {
-                  key: 'coverage-mode',
-                  label: t('pages.dataProcessing.preview.coverageMode', 'Coverage mode'),
-                  children: stringifyCommandData(previewSummary.coverageMode),
-                },
-                {
-                  key: 'default-impact-category',
-                  label: t(
-                    'pages.dataProcessing.preview.defaultImpactCategory',
-                    'Default impact category',
-                  ),
-                  children: stringifyCommandData(previewSummary.defaultImpactCategory),
-                },
-                {
-                  key: 'input-manifest-hash',
-                  label: t('pages.dataProcessing.preview.inputManifestHash', 'Input manifest hash'),
-                  children: stringifyCommandData(previewSummary.inputManifestHash),
-                },
-                {
-                  key: 'included-inputs',
-                  label: t('pages.dataProcessing.preview.includedInputs', 'Included inputs'),
-                  children: stringifyCommandData(previewSummary.includedInputCount),
-                },
-                {
-                  key: 'eligible-inputs',
-                  label: t('pages.dataProcessing.preview.eligibleInputs', 'Eligible inputs'),
-                  children: stringifyCommandData(previewSummary.eligibleInputCount),
-                },
-                {
-                  key: 'impact-categories',
-                  label: t(
-                    'pages.dataProcessing.preview.impactCategories',
-                    'Impact category count',
-                  ),
-                  children: Array.isArray(previewSummary.availableImpactCategories)
-                    ? previewSummary.availableImpactCategories.length
-                    : '-',
-                },
-              ]}
-            />
-          </Card>
-          <CalculationBundlePanel
-            packageId={selectedPreviewPackageId as string}
-            initialProcessId={deepLink.processId}
-            initialProcessVersion={deepLink.processVersion}
-          />
-          <Card title={t('pages.dataProcessing.preview.inputScopeTitle', 'Input scope')}>
-            <Descriptions
-              bordered
-              size='small'
-              column={1}
-              items={[
-                {
-                  key: 'process-count',
-                  label: t('pages.dataProcessing.preview.processCount', 'Process count'),
-                  children: previewProcessCount,
-                },
-                {
-                  key: 'selection-mode',
-                  label: t('pages.dataProcessing.preview.selectionMode', 'Selection mode'),
-                  children: stringifyCommandData(previewSelectionMode),
-                },
-                {
-                  key: 'predicate-version',
-                  label: t('pages.dataProcessing.preview.predicateVersion', 'Predicate version'),
-                  children: stringifyCommandData(previewPredicateVersion),
-                },
-                {
-                  key: 'state-codes',
-                  label: t('pages.dataProcessing.preview.stateCodes', 'State codes'),
-                  children: (
-                    <div className={styles.previewTags}>
-                      {previewStateCodeCounts.map((item) => (
-                        <span key={item.stateCode}>{`${item.stateCode}: ${item.count}`}</span>
-                      ))}
-                    </div>
-                  ),
-                },
-              ]}
-            />
-          </Card>
+          <Drawer
+            title={t('pages.dataProcessing.resultView.title', 'Process results')}
+            open={Boolean(resultProcess)}
+            onClose={() => setResultProcess(null)}
+            size='large'
+            destroyOnHidden
+          >
+            {resultProcess ? (
+              <CalculationBundlePanel
+                key={`${getDataProductTaskOwnerId()}:${selectedPreviewPackageId}:${resultProcess.id}:${resultProcess.version}`}
+                packageId={selectedPreviewPackageId as string}
+                view='results'
+                initialProcessId={resultProcess.id}
+                initialProcessVersion={resultProcess.version}
+                processName={resultProcess.name}
+              />
+            ) : null}
+          </Drawer>
           <Card
             title={t('pages.dataProcessing.preview.resultDetailsTitle', 'Result details')}
             extra={
               <Space size='small' className={styles.previewResultActions}>
-                {renderPreviewPager(
-                  previewDetailPage,
-                  previewDetailTotal,
-                  previewDetailReturned,
-                  reloadPreviewDetailPage,
-                )}
                 <Button
                   size='small'
                   icon={<DownloadOutlined />}
-                  loading={exportingPreview}
                   disabled={!previewResultReady || !selectedPreviewPackageId}
-                  onClick={handleExportPreview}
+                  onClick={() => handleTabChange('exports')}
                 >
-                  {t('pages.dataProcessing.preview.exportExcel', 'Export Excel')}
+                  {t('pages.dataProcessing.workspace.exportAll', 'Export all results')}
                 </Button>
               </Space>
             }
@@ -2854,31 +2561,49 @@ const DataProcessing = () => {
                   onChange={handlePreviewImpactChange}
                 />
               </Space>
-              {previewWarnings.length > 0 ? (
+              {!previewResultReady || previewWarnings.length > 0 ? (
                 <Alert
-                  type='warning'
-                  title={t(
-                    'pages.dataProcessing.preview.warningTitle',
-                    'Some preview data could not be loaded',
-                  )}
-                />
-              ) : null}
-              {!previewResultReady ? (
-                <Alert
-                  type='warning'
+                  type={previewResultReady ? 'warning' : 'error'}
+                  showIcon
                   title={
-                    previewResultUnavailableReason ??
-                    t(
-                      'pages.dataProcessing.preview.resultUnavailable',
-                      'Calculation results are not available for this preview.',
-                    )
+                    previewResultReady
+                      ? t(
+                          'pages.dataProcessing.preview.warningTitle',
+                          'Some preview data could not be loaded',
+                        )
+                      : t(
+                          'pages.dataProcessing.preview.resultUnavailable',
+                          'Calculation results are not available for this preview.',
+                        )
+                  }
+                  action={
+                    <Button
+                      loading={submittingAction === 'previewPackage'}
+                      onClick={() => reloadPreviewDetailPage(previewDetailOffset)}
+                    >
+                      {t('pages.dataProcessing.bundle.retry', 'Retry')}
+                    </Button>
                   }
                 />
               ) : null}
               <div className={styles.previewTableWrap}>
                 <Table
                   size='small'
-                  pagination={false}
+                  loading={submittingAction === 'previewPackage'}
+                  pagination={{
+                    ...dataListPagination,
+                    className: 'result-preview-pagination',
+                    current: Math.floor(previewDetailOffset / previewDetailLimit) + 1,
+                    pageSize: previewDetailLimit,
+                    total: previewDetailTotal,
+                    responsive: true,
+                    disabled: submittingAction === 'previewPackage',
+                    onChange: (page, pageSize) =>
+                      reloadPreviewDetailPage(
+                        pageSize === previewDetailLimit ? (page - 1) * pageSize : 0,
+                        pageSize,
+                      ),
+                  }}
                   rowKey={(row: Record<string, unknown>) =>
                     `${stringifyCommandData(row.processId)}:${stringifyCommandData(
                       row.processVersion,
@@ -2892,68 +2617,230 @@ const DataProcessing = () => {
               </div>
             </Space>
           </Card>
-          <Card
-            title={t(
-              'pages.dataProcessing.preview.artifactVerificationTitle',
-              'Artifact verification',
-            )}
-          >
-            <Descriptions
-              bordered
-              size='small'
-              column={1}
-              items={[
-                {
-                  key: 'manifest-version',
-                  label: t(
-                    'pages.dataProcessing.preview.artifactManifestVersion',
-                    'Manifest version',
-                  ),
-                  children: stringifyCommandData(previewArtifactManifest.artifactManifestVersion),
-                },
-                {
-                  key: 'storage',
-                  label: t('pages.dataProcessing.preview.storage', 'Storage'),
-                  children: previewArtifactStorage || '-',
-                },
-                {
-                  key: 'snapshot-id',
-                  label: t('pages.dataProcessing.preview.snapshotId', 'Snapshot ID'),
-                  children: stringifyCommandData(previewSnapshotBuilder.resolved_snapshot_id),
-                },
-                {
-                  key: 'snapshot-matrix',
-                  label: t('pages.dataProcessing.preview.snapshotMatrix', 'Snapshot matrix'),
-                  children: stringifyCommandData(previewMatrixSummary),
-                },
-                {
-                  key: 'snapshot-coverage',
-                  label: t('pages.dataProcessing.preview.snapshotCoverage', 'Snapshot coverage'),
-                  children: stringifyCommandData(previewCoverageSummary),
-                },
-                {
-                  key: 'artifacts',
-                  label: t('pages.dataProcessing.preview.artifacts', 'Artifacts'),
-                  children: (
-                    <Space
-                      orientation='vertical'
-                      size='small'
-                      className={styles.previewArtifactList}
+          <Collapse
+            items={[
+              {
+                key: 'evidence',
+                label: t('pages.dataProcessing.workspace.evidence', 'Technical evidence'),
+                children: (
+                  <Space orientation='vertical' className={styles.previewDetails}>
+                    {previewResultUnavailableReason || previewWarnings.length > 0 ? (
+                      <pre className={styles.previewDiagnostics}>
+                        {JSON.stringify(
+                          {
+                            reason: previewResultUnavailableReason,
+                            warnings: previewWarnings,
+                          },
+                          null,
+                          2,
+                        )}
+                      </pre>
+                    ) : null}
+                    <Card title={t('pages.dataProcessing.preview.inputScopeTitle', 'Input scope')}>
+                      <Descriptions
+                        bordered
+                        size='small'
+                        column={1}
+                        items={[
+                          {
+                            key: 'process-count',
+                            label: t('pages.dataProcessing.preview.processCount', 'Process count'),
+                            children: previewProcessCount,
+                          },
+                          {
+                            key: 'selection-mode',
+                            label: t(
+                              'pages.dataProcessing.preview.selectionMode',
+                              'Selection mode',
+                            ),
+                            children: stringifyCommandData(previewSelectionMode),
+                          },
+                          {
+                            key: 'predicate-version',
+                            label: t(
+                              'pages.dataProcessing.preview.predicateVersion',
+                              'Predicate version',
+                            ),
+                            children: stringifyCommandData(previewPredicateVersion),
+                          },
+                          {
+                            key: 'state-codes',
+                            label: t('pages.dataProcessing.preview.stateCodes', 'State codes'),
+                            children: (
+                              <div className={styles.previewTags}>
+                                {previewStateCodeCounts.map((item) => (
+                                  <span
+                                    key={item.stateCode}
+                                  >{`${item.stateCode}: ${item.count}`}</span>
+                                ))}
+                              </div>
+                            ),
+                          },
+                        ]}
+                      />
+                    </Card>
+                    <Card
+                      title={t('pages.dataProcessing.preview.summaryTitle', 'Result set overview')}
                     >
-                      {renderArtifactSummary(
-                        t('pages.dataProcessing.preview.queryArtifact', 'Query artifact'),
-                        previewQueryArtifact,
+                      <Descriptions
+                        bordered
+                        size='small'
+                        column={1}
+                        items={[
+                          {
+                            key: 'package-id',
+                            label: t('pages.dataProcessing.preview.packageId', 'Result set ID'),
+                            children: stringifyCommandData(previewSummary.packageId),
+                          },
+                          {
+                            key: 'package-version',
+                            label: t(
+                              'pages.dataProcessing.preview.packageVersion',
+                              'Result set version',
+                            ),
+                            children: stringifyCommandData(previewSummary.packageVersion),
+                          },
+                          {
+                            key: 'status',
+                            label: t('pages.dataProcessing.preview.status', 'Status'),
+                            children: stringifyCommandData(previewSummary.status),
+                          },
+                          {
+                            key: 'coverage-mode',
+                            label: t('pages.dataProcessing.preview.coverageMode', 'Coverage mode'),
+                            children: stringifyCommandData(previewSummary.coverageMode),
+                          },
+                          {
+                            key: 'default-impact-category',
+                            label: t(
+                              'pages.dataProcessing.preview.defaultImpactCategory',
+                              'Default impact category',
+                            ),
+                            children: stringifyCommandData(previewSummary.defaultImpactCategory),
+                          },
+                          {
+                            key: 'input-manifest-hash',
+                            label: t(
+                              'pages.dataProcessing.preview.inputManifestHash',
+                              'Input manifest hash',
+                            ),
+                            children: stringifyCommandData(previewSummary.inputManifestHash),
+                          },
+                          {
+                            key: 'included-inputs',
+                            label: t(
+                              'pages.dataProcessing.preview.includedInputs',
+                              'Included inputs',
+                            ),
+                            children: stringifyCommandData(previewSummary.includedInputCount),
+                          },
+                          {
+                            key: 'eligible-inputs',
+                            label: t(
+                              'pages.dataProcessing.preview.eligibleInputs',
+                              'Eligible inputs',
+                            ),
+                            children: stringifyCommandData(previewSummary.eligibleInputCount),
+                          },
+                          {
+                            key: 'impact-categories',
+                            label: t(
+                              'pages.dataProcessing.preview.impactCategories',
+                              'Impact category count',
+                            ),
+                            children: Array.isArray(previewSummary.availableImpactCategories)
+                              ? previewSummary.availableImpactCategories.length
+                              : '-',
+                          },
+                        ]}
+                      />
+                    </Card>
+                    <Card
+                      title={t(
+                        'pages.dataProcessing.preview.artifactVerificationTitle',
+                        'Artifact verification',
                       )}
-                      {renderArtifactSummary(
-                        t('pages.dataProcessing.preview.resultArtifact', 'Result artifact'),
-                        previewResultArtifact,
-                      )}
-                    </Space>
-                  ),
-                },
-              ]}
-            />
-          </Card>
+                    >
+                      <Descriptions
+                        bordered
+                        size='small'
+                        column={1}
+                        items={[
+                          {
+                            key: 'manifest-version',
+                            label: t(
+                              'pages.dataProcessing.preview.artifactManifestVersion',
+                              'Manifest version',
+                            ),
+                            children: stringifyCommandData(
+                              previewArtifactManifest.artifactManifestVersion,
+                            ),
+                          },
+                          {
+                            key: 'storage',
+                            label: t('pages.dataProcessing.preview.storage', 'Storage'),
+                            children: previewArtifactStorage || '-',
+                          },
+                          {
+                            key: 'snapshot-id',
+                            label: t('pages.dataProcessing.preview.snapshotId', 'Snapshot ID'),
+                            children: stringifyCommandData(
+                              firstString(
+                                previewSummary.snapshotId,
+                                isRecord(previewArtifactManifest.snapshotSource)
+                                  ? previewArtifactManifest.snapshotSource.snapshotId
+                                  : undefined,
+                                previewSnapshotBuilder.resolved_snapshot_id,
+                              ),
+                            ),
+                          },
+                          {
+                            key: 'snapshot-matrix',
+                            label: t(
+                              'pages.dataProcessing.preview.snapshotMatrix',
+                              'Snapshot matrix',
+                            ),
+                            children: stringifyCommandData(previewMatrixSummary),
+                          },
+                          {
+                            key: 'snapshot-coverage',
+                            label: t(
+                              'pages.dataProcessing.preview.snapshotCoverage',
+                              'Snapshot coverage',
+                            ),
+                            children: stringifyCommandData(previewCoverageSummary),
+                          },
+                          {
+                            key: 'artifacts',
+                            label: t('pages.dataProcessing.preview.artifacts', 'Artifacts'),
+                            children: (
+                              <Space
+                                orientation='vertical'
+                                size='small'
+                                className={styles.previewArtifactList}
+                              >
+                                {renderArtifactSummary(
+                                  t('pages.dataProcessing.preview.queryArtifact', 'Query artifact'),
+                                  previewQueryArtifact,
+                                )}
+                                {renderArtifactSummary(
+                                  t(
+                                    'pages.dataProcessing.preview.resultArtifact',
+                                    'Result artifact',
+                                  ),
+                                  previewResultArtifact,
+                                )}
+                              </Space>
+                            ),
+                          },
+                        ]}
+                      />
+                    </Card>
+                  </Space>
+                ),
+              },
+            ]}
+          />
         </Space>
       ) : null}
     </Space>
@@ -3167,28 +3054,85 @@ const DataProcessing = () => {
         ) : (
           <Space orientation='vertical' size='large' className={styles.pageStack}>
             {renderResultSetWorkspace()}
-            {renderCommandStatus()}
-            <Tabs
-              activeKey={activeTabKey}
-              onChange={handleTabChange}
-              items={[
-                {
-                  key: 'builds',
-                  label: t('pages.dataProcessing.tabs.builds', 'Completeness & Calculation'),
-                  children: renderWorkflowContextRequired(renderBuildRequests()),
-                },
-                {
-                  key: 'preview',
-                  label: t('pages.dataProcessing.tabs.preview', 'Result Preview'),
-                  children: renderWorkflowContextRequired(renderPackagePreview()),
-                },
-                {
-                  key: 'publication',
-                  label: t('pages.dataProcessing.tabs.publication', 'Publication'),
-                  children: renderWorkflowContextRequired(renderPublication()),
-                },
-              ]}
-            />
+            {!createDialogOpen ? renderCommandStatus() : null}
+            {isWorkspace ? (
+              <Tabs
+                activeKey={activeTabKey}
+                onChange={handleTabChange}
+                items={[
+                  {
+                    key: 'builds',
+                    label: t('pages.dataProcessing.tabs.builds', 'Completeness & Calculation'),
+                    children: renderWorkflowContextRequired(renderBuildRequests()),
+                  },
+                  {
+                    key: 'preview',
+                    label: t('pages.dataProcessing.tabs.preview', 'Result Preview'),
+                    children: renderWorkflowContextRequired(renderPackagePreview()),
+                  },
+                  {
+                    key: 'exports',
+                    label: t('pages.dataProcessing.workspace.exports', 'Exports'),
+                    children: renderWorkflowContextRequired(
+                      selectedPackageId ? (
+                        <CalculationBundlePanel
+                          key={selectedPackageId}
+                          packageId={selectedPackageId}
+                          view='exports'
+                          onReviewCalculation={() => handleTabChange('builds')}
+                        />
+                      ) : (
+                        <Alert
+                          type='info'
+                          title={t(
+                            'pages.dataProcessing.workspace.selectVersion',
+                            'Open a completed calculation in Results before exporting.',
+                          )}
+                        />
+                      ),
+                    ),
+                  },
+                  {
+                    key: 'publication',
+                    label: t('pages.dataProcessing.tabs.publication', 'Publication'),
+                    children: renderWorkflowContextRequired(renderPublication()),
+                  },
+                ]}
+              />
+            ) : null}
+            <Modal
+              title={t('pages.dataProcessing.resultSets.create', 'Create result set')}
+              open={createDialogOpen}
+              confirmLoading={submittingAction === 'createResultSet'}
+              onCancel={() => {
+                if (submittingAction !== 'createResultSet') setCreateDialogOpen(false);
+              }}
+              onOk={handleCreateResultSet}
+              okText={t('pages.dataProcessing.resultSets.create', 'Create result set')}
+            >
+              <Form form={resultSetForm} layout='vertical' onFinish={handleCreateResultSet}>
+                <Form.Item
+                  name='name'
+                  label={t('pages.dataProcessing.resultSets.newName', 'New result set name')}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: t(
+                        'pages.dataProcessing.validation.packageNameRequired',
+                        'Result set name is required',
+                      ),
+                    },
+                  ]}
+                >
+                  <Input
+                    aria-label={t('pages.dataProcessing.resultSets.newName', 'New result set name')}
+                    maxLength={200}
+                  />
+                </Form.Item>
+              </Form>
+              {createDialogOpen ? renderCommandStatus() : null}
+            </Modal>
           </Space>
         )}
       </Spin>

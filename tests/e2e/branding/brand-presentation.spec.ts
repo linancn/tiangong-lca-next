@@ -51,7 +51,10 @@ test('brand workspace preserves navigation and shared dataset surfaces', async (
   if (atlas) {
     await expect(page.locator('.atlas-workspace')).toBeVisible();
     await expect(page.locator('.atlas-workspace-action')).toHaveCount(3);
-    await expect(page.locator('.ant-layout-sider')).toHaveCSS('background-color', 'rgb(6, 22, 42)');
+    await expect(page.locator('.ant-pro-layout-header')).toHaveCSS(
+      'background-color',
+      'rgb(0, 21, 41)',
+    );
   } else await expect(page.locator('.atlas-workspace')).toHaveCount(0);
   await expect(page.getByText('Login successful!', { exact: true })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath(`${brand}-workspace.png`), fullPage: true });
@@ -61,6 +64,10 @@ test('brand workspace preserves navigation and shared dataset surfaces', async (
       exact: true,
     });
     await darkToggle.click();
+    await expect(page.locator('.ant-pro-layout-header')).toHaveCSS(
+      'background-color',
+      'rgb(0, 21, 41)',
+    );
     await expect(page.locator('.atlas-workspace-action').first()).toHaveCSS(
       'background-color',
       'rgb(16, 35, 55)',
@@ -70,6 +77,10 @@ test('brand workspace preserves navigation and shared dataset surfaces', async (
       fullPage: true,
     });
     await darkToggle.click();
+    await expect(page.locator('.ant-pro-layout-header')).toHaveCSS(
+      'background-color',
+      'rgb(0, 21, 41)',
+    );
     await expect(page.locator('.atlas-workspace-action').first()).toHaveCSS(
       'background-color',
       'rgb(255, 255, 255)',

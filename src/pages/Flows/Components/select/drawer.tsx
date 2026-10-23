@@ -1,3 +1,16 @@
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import {
+  ResponsiveDataListViewport,
+  dataListMetadataText,
+  dataListTooltipContent,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import {
@@ -16,7 +29,7 @@ import {
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Checkbox, Col, Drawer, Input, Row, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Drawer, Input, Space, Tooltip } from 'antd';
 import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -46,7 +59,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
-  const [openAI, setOpenAI] = useState<boolean>(false);
+  const tgSearch = useSubmittedDatasetSearch();
+  const coSearch = useSubmittedDatasetSearch();
+  const mySearch = useSubmittedDatasetSearch();
+  const teSearch = useSubmittedDatasetSearch();
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType | undefined>(undefined);
   const coActionRefSelect = useRef<ActionType | undefined>(undefined);
@@ -54,6 +70,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const teActionRefSelect = useRef<ActionType | undefined>(undefined);
 
   const intl = useIntl();
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
   const tgRequestEpochRef = useRef(0);
@@ -65,6 +82,19 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     contentLanguageAwareTableParams.contentLanguage,
     [tgRequestEpochRef, coRequestEpochRef, teRequestEpochRef, myRequestEpochRef],
   );
+  const onClassificationChange = (value: DatasetClassificationFilterValue[]) => {
+    tgRequestEpochRef.current += 1;
+    coRequestEpochRef.current += 1;
+    teRequestEpochRef.current += 1;
+    myRequestEpochRef.current += 1;
+    setClassification(value);
+    setSelectedRowKeys([]);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+  };
+
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -133,6 +163,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   };
 
   const onTabChange = async (key: string) => {
+    setSelectedRowKeys([]);
     const tabKey = key as DataTabKey;
     await setActiveTabKey(tabKey);
     if (tabKey === 'tg') {
@@ -153,32 +184,38 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
-    await setTgKeyWord(value);
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    tgRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  const onCoSearch: SearchProps['onSearch'] = async (value) => {
-    await setCoKeyWord(value);
+  const onCoSearch: SearchProps['onSearch'] = (value) => {
+    coSearch.submitSearch(value);
+    coRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
-  const onTeSearch: SearchProps['onSearch'] = async (value) => {
-    await setTeKeyWord(value);
+  const onTeSearch: SearchProps['onSearch'] = (value) => {
+    teSearch.submitSearch(value);
+    teRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teActionRefSelect.current?.reload();
   };
 
-  // const onTgSearch: SearchProps['onSearch'] = async (value) => {
-  //   setTableLoading(true);
-  //   setDataSource(await flow_hybrid_search(value, {}, lang));
-  //   setTableLoading(false);
-  // };
-
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
-    await setMyKeyWord(value);
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    myRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
@@ -213,7 +250,11 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.synonyms}>
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={dataListTooltipContent(row.name, row.synonyms)}
+          >
             {row.name}
           </Tooltip>,
         ];
@@ -228,9 +269,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       render: (_, row) => {
         const flowType = flowTypeOptions.find((i) => i.value === row.flowType);
         if (flowType) {
-          return flowType.label;
+          return dataListMetadataText(flowType.label);
         }
-        return row.flowType;
+        return dataListMetadataText(row.flowType);
       },
     },
     {
@@ -300,324 +341,400 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const databaseList: Record<DataTabKey, ReactNode> = {
     tg: (
       <>
-        <Card>
-          <Row align={'middle'}>
-            <Col flex='auto' style={{ marginRight: '10px' }}>
-              <Search
-                name={'tg'}
-                size={'large'}
-                placeholder={
-                  openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-                }
-                value={tgKeyWord}
-                onChange={handleTgKeyWordChange}
-                onSearch={onTgSearch}
-                enterButton
-              />
-            </Col>
-            <Col flex='100px'>
-              <Checkbox
-                onChange={(e) => {
-                  setOpenAI(e.target.checked);
-                }}
-              >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-              </Checkbox>
-            </Col>
-          </Row>
-        </Card>
-        <ProTable<FlowTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={tgActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          // loading={tableLoading}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          // dataSource={dataSource}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-            filter,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              tgRequestEpochRef,
-              async () => {
-                const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                if (tgKeyWord.length > 0) {
-                  if (openAI) {
-                    return flow_hybrid_search(params, params.contentLanguage, 'tg', tgKeyWord, {
-                      flowType: flowTypeFilter,
-                    });
-                  }
-                  return getFlowTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'tg',
-                    tgKeyWord,
-                    {
+        <ResponsiveDataListViewport columns={FlowsColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'tg'}
+                    placeholder={
+                      tgSearch.draftMode === 'smart'
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
+                    }
+                    value={tgKeyWord}
+                    onChange={handleTgKeyWordChange}
+                    onSearch={onTgSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <Checkbox
+                      checked={tgSearch.draftMode === 'smart'}
+                      onChange={(e) => {
+                        tgSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.openAI'
+                        defaultMessage='AI Recommendation'
+                      />
+                    </Checkbox>
+                    <DatasetClassificationFilter
+                      datasetKind='flow'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={tgActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              // loading={tableLoading}
+              search={false}
+              pagination={dataListPagination}
+              // dataSource={dataSource}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+                filter,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  tgRequestEpochRef,
+                  async () => {
+                    const search = tgSearch.submittedRef.current;
+                    const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
+                        return flow_hybrid_search(
+                          params,
+                          params.contentLanguage,
+                          'tg',
+                          search.keyword,
+                          {
+                            flowType: flowTypeFilter,
+                          },
+                        );
+                      }
+                      return getFlowTablePgroongaSearch(
+                        params,
+                        params.contentLanguage,
+                        'tg',
+                        search.keyword,
+                        {
+                          flowType: flowTypeFilter,
+                          asInput: asInput,
+                        },
+                      );
+                    }
+                    return getFlowTableAll(params, sort, params.contentLanguage, 'tg', [], {
                       flowType: flowTypeFilter,
                       asInput: asInput,
-                    },
-                  );
-                }
-                return getFlowTableAll(params, sort, params.contentLanguage, 'tg', [], {
-                  flowType: flowTypeFilter,
-                  asInput: asInput,
-                });
-              },
-            )
-          }
-          columns={FlowsColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+                    });
+                  },
+                )
+              }
+              columns={orderDataListColumns(FlowsColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     co: (
       <>
-        <Card>
-          <Row align={'middle'}>
-            <Col flex='auto' style={{ marginRight: '10px' }}>
-              <Search
-                name={'co'}
-                size={'large'}
-                placeholder={
-                  openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-                }
-                value={coKeyWord}
-                onChange={handleCoKeyWordChange}
-                onSearch={onCoSearch}
-                enterButton
-              />
-            </Col>
-            <Col flex='100px'>
-              <Checkbox
-                onChange={(e) => {
-                  setOpenAI(e.target.checked);
-                }}
-              >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-              </Checkbox>
-            </Col>
-          </Row>
-        </Card>
-        <ProTable<FlowTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={coActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          // loading={tableLoading}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          // dataSource={dataSource}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-            filter,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              coRequestEpochRef,
-              async () => {
-                const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                if (coKeyWord.length > 0) {
-                  if (openAI) {
-                    return flow_hybrid_search(params, params.contentLanguage, 'co', coKeyWord, {
-                      flowType: flowTypeFilter,
-                    });
-                  }
-                  return getFlowTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'co',
-                    coKeyWord,
-                    {
+        <ResponsiveDataListViewport columns={FlowsColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'co'}
+                    placeholder={
+                      coSearch.draftMode === 'smart'
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
+                    }
+                    value={coKeyWord}
+                    onChange={handleCoKeyWordChange}
+                    onSearch={onCoSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <Checkbox
+                      checked={coSearch.draftMode === 'smart'}
+                      onChange={(e) => {
+                        coSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.openAI'
+                        defaultMessage='AI Recommendation'
+                      />
+                    </Checkbox>
+                    <DatasetClassificationFilter
+                      datasetKind='flow'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={coActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              // loading={tableLoading}
+              search={false}
+              pagination={dataListPagination}
+              // dataSource={dataSource}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+                filter,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  coRequestEpochRef,
+                  async () => {
+                    const search = coSearch.submittedRef.current;
+                    const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
+                        return flow_hybrid_search(
+                          params,
+                          params.contentLanguage,
+                          'co',
+                          search.keyword,
+                          {
+                            flowType: flowTypeFilter,
+                          },
+                        );
+                      }
+                      return getFlowTablePgroongaSearch(
+                        params,
+                        params.contentLanguage,
+                        'co',
+                        search.keyword,
+                        {
+                          flowType: flowTypeFilter,
+                          asInput: asInput,
+                        },
+                      );
+                    }
+                    return getFlowTableAll(params, sort, params.contentLanguage, 'co', [], {
                       flowType: flowTypeFilter,
                       asInput: asInput,
-                    },
-                  );
-                }
-                return getFlowTableAll(params, sort, params.contentLanguage, 'co', [], {
-                  flowType: flowTypeFilter,
-                  asInput: asInput,
-                });
-              },
-            )
-          }
-          columns={FlowsColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+                    });
+                  },
+                )
+              }
+              columns={orderDataListColumns(FlowsColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     te: (
       <>
-        <Card>
-          <Search
-            name={'te'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={teKeyWord}
-            onChange={handleTeKeyWordChange}
-            onSearch={onTeSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<FlowTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={teActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-            filter,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              teRequestEpochRef,
-              async () => {
-                const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                if (teKeyWord.length > 0) {
-                  return getFlowTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'te',
-                    teKeyWord,
-                    {
+        <ResponsiveDataListViewport columns={FlowsColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'te'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={teKeyWord}
+                    onChange={handleTeKeyWordChange}
+                    onSearch={onTeSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='flow'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={teActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+                filter,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  teRequestEpochRef,
+                  async () => {
+                    const search = teSearch.submittedRef.current;
+                    const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+                    if (search.keyword.length > 0) {
+                      return getFlowTablePgroongaSearch(
+                        params,
+                        params.contentLanguage,
+                        'te',
+                        search.keyword,
+                        {
+                          flowType: flowTypeFilter,
+                          asInput: asInput,
+                        },
+                      );
+                    }
+                    return getFlowTableAll(params, sort, params.contentLanguage, 'te', [], {
                       flowType: flowTypeFilter,
                       asInput: asInput,
-                    },
-                  );
-                }
-                return getFlowTableAll(params, sort, params.contentLanguage, 'te', [], {
-                  flowType: flowTypeFilter,
-                  asInput: asInput,
-                });
-              },
-            )
-          }
-          columns={FlowsColumns}
-          toolBarRender={() => {
-            return [<FlowsCreate key={0} lang={lang} actionRef={teActionRefSelect} />];
-          }}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+                    });
+                  },
+                )
+              }
+              columns={orderDataListColumns(FlowsColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />,
+              })}
+              toolBarRender={() => {
+                return [<FlowsCreate key={0} lang={lang} actionRef={teActionRefSelect} />];
+              }}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     my: (
       <>
-        <Card>
-          <Search
-            name={'my'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={myKeyWord}
-            onChange={handleMyKeyWordChange}
-            onSearch={onMySearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<FlowTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={myActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-            filter,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              myRequestEpochRef,
-              async () => {
-                const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                if (myKeyWord.length > 0) {
-                  return getFlowTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'my',
-                    myKeyWord,
-                    {
+        <ResponsiveDataListViewport columns={FlowsColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'my'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={myKeyWord}
+                    onChange={handleMyKeyWordChange}
+                    onSearch={onMySearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='flow'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={myActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+                filter,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  myRequestEpochRef,
+                  async () => {
+                    const search = mySearch.submittedRef.current;
+                    const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+                    if (search.keyword.length > 0) {
+                      return getFlowTablePgroongaSearch(
+                        params,
+                        params.contentLanguage,
+                        'my',
+                        search.keyword,
+                        {
+                          flowType: flowTypeFilter,
+                          asInput: asInput,
+                        },
+                      );
+                    }
+                    return getFlowTableAll(params, sort, params.contentLanguage, 'my', [], {
                       flowType: flowTypeFilter,
                       asInput: asInput,
-                    },
-                  );
-                }
-                return getFlowTableAll(params, sort, params.contentLanguage, 'my', [], {
-                  flowType: flowTypeFilter,
-                  asInput: asInput,
-                });
-              },
-            )
-          }
-          columns={FlowsColumns}
-          toolBarRender={() => {
-            return [<FlowsCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
-          }}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+                    });
+                  },
+                )
+              }
+              columns={orderDataListColumns(FlowsColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />,
+              })}
+              toolBarRender={() => {
+                return [<FlowsCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
+              }}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
   };
@@ -691,6 +808,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
         <Card
           style={{ width: '100%' }}
           tabList={tabList}
+          tabProps={dataListTabProps}
+          styles={{ body: { padding: 0 } }}
           activeTabKey={activeTabKey}
           onTabChange={onTabChange}
         >

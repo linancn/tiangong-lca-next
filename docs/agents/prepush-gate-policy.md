@@ -29,9 +29,12 @@ checkPaths:
   - tsconfig*.json
   - jest.config.cjs
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
@@ -43,8 +46,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-23
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display, v6 strict RPC, four-locale labels and focused tests; existing ownership, dependency, validation and release gates remain unchanged.'
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 ---
 
 # Pre-Push Gate Policy
@@ -79,13 +82,13 @@ Production-effective workflows separately run `pnpm reference-data:production:ch
 
 The deterministic release commands preserve this split by construction. `release:to-dev` rejects main-semantic branch names and requires a safe release-line alignment: either current `main` is an ancestor of `dev`, or current `main` is an exact two-parent promotion whose second parent remains in `dev` history and whose tree is identical to that parent. It proves that only `package.json.version` and bounded Docpact review metadata changed while `pnpm-lock.yaml` remains byte-identical, preflights both the version candidate's `dev`-relative paths and the complete `main`-to-candidate path set, commits the composed candidate, and delegates transport to `push:checked --gate-profile release-candidate`. That profile rechecks Docpact plus static release contracts, while the exact deterministic Release PR into `dev` owns one non-browser static/full gate. `release:promote-dev-to-main` pins the merged `dev` candidate and uses `push:checked --gate-profile immutable-promotion`; its local push and main-target PR verify structure and the dev proof instead of repeating candidate acceptance. A direct main hotfix is a distinct path: its PR body carries an exact Issue/main-base/head marker, current main must be an ancestor, package version must remain unchanged, and the required main-candidate check runs static readiness plus one clean-runner full gate on that exact head. The only automatic transport retry remains the argument-free `push:retry` when the immediately preceding checked push created a new exact-intent receipt.
 
-Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `pnpm e2e:dev`; exact committed qualification uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. The credential-free/read-only hermetic GitHub workflow is manually dispatched for an open business PR or chosen ref when change risk warrants browser evidence; release PR, promotion, and publication do not require it. The full authenticated closure belongs exclusively to an explicitly authorized local operator session.
+Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `pnpm e2e:dev`; exact committed qualification uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. The credential-free/read-only hermetic GitHub workflow is manually dispatched for a chosen ref, while the bounded ordinary dependency job also runs canonical qualification as documented in `dependency-maintenance.md`; release PR, promotion, and publication do not require it. The full authenticated closure belongs exclusively to an explicitly authorized local operator session.
 
 Local semantic qualification writes only an ignored proof path supplied with `--proof`. Compute its key with `pnpm e2e:qualification:key`, generate with `pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json`, and verify with `pnpm release:proof:verify --proof <path>`. Manual GitHub qualification performs the same sequence without proof-cache reuse and uploads a short-lived artifact; no proof file is committed or reviewed as source.
 
 Docs-impact screenshot execution is an isolated workspace tooling surface. Next contributes only the exact source commit's declarative `config/docs-capture/profile.v1.json`; the workspace package owns profile validation, plan compilation, secret-file handling, read-only actions, Playwright capture, and access classification. This proof does not join the routine pre-push/release gate and does not change semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
 
-Routine locale and pre-push checks validate the external-proof contract without requiring a browser artifact in the checkout. Exact browser execution is an operator-selected business-PR-stage qualification, not a release enforcement condition. If a local operator supplies external authenticated evidence to the explicit production-readiness command, current backend, raw `pnpm-lock.yaml`, `pnpm-workspace.yaml`, runtime assets, semantic tests, and route/source digests must match exactly. pnpm does not store the root application version in its lockfile, so no lock normalization is allowed.
+Routine locale and pre-push checks validate the external-proof contract without requiring a browser artifact in the checkout. Exact browser execution is a business-PR-stage qualification, selected manually or by the bounded ordinary dependency workflow; it is not a release enforcement condition. If a local operator supplies external authenticated evidence to the explicit production-readiness command, current backend, raw `pnpm-lock.yaml`, `pnpm-workspace.yaml`, runtime assets, semantic tests, and route/source digests must match exactly. pnpm does not store the root application version in its lockfile, so no lock normalization is allowed.
 
 Qualification reuse is content-addressed and computed from current inputs; it is never granted through a tracked digest compatibility or waiver file. The closed simulator uses its fixed non-production backend profile, so deployment-only `.env` drift does not invalidate semantic proof. Source, harness, shared-helper, Git mode/type, or pinned browser-environment drift does. A behavior-key hit still passes proof verification before reuse.
 
@@ -107,7 +110,7 @@ It does not own:
 | local `pre-push` hook | ordinary delivery pushes run Docpact first and the full local gate last; exact deterministic release-candidate and immutable-promotion branches may use their repo-owned reduced profiles, which run Docpact plus static release preflight and defer the non-browser release gate to the exact dev Release PR |
 | non-mutating or deletion-only push | skip the checkpoint and both gates because no candidate content is being delivered; a checked push remains branch-update-only and rejects deletion before any gate |
 | same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
-| ordinary GitHub branch pushes | do not run broad duplicate remote test jobs or the Playwright browser matrix |
+| ordinary GitHub branch pushes | do not run broad duplicate remote test jobs; the path-selected ordinary dependency PR workflow separately runs canonical synthetic browser qualification |
 | PRs into `dev` | ordinary PRs rely on local full test-gate evidence and focused proof, while the lightweight `ai-doc-lint` PR job supplies executed, exact-head Docpact CI for workspace merge verification; do not duplicate the full suite remotely. A marker-bound deterministic Release PR also runs the reusable non-browser Release Gate and emits a 30-day proof bound to the main baseline, dev base/head/tree, version, PR, workflow run, attempt, and artifact |
 | PRs into `main` | keep the required compatibility check name `Main Candidate / Release Gate`, but verify only that the head is the exact tree-identical merge of the proved dev candidate, the main baseline has not drifted, and the bound dev release proof remains valid; do not rerun candidate tests or browsers |
 | `dev -> main` promotion candidate | use `release:to-dev` so the version PR preflights the complete current-`main` to candidate path set and owns the non-browser release gate; after it merges, the immutable promotion rechecks identity and reuses that proof |
@@ -116,6 +119,14 @@ It does not own:
 | canonical post-merge `main` pushes | read `package.json.version`; require the exact main merge, promotion merge, dev Release PR, main/dev bases, candidate tree, version, successful aggregate job, run attempt, unexpired artifact, and payload all to match; normal pushes fail fast and require a new dev candidate when proof is absent or invalid, then create or verify the matching `v*` tag and continue publication without rerunning candidate acceptance |
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
 | manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and always run the full reusable Release Gate before deploy/release |
+
+## Dual-brand web publication
+
+Normal formal publication has separate TianGong and Atlas jobs, both downstream of successful release context, qualification and tag verification and both checking out exactly `release_head`. TianGong explicitly selects `APP_BRAND=tiangong`; Atlas selects `APP_BRAND=atlas` and binds only `atlas-lca-platform` / `makers-dtpthotshhpt`. A failed brand job fails the workflow; one successful site is not a complete dual-brand release. Desktop publication remains TianGong-only.
+
+Atlas uses isolated runner tooling `@edgeone/makers-sdk@0.1.0`, pinned independently of the application manifest/lock, with exact-ID project/name verification before build and immediately before production deployment. The existing pinned CLI only generates the reviewed routing table. Archive construction preserves `.edgeone/assets`, `.edgeone/routes.json` and adjacent `edgeone.json`, verifies every ZIP entry against the source, and rejects symlinks; ordinary SDK directory mode must not be used because it excludes a root `.edgeone` directory. SDK archive mode uploads the verified ZIP unchanged. Record the created deployment ID before waiting, require the same project/environment/ID and terminal `Success`, and preserve sanitized receipts even on failure. Waiting errors do not authorize an automatic second creation. A public `release-manifest.json` binds brand, exact source/tag, destination, entry hash and workflow run for production verification.
+
+The dispatch default `publication_scope=full` preserves full release recovery. Explicit `atlas-web` is restricted to Main dispatch, an exact expected tag SHA and Main's current package version. It requires a real existing stable version tag contained in Main, runs the same fresh full recovery gate, verifies the existing tag, and excludes TianGong web and all Electron mutation jobs. Recovery uses current reviewed inline workflow logic with the old tag's application checkout; it must not silently require new helper files unavailable at that old source. It does not move tags or accept an older-version Atlas rollback. Execution commands live in `DEV.md`.
 
 ## Adoption Conditions
 
@@ -155,7 +166,7 @@ It does not own:
 - under Jest 30, the native threshold continues to enforce 100% statements, functions, and lines. `test:coverage:assert-full` excludes only Babel/Istanbul `if` alternate slots that have no source coordinates, fails closed for every other malformed map, and independently requires 100% of every source-mapped branch; raw synthetic-slot percentages are not a replacement baseline
 - keep agent/CI console output bounded to stage, failure item, and final summary lines while preserving full Jest logs and structured results under `.local/test-logs/**` for artifact upload
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
-- keep semantic E2E independent from `prepush:gate` and release proof: routine PR/dev/release events do not trigger browser work, an operator may run one hermetic credential-free qualification while the business PR remains open, and only an explicitly authorized local operator run may close the authenticated 50-ID digest-bound proof
+- keep semantic E2E independent from `prepush:gate` and release proof: the bounded ordinary dependency PR job runs canonical synthetic qualification, while other routine dev/release events do not trigger browser work, an operator may run one hermetic credential-free qualification while the business PR remains open, and only an explicitly authorized local operator run may close the authenticated 50-ID digest-bound proof
 - keep routine locale/pre-push validation structural and deterministic; revalidate current semantic evidence file hashes only in the explicit production-readiness gate
 - keep publication automation in the same `main` push workflow, but create the tag only after exact dev-candidate proof verification; reserve a fresh aggregate run for explicit tag or `workflow_dispatch` recovery, not a normal main-push fallback
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code

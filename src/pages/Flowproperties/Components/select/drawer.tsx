@@ -1,3 +1,15 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
+import {
+  ResponsiveDataListViewport,
+  dataListTooltipContent,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
@@ -33,9 +45,13 @@ const { Search } = Input;
 
 const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, buttonText }) => {
   const [tgKeyWord, setTgKeyWord] = useState<string>('');
+  const tgSearch = useSubmittedDatasetSearch('smart');
   const [coKeyWord, setCoKeyWord] = useState<string>('');
+  const coSearch = useSubmittedDatasetSearch('smart');
   const [myKeyWord, setMyKeyWord] = useState<string>('');
+  const mySearch = useSubmittedDatasetSearch('smart');
   const [teKeyWord, setTeKeyWord] = useState<string>('');
+  const teSearch = useSubmittedDatasetSearch('smart');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
@@ -45,6 +61,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const teActionRefSelect = useRef<ActionType | undefined>(undefined);
 
   const intl = useIntl();
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
   const tgRequestEpochRef = useRef(0);
@@ -56,6 +73,19 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     contentLanguageAwareTableParams.contentLanguage,
     [tgRequestEpochRef, coRequestEpochRef, teRequestEpochRef, myRequestEpochRef],
   );
+  const onClassificationChange = (value: DatasetClassificationFilterValue[]) => {
+    tgRequestEpochRef.current += 1;
+    coRequestEpochRef.current += 1;
+    teRequestEpochRef.current += 1;
+    myRequestEpochRef.current += 1;
+    setClassification(value);
+    setSelectedRowKeys([]);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+  };
+
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -98,6 +128,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   };
 
   const onTabChange = async (key: string) => {
+    setSelectedRowKeys([]);
     const tabKey = key as DataTabKey;
     await setActiveTabKey(tabKey);
     if (tabKey === 'tg') {
@@ -118,26 +149,38 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
-    await setTgKeyWord(value);
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    tgRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  const onCoSearch: SearchProps['onSearch'] = async (value) => {
-    await setCoKeyWord(value);
+  const onCoSearch: SearchProps['onSearch'] = (value) => {
+    coSearch.submitSearch(value);
+    coRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
-  const onTeSearch: SearchProps['onSearch'] = async (value) => {
-    await setTeKeyWord(value);
+  const onTeSearch: SearchProps['onSearch'] = (value) => {
+    teSearch.submitSearch(value);
+    teRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teActionRefSelect.current?.reload();
   };
 
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
-    await setMyKeyWord(value);
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    myRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
@@ -171,7 +214,11 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+        <Tooltip
+          key={0}
+          placement='topLeft'
+          title={dataListTooltipContent(row.name, row.generalComment)}
+        >
           {row.name}
         </Tooltip>,
       ],
@@ -271,308 +318,408 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const databaseList: Record<DataTabKey, ReactNode> = {
     tg: (
       <>
-        <Card>
-          <Search
-            name={'tg'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={tgKeyWord}
-            onChange={handleTgKeyWordChange}
-            onSearch={onTgSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={tgActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              tgRequestEpochRef,
-              async () => {
-                if (tgKeyWord.length > 0) {
-                  return flowproperty_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'tg',
-                    tgKeyWord,
-                    {},
-                  ).then((res) => {
-                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                      return {
-                        ...res,
-                        data: unitRes as FlowpropertyTable[],
-                      };
-                    });
-                  });
-                }
-                return getFlowpropertyTableAll(params, sort, params.contentLanguage, 'tg', []).then(
-                  (res) => {
-                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                      return {
-                        ...res,
-                        data: unitRes as FlowpropertyTable[],
-                      };
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'tg'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={tgKeyWord}
+                    onChange={handleTgKeyWordChange}
+                    onSearch={onTgSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='flowproperty'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={tgActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  tgRequestEpochRef,
+                  async () => {
+                    const submittedKeyword = tgSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
+                      return flowproperty_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'tg',
+                        submittedKeyword,
+                        {},
+                      ).then((res) => {
+                        return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                          return {
+                            ...res,
+                            data: unitRes as FlowpropertyTable[],
+                          };
+                        });
+                      });
+                    }
+                    return getFlowpropertyTableAll(
+                      params,
+                      sort,
+                      params.contentLanguage,
+                      'tg',
+                      [],
+                    ).then((res) => {
+                      return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                        return {
+                          ...res,
+                          data: unitRes as FlowpropertyTable[],
+                        };
+                      });
                     });
                   },
                 );
-              },
-            );
-          }}
-          columns={FlowpropertyColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+              }}
+              columns={orderDataListColumns(FlowpropertyColumns, {
+                dataType: (
+                  <FormattedMessage
+                    id='menu.tgdata.flowproperties'
+                    defaultMessage='Flow Properties'
+                  />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     co: (
       <>
-        <Card>
-          <Search
-            name={'co'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={coKeyWord}
-            onChange={handleCoKeyWordChange}
-            onSearch={onCoSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={coActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              coRequestEpochRef,
-              async () => {
-                if (coKeyWord.length > 0) {
-                  return flowproperty_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'co',
-                    coKeyWord,
-                    {},
-                  ).then((res) => {
-                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                      return {
-                        ...res,
-                        data: unitRes as FlowpropertyTable[],
-                      };
-                    });
-                  });
-                }
-                return getFlowpropertyTableAll(params, sort, params.contentLanguage, 'co', []).then(
-                  (res) => {
-                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                      return {
-                        ...res,
-                        data: unitRes as FlowpropertyTable[],
-                      };
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'co'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={coKeyWord}
+                    onChange={handleCoKeyWordChange}
+                    onSearch={onCoSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='flowproperty'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={coActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  coRequestEpochRef,
+                  async () => {
+                    const submittedKeyword = coSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
+                      return flowproperty_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'co',
+                        submittedKeyword,
+                        {},
+                      ).then((res) => {
+                        return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                          return {
+                            ...res,
+                            data: unitRes as FlowpropertyTable[],
+                          };
+                        });
+                      });
+                    }
+                    return getFlowpropertyTableAll(
+                      params,
+                      sort,
+                      params.contentLanguage,
+                      'co',
+                      [],
+                    ).then((res) => {
+                      return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                        return {
+                          ...res,
+                          data: unitRes as FlowpropertyTable[],
+                        };
+                      });
                     });
                   },
                 );
-              },
-            );
-          }}
-          columns={FlowpropertyColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+              }}
+              columns={orderDataListColumns(FlowpropertyColumns, {
+                dataType: (
+                  <FormattedMessage
+                    id='menu.tgdata.flowproperties'
+                    defaultMessage='Flow Properties'
+                  />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     te: (
       <>
-        <Card>
-          <Search
-            name={'te'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={teKeyWord}
-            onChange={handleTeKeyWordChange}
-            onSearch={onTeSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={teActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              teRequestEpochRef,
-              async () => {
-                if (teKeyWord.length > 0) {
-                  return flowproperty_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'te',
-                    teKeyWord,
-                    {},
-                  ).then((res) => {
-                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                      return {
-                        ...res,
-                        data: unitRes as FlowpropertyTable[],
-                      };
-                    });
-                  });
-                }
-                return getFlowpropertyTableAll(params, sort, params.contentLanguage, 'te', []).then(
-                  (res) => {
-                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                      return {
-                        ...res,
-                        data: unitRes as FlowpropertyTable[],
-                      };
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'te'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={teKeyWord}
+                    onChange={handleTeKeyWordChange}
+                    onSearch={onTeSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='flowproperty'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={teActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  teRequestEpochRef,
+                  async () => {
+                    const submittedKeyword = teSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
+                      return flowproperty_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'te',
+                        submittedKeyword,
+                        {},
+                      ).then((res) => {
+                        return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                          return {
+                            ...res,
+                            data: unitRes as FlowpropertyTable[],
+                          };
+                        });
+                      });
+                    }
+                    return getFlowpropertyTableAll(
+                      params,
+                      sort,
+                      params.contentLanguage,
+                      'te',
+                      [],
+                    ).then((res) => {
+                      return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                        return {
+                          ...res,
+                          data: unitRes as FlowpropertyTable[],
+                        };
+                      });
                     });
                   },
                 );
-              },
-            );
-          }}
-          columns={FlowpropertyColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+              }}
+              columns={orderDataListColumns(FlowpropertyColumns, {
+                dataType: (
+                  <FormattedMessage
+                    id='menu.tgdata.flowproperties'
+                    defaultMessage='Flow Properties'
+                  />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     my: (
       <>
-        <Card>
-          <Search
-            name={'my'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={myKeyWord}
-            onChange={handleMyKeyWordChange}
-            onSearch={onMySearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={myActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              myRequestEpochRef,
-              async () => {
-                if (myKeyWord.length > 0) {
-                  return flowproperty_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'my',
-                    myKeyWord,
-                    {},
-                    0,
-                  ).then((res) => {
-                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                      return {
-                        ...res,
-                        data: unitRes as FlowpropertyTable[],
-                      };
-                    });
-                  });
-                }
-                return getFlowpropertyTableAll(
-                  params,
-                  sort,
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'my'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={myKeyWord}
+                    onChange={handleMyKeyWordChange}
+                    onSearch={onMySearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='flowproperty'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={myActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
                   params.contentLanguage,
-                  'my',
-                  [],
-                  0,
-                ).then((res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                    return {
-                      ...res,
-                      data: unitRes as FlowpropertyTable[],
-                    };
-                  });
-                });
-              },
-            );
-          }}
-          columns={FlowpropertyColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+                  () => currentContentLanguageRef.current,
+                  myRequestEpochRef,
+                  async () => {
+                    const submittedKeyword = mySearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
+                      return flowproperty_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'my',
+                        submittedKeyword,
+                        {},
+                        0,
+                      ).then((res) => {
+                        return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                          return {
+                            ...res,
+                            data: unitRes as FlowpropertyTable[],
+                          };
+                        });
+                      });
+                    }
+                    return getFlowpropertyTableAll(
+                      params,
+                      sort,
+                      params.contentLanguage,
+                      'my',
+                      [],
+                      0,
+                    ).then((res) => {
+                      return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                        return {
+                          ...res,
+                          data: unitRes as FlowpropertyTable[],
+                        };
+                      });
+                    });
+                  },
+                );
+              }}
+              columns={orderDataListColumns(FlowpropertyColumns, {
+                dataType: (
+                  <FormattedMessage
+                    id='menu.tgdata.flowproperties'
+                    defaultMessage='Flow Properties'
+                  />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
   };
@@ -638,6 +785,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
         <Card
           style={{ width: '100%' }}
           tabList={tabList}
+          tabProps={dataListTabProps}
+          styles={{ body: { padding: 0 } }}
           activeTabKey={activeTabKey}
           onTabChange={onTabChange}
         >

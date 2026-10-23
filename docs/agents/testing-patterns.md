@@ -28,6 +28,7 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - scripts/i18n/**
   - scripts/test-runner.cjs
   - scripts/jest-sequencer.cjs
@@ -38,13 +39,15 @@ checkPaths:
   - scripts/release/**
   - docker/e2e/**
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - package.json
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-23
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display, v6 strict RPC, four-locale labels and focused tests; existing ownership, dependency, validation and release gates remain unchanged.'
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 ---
 
 # Testing Patterns Reference
@@ -73,8 +76,14 @@ lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display
 - make mocks for stateful hooks preserve the identity of returned API objects across parent rerenders; update methods on the stable object instead of returning a fresh placeholder on each render
 - pair shared hook mocks with a direct rerender regression that proves both object identity and the callable API the consumer relies on
 - when mount and user actions can call the same async loader, guard the in-flight request outside render-state closures and prove that an action fired before the first response does not start a second request or let a later empty response overwrite valid data
+- validate changed workflow expressions with `actionlint`; YAML parsing and extracted-script tests do not validate GitHub context availability. Runner-dependent paths belong in supported step contexts or are exported from a runner step through `GITHUB_ENV`, never `jobs.<job_id>.env`
+- bound per-job workflow assertions to the exact named job before the next sibling job; never treat a selected job as the remainder of the file. Keep workflow-wide permission guards on the complete source, and use negative controls that place a forbidden install, aggregate, credential or release operation inside the selected job while a legitimate separate job remains excluded.
+- when an actual app transition intentionally reloads a page, observe fresh document identity and exact session owner atomically through Playwright's public navigation-aware wait rather than polling standalone page evaluations. Use timer polling for potentially hidden tabs, retain the existing authenticated/public assertion budget and total testcase limit, and keep post-release identity plus zero-stale-dispatch checks; do not catch arbitrary errors or manufacture SDK events.
+- after advancing a browser context clock to trigger token refresh, restore advancing wall time with `setSystemTime` when real elapsed-time behavior must resume. Observe `Date.now()` progression and require genuine header hover while login feedback remains visible; retain winning-owner, document-generation and stale-dispatch assertions. A frozen Date, forced pointer action or waiting for feedback to disappear must not hide an input interception regression.
+- unexpected external-command failures from controlled release fixtures retain bounded, JSON-escaped command, exit and child-output diagnostics without environment or account configuration. Keep the original child result and every assertion unchanged so missing diagnostics cannot obscure the failing boundary.
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
+- give extensionless CommonJS fixture executables an explicit `type: commonjs` package boundary in their owned bin directory, so an ESM temporary ancestor cannot change interpretation. Exercise the actual commands beneath an explicit ESM ancestor and prove both their normal protocols and the missing-boundary failure; preserve default temporary paths, command bodies and production release guards.
 - release-helper fixtures must enforce the actual `gh` contract: list by bare branch, return explicit head owner/repository metadata, create direct repository heads without an organization prefix, and read the exact multiline `--body-file` contents while the owned temporary file exists. Prove `--apply --prepare-only` still prepares and pushes the exact version/promotion candidate, emits its submission proposal, and never invokes PR creation; malformed identity, ambiguous remotes and failed preflight must remain fail-closed.
 - schedule known process-heavy Jest suites first when that lowers cold-run tail latency, but preserve Jest discovery and the complete inventory. Keep Jest's own failure/duration/file-size order within each priority group and lock the selected paths with a sequencer contract test
 - for process-heavy Git/pnpm contract suites, build one immutable seed only when setup dominates runtime, then copy a separate repository and bare remote for every test case and rebind `origin` to that case. Never share mutable refs, receipts, gate logs, or transport state between tests
@@ -84,6 +93,7 @@ lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display
 - when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
 - when a Table/ProTable dependency upgrade appears to change the first request in one browser, first compare the page unit request and service fallback. If both intentionally use the same default, correct the browser fixture to that one exact RPC body; add `defaultSortOrder` only when the product truly owns a different initial order
 - when a browser assertion compares several rectangles inside an opening Drawer, Modal, or responsive toolbar, read all rectangles in one in-page evaluation and poll the complete invariant. Sort by rendered coordinates when the contract is visual order; sequential locator `boundingBox()` calls can sample different animation frames, and DOM order is not a horizontal-layout contract
+- for tooltip readability, collect visibility, expected text, panel and rendered text rectangles, clipping boundaries and active animations in one browser observation. Require positive geometry and the complete invariant to hold after motion settles; containment inequalities alone also accept zero-size rectangles. Run the same check immediately before and after a viewport screenshot, and exercise browser negative controls for collapsed, hidden, clipped and moving states without fixed sleeps or weakened interaction assertions
 - when a hidden navigation group is rendered as a composed page title, declare the ordered catalog message IDs and separator in the route target and assert the complete exact localized title. Keep exact route/query, access, locale and page-owned message checks; do not replace them with broad substring matching or unhide product menus for a test
 - before acting in a role-selected dialog, wait for its observed opening preparation and finite Web Animations to settle; before a following confirmation, prove the preceding business mutation and dialog closure. Keep clicks actionable and preserve failure/persistence assertions. A click that returned without a DOM click event is not completion proof; forced clicks, fixed sleeps and retries must not conceal that race
 - Jest 30/jsdom 26 owns non-configurable `window` and `location` objects. Pass mock `Location` methods through `src/utils/browserNavigation.ts`, pass nullable event-target/storage/window inputs to pure runtime helpers, and use `history.pushState` for URL state; never delete or redefine the jsdom globals. jest-dom 7 style expectations use computed normalized colors such as `rgb(...)`, not named-color serialization
@@ -170,6 +180,7 @@ Browser semantic E2E pattern:
 - local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; qualification builds with its fixed `.invalid` backend profile, root version-only and deployment `.env` changes preserve the key, while source, qualification config, shared helpers, Git mode/type, or browser-environment changes invalidate it
 - release-workflow unit fixtures must prove release-to-dev and promotion invoke only their exact restricted push profiles, never invoke browser qualification or write tracked proof, and still cover composed-candidate preflight failure, unexpected untracked files, immutable promotion identity, main-baseline binding, direct ancestry, tree-identical promotion, changed-tree rejection, and the rule that no failed preflight path reaches push or PR creation
 - publication-workflow contract tests must prove normal main pushes fail closed on an invalid dev proof without selecting a full-gate fallback, while explicit tag/dispatch recovery selects one full aggregate; every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
+- Atlas workflow tests execute the actual inline Node/Python blocks against isolated SDK doubles and ZIP fixtures; assert exact-ID binding, source/brand/hash failure before creation, hidden routes and receipt persistence before failed waits. Keep the real package's SDK ZIP compatibility probe separate and credential-free, and never treat successful mocks as proof of live account permission.
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
 - reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence
@@ -177,7 +188,7 @@ Browser semantic E2E pattern:
 - retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
 - run the complete registered route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
-- keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` runs the hermetic content-addressed qualification for an operator-selected open business PR or exact SHA, while routine PR/dev/release events do not trigger or require it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
+- keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` runs the hermetic content-addressed qualification for an operator-selected open business PR or exact SHA, while the bounded ordinary dependency PR job runs the same qualification and other routine dev/release events do not trigger or require it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
 - write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
 - delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence
 - keep Header Umi `SelectLang` at `reload={false}` and prove locale switching within the same document: URL/document identity persist, mounted locale state refreshes, and a delayed old-locale reference response cannot overwrite the current selection
@@ -186,6 +197,13 @@ Browser semantic E2E pattern:
 - treat adding a registry locale or changing a bound route/source/test, raw `pnpm-lock.yaml`, or `pnpm-workspace.yaml` install policy as evidence invalidation, not as a request to reuse the old result; a root `package.json.version`-only release may reuse dependency identity because pnpm does not encode that version in its lockfile
 - when the user explicitly authorizes skipping E2E for an additive production request-guard expansion, bind only `tests/e2e/i18n/production-request-guard.ts` and its paired `tests/unit/e2e/productionRequestGuard.test.ts` proof to exact old/new digest pairs under `reviewed-read-only-request-guard-expansion`, require focused unit proof for every added read-only endpoint, and fail closed on any later digest drift
 - when a release owner explicitly authorizes skipping the full authenticated E2E rerun for a promotion, record one owner-Issue-bound `user-authorized-release-candidate-e2e-skip` identity covering the complete `config`, `src`, `tests/unit`, and package manifest trees; require the full pre-push gate, permit it only for source and unit-test bindings, and fail closed on any candidate-tree drift
+
+Dataset search submission pattern:
+
+- keep Checkbox mocks controlled by their `checked` prop so tests exercise mutual exclusion like native Ant Design
+- cover the native clear event (`onSearch` with `source: clear`) separately from Search/Enter; clearing must not publish draft mode
+- hold replacement reloads while resolving earlier requests to prove accepted submissions invalidate stale results synchronously, rather than relying on the next request's epoch increment
+- pair request mode/keyword/page observations with visible result identity and test each selector tab's independent draft and accepted query
 
 Release Gate proof pattern:
 

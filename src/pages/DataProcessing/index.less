@@ -4,7 +4,7 @@
 }
 
 .resultSetWorkspace {
-  width: min(1180px, 100%);
+  width: 100%;
   border-top: 3px solid var(--ant-color-primary);
 }
 
@@ -110,7 +110,7 @@
 
 .workbenchPanel {
   width: 100%;
-  max-width: 1180px;
+  min-width: 0;
 }
 
 .commandMessage {
@@ -331,7 +331,8 @@
 }
 
 .bundleProcessSelect {
-  min-width: min(680px, 75vw);
+  width: 100%;
+  min-width: 0;
 }
 
 .bundleDownloadGrid {
@@ -413,14 +414,16 @@
   overflow-wrap: anywhere;
 }
 
-.previewPager {
-  color: var(--ant-color-text-secondary);
-  font-size: 12px;
-  line-height: 20px;
+.previewResultToolbar {
+  width: 100%;
+  flex-wrap: wrap;
 }
 
-.previewResultToolbar {
-  flex-wrap: wrap;
+.previewResultToolbar > :global(.ant-space-item),
+.previewTableStack > :global(.ant-space-item),
+.previewDetails > :global(.ant-space-item) {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .previewResultSelect {
@@ -491,4 +494,75 @@
   color: var(--ant-color-success);
   font-size: 12px;
   line-height: 20px;
+}
+
+.directoryToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.directoryToolbar > :first-child {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.directoryToolbar > :global(.ant-select) {
+  min-width: 160px;
+}
+
+.workspaceTitle {
+  margin: 0 !important;
+  overflow-wrap: anywhere;
+}
+
+.resultSetName {
+  height: auto;
+  padding: 0;
+  white-space: normal;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 860px) {
+  .resultSetCreateForm,
+  .resultSetSelector {
+    flex: 0 0 auto;
+  }
+
+  .directoryToolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .directoryToolbar > :first-child {
+    flex: 0 0 auto;
+  }
+
+  .bundleProcessSelect,
+  .previewResultSelect {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .previewDetails :global(.ant-card-head-wrapper) {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-block: 12px;
+  }
+
+  .previewDetails,
+  .workbenchPanel,
+  .pageStack {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+.previewDiagnostics {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

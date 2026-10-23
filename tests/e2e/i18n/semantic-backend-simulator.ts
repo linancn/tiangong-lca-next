@@ -5,6 +5,7 @@ import type { BrowserContext, Page, Request, Route } from '@playwright/test';
 import {
   SEMANTIC_HARNESS_USER_ID,
   semanticPersonaRoleProjection,
+  createControlledResponseGate,
   type HarnessPersona,
 } from './harness-contract';
 import { readVerifiedProductionBackendTarget } from './production-backend-target';
@@ -14,6 +15,8 @@ import {
   assertExactReadOnlyProcessValidationDraft,
   PROCESS_SAVE_DRAFT_PATH,
 } from './typed-view-readonly-fixture';
+
+export const SYNTHETIC_ACTOR_B = '70400000-0000-4000-8000-000000000705';
 
 const SIMULATED_USER_ID = SEMANTIC_HARNESS_USER_ID;
 const SIMULATED_EMAIL = 'semantic-harness@example.invalid';
@@ -79,17 +82,21 @@ function base64Url(value: unknown): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-function simulatedAccessToken(issuer: string): string {
+function simulatedAccessToken(
+  issuer: string,
+  subject = SIMULATED_USER_ID,
+  expiresAt = 4_102_444_800,
+): string {
   const unsigned = [
     base64Url({ alg: 'RS256', kid: SIMULATED_KEY_ID, typ: 'JWT' }),
     base64Url({
       aud: 'authenticated',
       email: SIMULATED_EMAIL,
-      exp: 4_102_444_800,
+      exp: expiresAt,
       iat: 1_775_000_000,
       iss: `${issuer}/auth/v1`,
       role: 'authenticated',
-      sub: SIMULATED_USER_ID,
+      sub: subject,
       user_metadata: {},
     }),
   ].join('.');
@@ -103,35 +110,49 @@ async function responseFor(
   persona: HarnessPersona,
   backendOrigin: string,
   processState: { json: Record<string, unknown> },
+  authRace?: SyntheticAuthRace,
 ): Promise<unknown> {
   const target = new URL(route.request().url());
   if (target.pathname === '/auth/v1/.well-known/jwks.json') {
     return { keys: [simulatedPublicJwk] };
   }
   if (target.pathname === '/auth/v1/token') {
-    const accessToken = simulatedAccessToken(backendOrigin);
+    const body = JSON.parse(route.request().postData() ?? '{}');
+    const refresh = target.searchParams.get('grant_type') === 'refresh_token';
+    const subject =
+      body.email === 'actor-b@example.invalid' ? SYNTHETIC_ACTOR_B : SIMULATED_USER_ID;
+    if (refresh && authRace) {
+      authRace.refresh.markStarted();
+      await authRace.refresh.released;
+    }
+    const expiresAt = authRace ? Math.floor(Date.now() / 1000) + 3600 : 4_102_444_800;
+    const accessToken = simulatedAccessToken(backendOrigin, subject, expiresAt);
     return {
       access_token: accessToken,
       expires_in: 3600,
-      expires_at: 4_102_444_800,
-      refresh_token: 'qualification-refresh-token',
+      expires_at: expiresAt,
+      refresh_token: `qualification-refresh-${subject}`,
       token_type: 'bearer',
       user: {
         app_metadata: { provider: 'email', providers: ['email'] },
         aud: 'authenticated',
         email: SIMULATED_EMAIL,
-        id: SIMULATED_USER_ID,
+        id: subject,
         role: 'authenticated',
         user_metadata: {},
       },
     };
   }
   if (target.pathname === '/auth/v1/user') {
+    const bearer = route.request().headers().authorization?.split(' ')[1];
+    const subject: string = bearer
+      ? JSON.parse(Buffer.from(bearer.split('.')[1], 'base64url').toString()).sub
+      : SIMULATED_USER_ID;
     return {
       app_metadata: { provider: 'email', providers: ['email'] },
       aud: 'authenticated',
       email: SIMULATED_EMAIL,
-      id: SIMULATED_USER_ID,
+      id: subject,
       role: 'authenticated',
       user_metadata: {},
     };
@@ -186,8 +207,8 @@ async function responseFor(
   if (target.pathname.startsWith('/rest/v1/rpc/')) {
     if (
       [
-        '/rest/v1/rpc/list_dataset_display_candidates',
-        '/rest/v1/rpc/list_displayed_datasets',
+        '/rest/v1/rpc/list_dataset_display_candidates_filtered',
+        '/rest/v1/rpc/list_displayed_datasets_filtered',
       ].includes(target.pathname)
     )
       return { data: [], total: 0 };
@@ -202,6 +223,13 @@ async function responseFor(
     }.`,
   );
 }
+
+/** Opt-in synthetic Auth transport controls; never replaces the browser SDK or its events. */
+export function createSyntheticAuthRace() {
+  const taskRequests: { subject: string | null; path: string }[] = [];
+  return { refresh: createControlledResponseGate(), taskRequests };
+}
+type SyntheticAuthRace = ReturnType<typeof createSyntheticAuthRace>;
 
 export type SemanticBackendSimulator = ProductionRequestGuard & {
   externalRequests: number;
@@ -250,7 +278,7 @@ function assertKnownSemanticBackendRequest(request: Request) {
 export async function installSemanticBackendSimulator(
   target: BrowserContext | Page,
   persona: HarnessPersona = 'standard_user',
-  options: { allowLedgerControlledProcessSaveDraft?: boolean } = {},
+  options: { allowLedgerControlledProcessSaveDraft?: boolean; authRace?: SyntheticAuthRace } = {},
 ): Promise<SemanticBackendSimulator> {
   const backend = readVerifiedProductionBackendTarget();
   const semanticLedger = await readProductionDataLedger();
@@ -308,6 +336,15 @@ export async function installSemanticBackendSimulator(
       });
       return;
     }
+    if (
+      options.authRace &&
+      requestTarget.pathname === '/auth/v1/logout' &&
+      request.method() === 'POST'
+    ) {
+      guard.fulfilledRequests += 1;
+      await route.fulfill({ status: 204 });
+      return;
+    }
     const decision = classifyProductionRequest(
       request.method(),
       request.url(),
@@ -322,9 +359,20 @@ export async function installSemanticBackendSimulator(
       return;
     }
     assertKnownSemanticBackendRequest(request);
+    if (options.authRace && requestTarget.pathname.startsWith('/functions/v1/')) {
+      const bearer = request.headers().authorization?.split(' ')[1];
+      options.authRace.taskRequests.push({
+        subject: bearer
+          ? JSON.parse(Buffer.from(bearer.split('.')[1], 'base64url').toString()).sub
+          : null,
+        path: requestTarget.pathname,
+      });
+    }
     guard.fulfilledRequests += 1;
     await route.fulfill({
-      body: JSON.stringify(await responseFor(route, persona, backend.origin, processState)),
+      body: JSON.stringify(
+        await responseFor(route, persona, backend.origin, processState, options.authRace),
+      ),
       contentType: 'application/json',
       headers: {
         'access-control-allow-origin': '*',

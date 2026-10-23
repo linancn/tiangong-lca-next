@@ -1,3 +1,10 @@
+import {
+  ResponsiveDataListViewport,
+  dataListPagination,
+  dataListText,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getLang, getLangText } from '@/services/general/util';
 import { CloseOutlined } from '@ant-design/icons';
@@ -41,6 +48,70 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const displayColumns = orderDataListColumns<RefVersionItem>(
+    [
+      {
+        title: (
+          <FormattedMessage id={'component.refsOfNewVersionDrawer.col.id'} defaultMessage={'ID'} />
+        ),
+        dataIndex: 'id',
+        width: 280,
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.type'}
+            defaultMessage={'Type'}
+          />
+        ),
+        dataIndex: 'dataType',
+        render: (_, row) => row.type,
+        width: 120,
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.desc'}
+            defaultMessage={'Description'}
+          />
+        ),
+        dataIndex: 'name',
+        ellipsis: true,
+        render: (_, r) => {
+          return dataListText(getLangText(r.description, lang));
+        },
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.current'}
+            defaultMessage={'Current version'}
+          />
+        ),
+        dataIndex: 'version',
+        render: (_, row) => row.currentVersion,
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.new'}
+            defaultMessage={'New version'}
+          />
+        ),
+        dataIndex: 'newVersion',
+      },
+    ],
+    {
+      titles: {
+        version: (
+          <FormattedMessage
+            id='component.refsOfNewVersionDrawer.col.current'
+            defaultMessage='Current version'
+          />
+        ),
+      },
+    },
+  );
   return (
     <Drawer
       getContainer={() => document.body}
@@ -78,113 +149,67 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
       }
     >
       {open ? (
-        <ProTable<RefVersionItem>
-          rowKey='key'
-          actionRef={actionRef}
-          search={false}
-          options={false}
-          loading={loading}
-          dataSource={dataSource}
-          pagination={{ pageSize: 10 }}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            selectedRowKeys,
-            onSelect: (record, selected) => {
-              const currentKey = record.key;
-              const currentId = record.id;
-              if (selected) {
-                const filteredRows = (selectedRows as RefVersionItem[]).filter(
-                  (r) => r.id !== currentId,
-                );
-                const filteredKeys = selectedRowKeys.filter(
-                  (k) =>
-                    !(selectedRows as RefVersionItem[]).some(
-                      (sr) => sr.key === k && sr.id === currentId,
-                    ),
-                );
-                const newRows = [...filteredRows, record as RefVersionItem];
-                const newKeys = [...filteredKeys, currentKey];
-                setSelectedRows(newRows);
-                setSelectedRowKeys(newKeys);
-              } else {
-                const newRows = (selectedRows as RefVersionItem[]).filter(
-                  (r) => r.key !== currentKey,
-                );
-                const newKeys = selectedRowKeys.filter((k) => k !== currentKey);
-                setSelectedRows(newRows);
-                setSelectedRowKeys(newKeys);
-              }
-            },
-            onSelectAll: (selected, selectedRowsAll) => {
-              if (selected) {
-                const byId = new Map<string, RefVersionItem>();
-                // 确保同 id 仅一条
-                (selectedRowsAll as RefVersionItem[]).forEach((r) => {
-                  byId.set(r.id, r);
-                });
-                const uniqueRows = Array.from(byId.values());
-                setSelectedRows(uniqueRows);
-                setSelectedRowKeys(uniqueRows.map((r) => r.key));
-              } else {
-                setSelectedRows([]);
-                setSelectedRowKeys([]);
-              }
-            },
-          }}
-          columns={[
-            {
-              title: (
-                <FormattedMessage
-                  id={'component.refsOfNewVersionDrawer.col.id'}
-                  defaultMessage={'ID'}
-                />
-              ),
-              dataIndex: 'id',
-              width: 280,
-            },
-            {
-              title: (
-                <FormattedMessage
-                  id={'component.refsOfNewVersionDrawer.col.type'}
-                  defaultMessage={'Type'}
-                />
-              ),
-              dataIndex: 'type',
-              width: 120,
-            },
-            {
-              title: (
-                <FormattedMessage
-                  id={'component.refsOfNewVersionDrawer.col.desc'}
-                  defaultMessage={'Description'}
-                />
-              ),
-              dataIndex: 'description',
-              ellipsis: true,
-              render: (_, r) => {
-                return <>{getLangText(r.description, lang)}</>;
-              },
-            },
-            {
-              title: (
-                <FormattedMessage
-                  id={'component.refsOfNewVersionDrawer.col.current'}
-                  defaultMessage={'Current version'}
-                />
-              ),
-              dataIndex: 'currentVersion',
-            },
-            {
-              title: (
-                <FormattedMessage
-                  id={'component.refsOfNewVersionDrawer.col.new'}
-                  defaultMessage={'New version'}
-                />
-              ),
-              dataIndex: 'newVersion',
-            },
-          ]}
-        />
+        <ResponsiveDataListViewport columns={displayColumns}>
+          {({ scroll }) => (
+            <ProTable<RefVersionItem>
+              {...responsiveDataListTableProps}
+              scroll={scroll}
+              rowKey='key'
+              actionRef={actionRef}
+              search={false}
+              options={false}
+              loading={loading}
+              dataSource={dataSource}
+              pagination={dataListPagination}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                selectedRowKeys,
+                onSelect: (record, selected) => {
+                  const currentKey = record.key;
+                  const currentId = record.id;
+                  if (selected) {
+                    const filteredRows = (selectedRows as RefVersionItem[]).filter(
+                      (r) => r.id !== currentId,
+                    );
+                    const filteredKeys = selectedRowKeys.filter(
+                      (k) =>
+                        !(selectedRows as RefVersionItem[]).some(
+                          (sr) => sr.key === k && sr.id === currentId,
+                        ),
+                    );
+                    const newRows = [...filteredRows, record as RefVersionItem];
+                    const newKeys = [...filteredKeys, currentKey];
+                    setSelectedRows(newRows);
+                    setSelectedRowKeys(newKeys);
+                  } else {
+                    const newRows = (selectedRows as RefVersionItem[]).filter(
+                      (r) => r.key !== currentKey,
+                    );
+                    const newKeys = selectedRowKeys.filter((k) => k !== currentKey);
+                    setSelectedRows(newRows);
+                    setSelectedRowKeys(newKeys);
+                  }
+                },
+                onSelectAll: (selected, selectedRowsAll) => {
+                  if (selected) {
+                    const byId = new Map<string, RefVersionItem>();
+                    // 确保同 id 仅一条
+                    (selectedRowsAll as RefVersionItem[]).forEach((r) => {
+                      byId.set(r.id, r);
+                    });
+                    const uniqueRows = Array.from(byId.values());
+                    setSelectedRows(uniqueRows);
+                    setSelectedRowKeys(uniqueRows.map((r) => r.key));
+                  } else {
+                    setSelectedRows([]);
+                    setSelectedRowKeys([]);
+                  }
+                },
+              }}
+              columns={displayColumns}
+            />
+          )}
+        </ResponsiveDataListViewport>
       ) : null}
     </Drawer>
   );

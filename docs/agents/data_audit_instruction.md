@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
-lastReviewedNote: 'Documented the unified Process and Lifecycle Model Review Member footer and reviewer-opinion rejection behavior for Platform #1208 after merging current dev.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
+lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: reviewer-model exchange selection retains exact references and actions while using shared column budgets. Audit codes, advisory opinions, submission and final-decision authority are unchanged.'
 ---
 
 # Audit Status Reference
@@ -86,9 +86,9 @@ New reviews use `review_kind = root | reference`. Migrated legacy source rows re
 | Review Member approves | `comments.state_code -> 1`; simple Root/Reference approval has no opinion field |
 | Review Member rejects | a non-empty reason is required; `comments.state_code -> -3` |
 | Review Member edits a submitted Process/Lifecycle Model Root opinion before finalization | saving a draft updates the comment JSON and returns `comments.state_code: 1/-3 -> 0`; the opinion must be submitted again |
-| Review Admin finally approves | after all current Review Members have completed, `comments.state_code -> 2`, `reviews.state_code -> 2`, and only the exact review target moves `20 -> 100` |
+| Review Admin finally approves | after at least one current assigned Review Member has submitted an approval, `comments.state_code -> 2`, `reviews.state_code -> 2`, and only the exact review target moves `20 -> 100` |
 
-Review Member outcomes are advisory. The Platform disables Review Admin final approval when every current assigned Review Member used `-3`; it also excludes those tasks from batch approval. This is a frontend control, not a backend authorization change. Review Admin may reject before every Review Member has completed. A Root Review may be approved while its Reference Reviews are still pending; this does not approve or release those references. Conversely, a Reference Review continues independently when its only Root Review is rejected.
+Review Member outcomes are advisory. Review Admin final approval requires at least one current assigned Review Member Comment in state `1`; pending opinions do not delay final approval. Draft, rejected, revoked and unassigned opinions do not satisfy this requirement. The single-item UI, batch eligibility and database finalization enforce the same rule. Review Admin may reject before every Review Member has completed. A Root Review may be approved while its Reference Reviews are still pending; this does not approve or release those references. Conversely, a Reference Review continues independently when its only Root Review is rejected.
 
 ## Batch Decision Boundary
 

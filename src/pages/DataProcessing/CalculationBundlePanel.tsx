@@ -1,3 +1,10 @@
+import { resolveContentLanguage } from '@/services/general/contentLanguageRegistry';
+import {
+  createResultMetadataReader,
+  resultReferenceKey,
+  resultMethodMetadata,
+  type ResultMetadata,
+} from '@/services/lcaReleases/presentation';
 import {
   fetchCalculationBundleArtifactText,
   fetchCalculationBundleRecords,
@@ -13,9 +20,22 @@ import {
 } from '@/services/lcaReleases';
 import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Alert, Button, Card, Descriptions, Select, Space, Spin, Table, Tabs } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  Collapse,
+  Descriptions,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tabs,
+  Typography,
+} from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './index.less';
+import CalculationExportsPanel from './CalculationExportsPanel';
 
 const MAX_INLINE_ARTIFACT_BYTES = 24 * 1024 * 1024;
 
@@ -90,11 +110,21 @@ function hashValue(value: unknown): string {
 
 type Props = {
   packageId: string;
+  view?: 'results' | 'exports';
+  onReviewCalculation?: () => void;
   initialProcessId?: string;
   initialProcessVersion?: string;
+  processName?: string;
 };
 
-const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVersion }: Props) => {
+const CalculationBundlePanel = ({
+  packageId,
+  view,
+  onReviewCalculation,
+  initialProcessId,
+  initialProcessVersion,
+  processName,
+}: Props) => {
   const intl = useIntl();
   const t = useCallback(
     (id: string, defaultMessage: string) => intl.formatMessage({ id, defaultMessage }),
@@ -112,8 +142,15 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   const [recordsIssue, setRecordsIssue] = useState<string | null>(null);
   const [downloadIssue, setDownloadIssue] = useState<string | null>(null);
   const [downloadingPath, setDownloadingPath] = useState<string | null>(null);
+  const language = resolveContentLanguage(intl.locale);
+  const readMetadata = useMemo(() => createResultMetadataReader(language), [language, packageId]);
+  const [flowMetadata, setFlowMetadata] = useState<Record<string, ResultMetadata>>({});
+  const [resolvedProcessName, setResolvedProcessName] = useState('');
+  const [lciPage, setLciPage] = useState(1);
+  const [metadataLoading, setMetadataLoading] = useState(false);
+  const [metadataRetry, setMetadataRetry] = useState(0);
   const [reloadToken, setReloadToken] = useState(0);
-  const [activeResultTab, setActiveResultTab] = useState('lci');
+  const [activeResultTab, setActiveResultTab] = useState('lcia');
 
   useEffect(() => {
     let cancelled = false;
@@ -122,6 +159,8 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
       setIssue(null);
       setBundle(null);
       setProcesses([]);
+      setLciRows([]);
+      setLciaRows([]);
       setSelectedProcessIndex(undefined);
       setCoverage(null);
       setDownloadIssue(null);
@@ -161,12 +200,14 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
         const preferred = processRows.find(
           (process) =>
             process.rootProcess.id === initialProcessId &&
-            (!initialProcessVersion || process.rootProcess.version === initialProcessVersion),
+            process.rootProcess.version === initialProcessVersion,
         );
         setBundle(nextBundle);
         setProcesses(processRows);
         setCoverage(coveragePayload);
-        setSelectedProcessIndex(preferred?.processIndex ?? processRows[0]?.processIndex);
+        setSelectedProcessIndex(
+          initialProcessId ? preferred?.processIndex : processRows[0]?.processIndex,
+        );
       } catch (error) {
         if (!cancelled) {
           setIssue({
@@ -187,7 +228,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   useEffect(() => {
     let cancelled = false;
     const loadRecords = async () => {
-      if (!bundle || selectedProcessIndex === undefined) return;
+      if (view === 'exports' || !bundle || selectedProcessIndex === undefined) return;
       setRecordsLoading(true);
       setRecordsIssue(null);
       setLciRows([]);
@@ -228,11 +269,59 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
     return () => {
       cancelled = true;
     };
-  }, [bundle, selectedProcessIndex]);
+  }, [bundle, selectedProcessIndex, view]);
 
   const selectedProcess = processes.find(
     (process) => process.processIndex === selectedProcessIndex,
   );
+  useEffect(() => {
+    let cancelled = false;
+    setLciPage(1);
+    setResolvedProcessName('');
+    if (selectedProcess && view !== 'exports') {
+      void readMetadata('processes', [selectedProcess.rootProcess]).then((metadata) => {
+        if (!cancelled)
+          setResolvedProcessName(
+            metadata[resultReferenceKey(selectedProcess.rootProcess)]?.name ?? '',
+          );
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProcess, readMetadata, view, metadataRetry]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setFlowMetadata({});
+    if (!selectedProcess || view === 'exports') return;
+    setMetadataLoading(true);
+    const references = [
+      selectedProcess.quantitativeReference.flow,
+      ...lciRows.slice((lciPage - 1) * 25, lciPage * 25).map((row) => row.flow),
+    ];
+    void readMetadata('flows', references).then((metadata) => {
+      if (!cancelled) {
+        setFlowMetadata(metadata);
+        setMetadataLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProcess, lciRows, lciPage, readMetadata, view, metadataRetry]);
+
+  const displayName = processName || resolvedProcessName;
+  const reference = selectedProcess?.quantitativeReference;
+  const referenceName = reference && flowMetadata[resultReferenceKey(reference.flow)]?.name;
+  const metadataUnavailable =
+    !metadataLoading &&
+    selectedProcess &&
+    (!displayName ||
+      !referenceName ||
+      lciRows
+        .slice((lciPage - 1) * 25, lciPage * 25)
+        .some((row) => !flowMetadata[resultReferenceKey(row.flow)]));
   const processOptions = processes.map((process) => ({
     label: processOptionLabel(process),
     value: String(process.processIndex),
@@ -246,7 +335,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
 
   const exportLciCsv = () =>
     downloadText(
-      `lci-${selectedProcess?.rootProcess.id ?? 'process'}.csv`,
+      `lci-${selectedProcess!.rootProcess.id}.csv`,
       recordsToCsv(
         ['flow_uuid', 'flow_version', 'direction', 'unit', 'location', 'mean_amount'],
         lciRows.map((row) => [
@@ -262,7 +351,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
     );
   const exportJson = (kind: 'lci' | 'lcia', rows: unknown[]) =>
     downloadText(
-      `${kind}-${selectedProcess?.rootProcess.id ?? 'process'}.json`,
+      `${kind}-${selectedProcess!.rootProcess.id}.json`,
       `${JSON.stringify(rows, null, 2)}\n`,
       'application/json',
     );
@@ -290,12 +379,29 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
 
   const lciColumns = useMemo(
     () => [
-      { title: t('pages.dataProcessing.bundle.flow', 'Flow UUID'), dataIndex: ['flow', 'id'] },
+      {
+        title: t('pages.dataProcessing.resultView.flow', 'Flow'),
+        dataIndex: ['flow', 'id'],
+        render: (id: string, row: CalculationBundleLciRecord) => (
+          <span title={`${id} · ${row.flow.version}`}>
+            {flowMetadata[resultReferenceKey(row.flow)]?.name || id}
+          </span>
+        ),
+      },
       {
         title: t('pages.dataProcessing.bundle.version', 'Version'),
         dataIndex: ['flow', 'version'],
       },
-      { title: t('pages.dataProcessing.bundle.direction', 'Direction'), dataIndex: 'direction' },
+      {
+        title: t('pages.dataProcessing.bundle.direction', 'Direction'),
+        dataIndex: 'direction',
+        render: (value: string) =>
+          value === 'Input'
+            ? t('pages.dataProcessing.resultView.input', 'Input')
+            : value === 'Output'
+              ? t('pages.dataProcessing.resultView.output', 'Output')
+              : value,
+      },
       { title: t('pages.dataProcessing.bundle.unit', 'Unit'), dataIndex: 'unit' },
       {
         title: t('pages.dataProcessing.bundle.location', 'Location'),
@@ -308,25 +414,39 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
         render: (value: number) => formatBundleNumber(value),
       },
     ],
-    [t],
+    [t, flowMetadata],
   );
   const lciaColumns = useMemo(
     () => [
       {
-        title: t('pages.dataProcessing.bundle.method', 'LCIA method UUID'),
+        title: t('pages.dataProcessing.preview.lciaMethod', 'LCIA method'),
         dataIndex: ['method', 'id'],
+        render: (id: string, row: CalculationBundleLciaRecord) => {
+          const metadata = resultMethodMetadata(row.method, language);
+          return (
+            <span title={`${id} · ${row.method.version}`}>
+              {metadata.name === '-' ? id : metadata.name}
+            </span>
+          );
+        },
       },
       {
         title: t('pages.dataProcessing.bundle.version', 'Version'),
         dataIndex: ['method', 'version'],
       },
       {
-        title: t('pages.dataProcessing.bundle.amount', 'Amount'),
+        title: t('pages.dataProcessing.preview.value', 'Value'),
         dataIndex: 'meanAmount',
         render: (value: number) => formatBundleNumber(value),
       },
+      {
+        title: t('pages.dataProcessing.bundle.unit', 'Unit'),
+        key: 'unit',
+        render: (_: unknown, row: CalculationBundleLciaRecord) =>
+          resultMethodMetadata(row.method, language).unit,
+      },
     ],
-    [t],
+    [t, language],
   );
 
   if (loading) return <Spin spinning={true} />;
@@ -353,18 +473,41 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   }
   if (!bundleData || !manifest) return null;
 
-  const resultNotice = recordsIssue ? <Alert type='warning' title={recordsIssue} /> : null;
+  const resultNotice = recordsIssue ? (
+    <Alert type='warning' title={recordsIssue} />
+  ) : initialProcessId && !selectedProcess ? (
+    <Alert
+      type='info'
+      title={t(
+        'pages.dataProcessing.resultView.processUnavailable',
+        'This process version is not included in this calculation.',
+      )}
+    />
+  ) : null;
   const processControl = (
     <Space className={styles.bundleToolbar} wrap>
       <span>{t('pages.dataProcessing.bundle.process', 'Process')}</span>
-      <Select
-        aria-label={t('pages.dataProcessing.bundle.process', 'Process')}
-        className={styles.bundleProcessSelect}
-        value={selectedProcessIndex === undefined ? undefined : String(selectedProcessIndex)}
-        options={processOptions}
-        showSearch={{ optionFilterProp: 'label' }}
-        onChange={(value) => setSelectedProcessIndex(Number(value))}
-      />
+      {initialProcessId ? (
+        <Typography.Text strong>
+          {displayName || initialProcessId} · {initialProcessVersion}
+        </Typography.Text>
+      ) : (
+        <Select
+          aria-label={t('pages.dataProcessing.bundle.process', 'Process')}
+          className={styles.bundleProcessSelect}
+          value={selectedProcessIndex === undefined ? undefined : String(selectedProcessIndex)}
+          options={processOptions}
+          showSearch={{ optionFilterProp: 'label' }}
+          onChange={(value) => setSelectedProcessIndex(Number(value))}
+        />
+      )}
+      {reference ? (
+        <Typography.Text type='secondary'>
+          {t('pages.dataProcessing.resultView.reference', 'Dataset reference quantity')}:{' '}
+          {referenceName || reference.flow.id} · {formatBundleNumber(reference.meanAmount)}{' '}
+          {reference.referenceUnit}
+        </Typography.Text>
+      ) : null}
     </Space>
   );
   const rawActions = (
@@ -375,7 +518,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
         onClick={exportLciCsv}
         disabled={!lciRows.length}
       >
-        {t('pages.dataProcessing.bundle.exportCsv', 'Export CSV')}
+        {t('pages.dataProcessing.workspace.currentCsv', 'Current process CSV')}
       </Button>
       <Button
         size='small'
@@ -383,7 +526,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
         onClick={() => exportJson('lci', lciRows)}
         disabled={!lciRows.length}
       >
-        {t('pages.dataProcessing.bundle.exportJson', 'Export JSON')}
+        {t('pages.dataProcessing.workspace.currentJson', 'Current process JSON')}
       </Button>
     </Space>
   );
@@ -417,58 +560,30 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   return (
     <Card
       className={styles.bundleCard}
-      title={t('pages.dataProcessing.bundle.title', 'Calculation Bundle')}
-      extra={
-        <Button icon={<ReloadOutlined />} onClick={() => setReloadToken((value) => value + 1)}>
-          {t('pages.dataProcessing.bundle.refresh', 'Refresh secure links')}
-        </Button>
+      title={
+        view === 'exports'
+          ? t('pages.dataProcessing.workspace.exports', 'Exports')
+          : t('pages.dataProcessing.resultView.title', 'Process results')
       }
     >
       <Space orientation='vertical' size='middle' className={styles.previewDetails}>
-        <Descriptions
-          bordered
-          size='small'
-          column={2}
-          items={[
-            {
-              key: 'contract',
-              label: t('pages.dataProcessing.bundle.schema', 'Contract'),
-              children: manifest.schemaVersion,
-            },
-            {
-              key: 'coverage',
-              label: t('pages.dataProcessing.bundle.coverage', 'Coverage'),
-              children:
-                coverageComplete === true
-                  ? t('pages.dataProcessing.bundle.complete', 'Complete')
-                  : t('pages.dataProcessing.bundle.blocked', 'Incomplete / blocked'),
-            },
-            {
-              key: 'process-count',
-              label: t('pages.dataProcessing.bundle.processCount', 'Processes'),
-              children: manifest.scope.processCount,
-            },
-            {
-              key: 'impact-count',
-              label: t('pages.dataProcessing.bundle.impactCount', 'LCIA methods'),
-              children: manifest.snapshot.impactCount,
-            },
-            {
-              key: 'snapshot',
-              label: t('pages.dataProcessing.bundle.snapshot', 'Snapshot'),
-              children: <code>{manifest.snapshot.id}</code>,
-            },
-            {
-              key: 'content-hash',
-              label: t('pages.dataProcessing.bundle.contentHash', 'Bundle hash'),
-              children: <code>{manifest.bundleContentHash}</code>,
-            },
-          ]}
-        />
-        {processControl}
+        {view !== 'exports' ? processControl : null}
+        {metadataUnavailable && view !== 'exports' ? (
+          <Space>
+            <Typography.Text type='secondary'>
+              {t(
+                'pages.dataProcessing.resultView.metadataUnavailable',
+                'Some names are unavailable. Exact identifiers remain visible; results are unchanged.',
+              )}
+            </Typography.Text>
+            <Button size='small' onClick={() => setMetadataRetry((value) => value + 1)}>
+              {t('pages.dataProcessing.bundle.retry', 'Retry')}
+            </Button>
+          </Space>
+        ) : null}
         <Spin spinning={recordsLoading}>
           <Tabs
-            activeKey={activeResultTab}
+            activeKey={view === 'exports' ? 'downloads' : activeResultTab}
             onChange={setActiveResultTab}
             items={[
               {
@@ -485,7 +600,13 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                       }
                       columns={lciColumns}
                       dataSource={lciRows}
-                      pagination={{ pageSize: 25 }}
+                      pagination={{
+                        current: lciPage,
+                        pageSize: 25,
+                        showSizeChanger: false,
+                        onChange: setLciPage,
+                      }}
+                      scroll={{ x: 700, y: 480 }}
                     />
                   </Space>
                 ),
@@ -502,7 +623,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                       onClick={() => exportJson('lcia', lciaRows)}
                       disabled={!lciaRows.length}
                     >
-                      {t('pages.dataProcessing.bundle.exportJson', 'Export JSON')}
+                      {t('pages.dataProcessing.workspace.currentJson', 'Current process JSON')}
                     </Button>
                     <Table
                       size='small'
@@ -511,52 +632,10 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                       }
                       columns={lciaColumns}
                       dataSource={lciaRows}
-                      pagination={{ pageSize: 25 }}
+                      pagination={false}
+                      scroll={{ x: 600, y: 480 }}
                     />
                   </Space>
-                ),
-              },
-              {
-                key: 'evidence',
-                label: t('pages.dataProcessing.bundle.evidence', 'Evidence'),
-                children: (
-                  <Descriptions
-                    bordered
-                    size='small'
-                    column={1}
-                    items={[
-                      {
-                        key: 'selection-hash',
-                        label: t('pages.dataProcessing.bundle.selectionHash', 'Selection hash'),
-                        children: <code>{manifest.scope.selectionManifestHash}</code>,
-                      },
-                      {
-                        key: 'snapshot-hash',
-                        label: t('pages.dataProcessing.bundle.snapshotHash', 'Snapshot hash'),
-                        children: <code>{manifest.snapshot.sha256}</code>,
-                      },
-                      {
-                        key: 'method-set-hash',
-                        label: t(
-                          'pages.dataProcessing.bundle.methodSetHash',
-                          'Method identity hash',
-                        ),
-                        children: (
-                          <code>{hashValue(manifest.methodSet.methodIdentityManifestSha256)}</code>
-                        ),
-                      },
-                      {
-                        key: 'factor-hash',
-                        label: t('pages.dataProcessing.bundle.factorHash', 'Factor hash'),
-                        children: <code>{hashValue(manifest.methodSet.factorManifestSha256)}</code>,
-                      },
-                      {
-                        key: 'artifact-count',
-                        label: t('pages.dataProcessing.bundle.artifactCount', 'Verified artifacts'),
-                        children: bundleData.artifactCount,
-                      },
-                    ]}
-                  />
                 ),
               },
               {
@@ -575,6 +654,10 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                         }
                       />
                     ) : null}
+                    <CalculationExportsPanel
+                      packageId={packageId}
+                      onReviewCalculation={onReviewCalculation}
+                    />
                     <strong>{t('pages.dataProcessing.bundle.resultFiles', 'Result files')}</strong>
                     <div className={styles.bundleDownloadGrid}>
                       {productDownloadCards(downloadsFor('results'))}
@@ -612,9 +695,90 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                   </Space>
                 ),
               },
-            ]}
+            ].filter(
+              (item) =>
+                !view || (view === 'exports' ? item.key === 'downloads' : item.key !== 'downloads'),
+            )}
           />
         </Spin>
+        <Collapse
+          items={[
+            {
+              key: 'identity',
+              label: t('pages.dataProcessing.workspace.evidence', 'Technical evidence'),
+              children: (
+                <Descriptions
+                  bordered
+                  size='small'
+                  column={2}
+                  items={[
+                    {
+                      key: 'selection-hash',
+                      label: t('pages.dataProcessing.bundle.selectionHash', 'Selection hash'),
+                      children: <code>{manifest.scope.selectionManifestHash}</code>,
+                    },
+                    {
+                      key: 'snapshot-hash',
+                      label: t('pages.dataProcessing.bundle.snapshotHash', 'Snapshot hash'),
+                      children: <code>{manifest.snapshot.sha256}</code>,
+                    },
+                    {
+                      key: 'method-set-hash',
+                      label: t('pages.dataProcessing.bundle.methodSetHash', 'Method identity hash'),
+                      children: (
+                        <code>{hashValue(manifest.methodSet.methodIdentityManifestSha256)}</code>
+                      ),
+                    },
+                    {
+                      key: 'factor-hash',
+                      label: t('pages.dataProcessing.bundle.factorHash', 'Factor hash'),
+                      children: <code>{hashValue(manifest.methodSet.factorManifestSha256)}</code>,
+                    },
+                    {
+                      key: 'artifact-count',
+                      label: t('pages.dataProcessing.bundle.artifactCount', 'Verified artifacts'),
+                      children: bundleData.artifactCount,
+                    },
+
+                    {
+                      key: 'contract',
+                      label: t('pages.dataProcessing.bundle.schema', 'Contract'),
+                      children: manifest.schemaVersion,
+                    },
+                    {
+                      key: 'coverage',
+                      label: t('pages.dataProcessing.bundle.coverage', 'Coverage'),
+                      children:
+                        coverageComplete === true
+                          ? t('pages.dataProcessing.bundle.complete', 'Complete')
+                          : t('pages.dataProcessing.bundle.blocked', 'Incomplete / blocked'),
+                    },
+                    {
+                      key: 'process-count',
+                      label: t('pages.dataProcessing.bundle.processCount', 'Processes'),
+                      children: manifest.scope.processCount,
+                    },
+                    {
+                      key: 'impact-count',
+                      label: t('pages.dataProcessing.bundle.impactCount', 'LCIA methods'),
+                      children: manifest.snapshot.impactCount,
+                    },
+                    {
+                      key: 'snapshot',
+                      label: t('pages.dataProcessing.bundle.snapshot', 'Snapshot'),
+                      children: <code>{manifest.snapshot.id}</code>,
+                    },
+                    {
+                      key: 'content-hash',
+                      label: t('pages.dataProcessing.bundle.contentHash', 'Bundle hash'),
+                      children: <code>{manifest.bundleContentHash}</code>,
+                    },
+                  ]}
+                />
+              ),
+            },
+          ]}
+        />
       </Space>
     </Card>
   );

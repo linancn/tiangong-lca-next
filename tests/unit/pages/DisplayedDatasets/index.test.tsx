@@ -24,6 +24,8 @@ jest.mock('@ant-design/pro-components', () => ({
     return (
       <section>
         {props.headerTitle}
+        {props.toolbar?.search}
+        {props.toolbar?.filter}
         {props.columns.map((column: any) => (
           <span key={String(column.dataIndex ?? column.valueType)}>{column.title}</span>
         ))}
@@ -31,7 +33,7 @@ jest.mock('@ant-design/pro-components', () => ({
         {rows.map((row: any) => (
           <article key={props.rowKey(row)} data-testid={props.rowKey(row)}>
             <span>{row.name}</span>
-            {props.columns[4].render(null, row)}
+            {props.columns.find((c: any) => c.dataIndex === 'calculationResult').render(null, row)}
           </article>
         ))}
       </section>
@@ -49,12 +51,16 @@ jest.mock('@/components/DatasetKindFilter', () => ({
   datasetKindMessage: (kind: string) => ({ id: kind, defaultMessage: kind }),
 }));
 jest.mock('umi', () => ({
-  FormattedMessage: ({ defaultMessage, values = {} }: any) => (
-    <>{defaultMessage.replace(/\{(\w+)\}/g, (_: string, key: string) => String(values[key]))}</>
+  FormattedMessage: ({ defaultMessage, id, values = {} }: any) => (
+    <>
+      {(defaultMessage ?? id).replace(/\{(\w+)\}/g, (_: string, key: string) =>
+        String(values[key]),
+      )}
+    </>
   ),
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: ({ defaultMessage }: any) => defaultMessage,
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
 }));
 const process = (version = '01.00.000', id = 'process-a') => ({
@@ -100,27 +106,75 @@ describe('DisplayedDatasets', () => {
     mockLocale = 'zh-CN';
     proTableProps = undefined;
   });
-  it('preserves exact-version pagination and exposes the five-column mixed-type list', async () => {
+  it.each([
+    ['process', 'LCI result'],
+    ['flow', 'Product flow'],
+    ['source', 'External record'],
+  ])('renders %s subtype metadata with the correct kind label', (datasetKind, typeOfDataSet) => {
     render(<DisplayedDatasets />);
-    expect(screen.getByText('Displayed datasets')).toBeInTheDocument();
+    const column = proTableProps.columns.find((item: any) => item.dataIndex === 'datasetKind');
+    const cell = render(
+      <div data-testid='rendered-subtype'>
+        {column.render(null, { datasetKind, typeOfDataSet })}
+      </div>,
+    );
+    expect(cell.getByTestId('rendered-subtype')).toHaveTextContent(
+      `${datasetKind} · ${typeOfDataSet}`,
+    );
+  });
+  it('uses the newly applied query and classification without changing dataset kind', async () => {
+    render(<DisplayedDatasets />);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Dataset type' }), {
+      target: { value: 'flow' },
+    });
+    await page([]);
+    await act(async () => proTableProps.toolbar.search.props.onSearch('steel'));
+    await page([]);
+    expect(mockListDatasetDisplay).toHaveBeenLastCalledWith(
+      { current: 1, pageSize: 10, datasetKind: 'flow', query: 'steel', classification: [] },
+      'zh',
+    );
+    fireEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await page([]);
+    const classification = [{ scope: 'classification', code: 'C', path: ['C'] }];
+    expect(mockListDatasetDisplay).toHaveBeenLastCalledWith(
+      { current: 1, pageSize: 10, datasetKind: 'flow', query: 'steel', classification },
+      'zh',
+    );
+    await act(async () => proTableProps.toolbar.search.props.onSearch(''));
+    await page([]);
+    expect(mockListDatasetDisplay).toHaveBeenLastCalledWith(
+      { current: 1, pageSize: 10, datasetKind: 'flow', query: '', classification },
+      'zh',
+    );
+  });
+  it('preserves exact-version pagination and exposes the six base columns before the calculation result', async () => {
+    render(<DisplayedDatasets />);
+    expect(proTableProps.headerTitle).toBe(false);
     expect(screen.getByText('Calculation result (kg CO2 Equivalents)')).toBeInTheDocument();
     expect(proTableProps.className).toBe('responsive-data-list-table');
     expect(proTableProps.search).toBe(false);
     expect(proTableProps.options).toEqual({ fullScreen: true });
     expect(proTableProps.toolBarRender).toBeDefined();
-    expect(proTableProps.pagination).toEqual({ pageSize: 10, showSizeChanger: false });
+    expect(proTableProps.pagination).toEqual({
+      defaultPageSize: 50,
+      showSizeChanger: true,
+      pageSizeOptions: [20, 50, 100],
+    });
     expect(proTableProps.columns[0].width).toBe(72);
-    expect(proTableProps.columns).toHaveLength(5);
+    expect(proTableProps.columns).toHaveLength(7);
     expect(proTableProps.columns.slice(1).map((c: any) => c.dataIndex)).toEqual([
       'name',
-      'version',
+      'location',
+      'referenceYear',
       'datasetKind',
+      'version',
       'calculationResult',
     ]);
     expect(proTableProps.rowKey(process())).toBe('process:process-a:01.00.000');
     await page([], 2);
     expect(mockListDatasetDisplay).toHaveBeenCalledWith(
-      { current: 2, pageSize: 10, datasetKind: 'all' },
+      { current: 2, pageSize: 10, datasetKind: 'all', query: '', classification: [] },
       'zh',
     );
     expect(mockGetClimate).not.toHaveBeenCalled();
@@ -245,14 +299,20 @@ describe('DisplayedDatasets', () => {
     mockGetClimate.mockReturnValueOnce(pending.promise);
     render(<DisplayedDatasets />);
     await page([process()]);
-    expect(proTableProps.columns[3].render(null, process())).toBe('process');
+    expect(
+      render(
+        proTableProps.columns
+          .find((c: any) => c.dataIndex === 'datasetKind')
+          .render(null, process()),
+      ).container,
+    ).toHaveTextContent('process');
     fireEvent.change(screen.getByRole('combobox', { name: 'Dataset type' }), {
       target: { value: 'flow' },
     });
     const row = { ...process('01.00.000', 'flow-a'), datasetKind: 'flow' };
     await page([row]);
     expect(mockListDatasetDisplay).toHaveBeenLastCalledWith(
-      { current: 1, pageSize: 10, datasetKind: 'flow' },
+      { current: 1, pageSize: 10, datasetKind: 'flow', query: '', classification: [] },
       'zh',
     );
     await act(async () => pending.resolve(values([process()], 99)));
@@ -260,3 +320,17 @@ describe('DisplayedDatasets', () => {
     expect(screen.queryByText('99')).not.toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import FlowpropertiesPage from '@/pages/Flowproperties';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 jest.mock('@/contexts/AntdAppContext', () => ({
   __esModule: true,
@@ -17,6 +17,8 @@ jest.mock('@/components/ToolBarButton', () => ({
     </button>
   ),
 }));
+
+let mockCapturedTableProps: any;
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -276,10 +278,21 @@ jest.mock('antd', () => {
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Tooltip = ({ children }: any) => <div>{children}</div>;
+  const Tooltip = ({ children, title }: any) => <div title={toText(title)}>{children}</div>;
   const Search = ({ disabled, onSearch, placeholder }: any) => (
     <div>
-      <input aria-label='search-input' disabled={disabled} placeholder={placeholder} />
+      <input
+        aria-label='search-input'
+        disabled={disabled}
+        placeholder={placeholder}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter')
+            onSearch?.(event.currentTarget.value, event, { source: 'input' });
+        }}
+      />
+      <button type='button' onClick={() => onSearch?.('', undefined, { source: 'clear' })}>
+        clear
+      </button>
       <button type='button' disabled={disabled} onClick={() => onSearch?.('climate')}>
         search
       </button>
@@ -358,13 +371,17 @@ jest.mock('@ant-design/pro-components', () => {
     actionRef,
     request,
     params = {},
+    toolbar,
     toolBarRender,
     headerTitle,
     columns,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params, request, actionRef };
     const [rows, setRows] = React.useState<any[]>([]);
     const headerTitleText = toText(headerTitle);
+    const paramsKey = JSON.stringify(params);
     const latestRequestRef = React.useRef(request);
     const latestParamsRef = React.useRef(params);
     latestRequestRef.current = request;
@@ -374,7 +391,7 @@ jest.mock('@ant-design/pro-components', () => {
       () => ({
         reload: jest.fn(async () => {
           const result = await latestRequestRef.current?.(
-            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            { ...latestParamsRef.current, pageSize: 50, current: 1 },
             {},
           );
           setRows(result?.data ?? []);
@@ -390,12 +407,16 @@ jest.mock('@ant-design/pro-components', () => {
         actionRef.current = api;
       }
       void api.reload();
-    }, [actionRef, api, headerTitleText, params.locale]);
+    }, [actionRef, api, headerTitleText, paramsKey]);
 
     return (
       <section data-testid='pro-table'>
         <div>{headerTitleText}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         {rows.map((row: any, rowIndex: number) => (
           <div
             data-testid='pro-row'
@@ -426,6 +447,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('FlowpropertiesPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     mockLocation = {
       pathname: '/mydata/flowproperties',
@@ -470,6 +492,50 @@ describe('FlowpropertiesPage', () => {
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
   });
 
+  it('keeps the Open Data catalog route and classification control without a source toggle', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockLocation = { pathname: '/tgdata/flowproperties', search: '' };
+    renderWithProviders(<FlowpropertiesPage />);
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
+    expect(mockGetFlowpropertyTableAll.mock.calls.at(-1)?.at(-1)).toBe(true);
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^(All data|Enterprise data|Literature data)$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<FlowpropertiesPage />);
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -487,7 +553,7 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
 
     expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -495,7 +561,7 @@ describe('FlowpropertiesPage', () => {
       'all',
     );
     expect(screen.getByRole('button', { name: /search/i })).not.toBeDisabled();
-    expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
+    expect(screen.getByTitle('pages.flowproperty.title.tips')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
     expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"disabled":true');
@@ -513,7 +579,7 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
 
     expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -544,7 +610,7 @@ describe('FlowpropertiesPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'AI Recommendation' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
-    expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle('pages.flowproperty.title.tips')).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"importCount":1');
@@ -593,7 +659,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -610,7 +676,7 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -622,7 +688,7 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -650,7 +716,7 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockFlowpropertyHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -680,7 +746,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockFlowpropertyHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -710,7 +776,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'co',
@@ -753,7 +819,7 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith(''));
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'co',
@@ -761,14 +827,15 @@ describe('FlowpropertiesPage', () => {
         'all',
       ),
     );
-    expect(screen.getByText('Impact category')).toBeInTheDocument();
+    expect(screen.queryByText('Impact category')).not.toBeInTheDocument();
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
     expect(screen.getByText('sup:')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'co',
         'climate',
@@ -793,7 +860,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -810,7 +877,87 @@ describe('FlowpropertiesPage', () => {
     );
   });
 
-  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+  it('keeps clear as an edit and applies empty input only on Enter', async () => {
+    renderWithProviders(<FlowpropertiesPage />);
+    await waitFor(() => expect(mockCapturedTableProps.actionRef.current).toBeDefined());
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    const reload = mockCapturedTableProps.actionRef.current.reload;
+    const count = reload.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(reload).toHaveBeenCalledTimes(count);
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    await waitFor(() => expect(reload).toHaveBeenCalledTimes(count + 1));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(mockMessage.warning).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    expect(mockMessage.warning).toHaveBeenCalled();
+    expect(reload).toHaveBeenCalledTimes(count + 1);
+  });
+
+  it('keeps draft modes staged across paging, sorting, classification, and reload until submission', async () => {
+    renderWithProviders(<FlowpropertiesPage />);
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(mockMessage.warning).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockFlowpropertyHybridSearch).not.toHaveBeenCalled();
+    expect(mockGetFlowpropertyTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalled());
+    await userEvent.click(smartSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 3, pageSize: 20 },
+        { modifiedAt: 'descend' },
+      );
+      await mockCapturedTableProps.actionRef.current.reload();
+    });
+    expect(mockGetFlowpropertyTablePgroongaSearch.mock.calls.at(-2)[0]).toEqual(
+      expect.objectContaining({ current: 3, pageSize: 20 }),
+    );
+    expect(mockGetFlowpropertyTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('climate');
+    expect(mockFlowpropertyHybridSearch).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTablePgroongaSearch.mock.calls.at(-1)[0].classification).toEqual([
+        { scope: 'classification', code: 'C', path: ['C'] },
+      ]),
+    );
+    expect(mockFlowpropertyHybridSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockFlowpropertyHybridSearch).toHaveBeenCalled());
+    expect(mockFlowpropertyHybridSearch.mock.calls.at(-1)[3]).toBe('climate');
+    const appliedCount = mockFlowpropertyHybridSearch.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(mockFlowpropertyHybridSearch).toHaveBeenCalledTimes(appliedCount + 1),
+    );
+    await userEvent.click(referenceSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        {},
+      );
+    });
+    expect(mockFlowpropertyHybridSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockFlowpropertyHybridSearch.mock.calls.at(-1)[3]).toBe('climate');
+    expect(mockGetFlowpropertyTableUuidMentionSearch).not.toHaveBeenCalled();
+  });
+
+  it('uses the main table for reference lookup and retains rows for incomplete UUIDs', async () => {
     const referenceRows = [
       {
         id: 'fp-ref',
@@ -843,19 +990,25 @@ describe('FlowpropertiesPage', () => {
       'pages.search.referenceLookup.placeholder',
     );
 
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockMessage.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
-    await waitFor(() => expect(screen.queryByTestId('flowproperty-view')).not.toBeInTheDocument());
+    expect(screen.getByTestId('flowproperty-view')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
     expect(mockGetFlowpropertyTableUuidMentionSearch).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -867,6 +1020,35 @@ describe('FlowpropertiesPage', () => {
     expect(mockMessage.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        { modifiedAt: 'ascend' },
+      );
+    });
+    expect(mockGetFlowpropertyTableUuidMentionSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockGetFlowpropertyTableUuidMentionSearch.mock.calls.at(-1)[3]).toBe(
+      'd1380000-0000-4000-8000-000000000001',
+    );
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+
+    const appliedReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    const appliedLookupCount = mockGetFlowpropertyTableUuidMentionSearch.mock.calls.length;
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    expect(screen.getByText('Referenced flow property')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      appliedReloadCount,
+    );
+    expect(mockGetFlowpropertyTableUuidMentionSearch).toHaveBeenCalledTimes(appliedLookupCount);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
 
     const callCountBeforeUncappedLookup =
       mockGetFlowpropertyTableUuidMentionSearch.mock.calls.length;
@@ -882,6 +1064,10 @@ describe('FlowpropertiesPage', () => {
         callCountBeforeUncappedLookup,
       ),
     );
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).toHaveBeenCalledWith({
+      current: 1,
+    });
   });
 
   it('opens and closes the route-driven view drawer for my-data links', async () => {
@@ -925,3 +1111,17 @@ describe('FlowpropertiesPage', () => {
     );
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

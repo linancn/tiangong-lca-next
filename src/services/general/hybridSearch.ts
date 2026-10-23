@@ -1,6 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { addOpenDataHybridFilters, type OpenDataCatalogFilters } from '../openDataCatalog/api';
+import { addOpenDataCatalogScope } from '../openDataCatalog/api';
 
 export type FoundationHybridSearchFunctionName =
   | 'contact_hybrid_search'
@@ -25,7 +25,7 @@ type FoundationHybridSearchOptions<Row extends FoundationHybridSearchRow, Result
   queryText: string;
   stateCode?: string | number;
   teamId?: string | null;
-  openDataFilters?: OpenDataCatalogFilters;
+  useOpenDataCatalog?: boolean;
 };
 
 export type FoundationHybridSearchResult<ResultRow> = {
@@ -69,7 +69,7 @@ export async function invokeFoundationHybridSearch<
     );
   }
 
-  const body: Record<string, unknown> = addOpenDataHybridFilters(
+  const body: Record<string, unknown> = addOpenDataCatalogScope(
     {
       query: options.queryText,
       filter_condition: options.filterCondition,
@@ -77,7 +77,7 @@ export async function invokeFoundationHybridSearch<
       page_size: options.params.pageSize ?? 10,
       page_current: page,
     },
-    options.openDataFilters,
+    options.useOpenDataCatalog,
   );
   if (typeof options.stateCode === 'number') {
     body.state_code = options.stateCode;

@@ -27,6 +27,8 @@ checkPaths:
   - tsconfig*.json
   - jest.config.cjs
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
+  - playwright.result-preview.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
   - scripts/release/**
@@ -37,19 +39,22 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-23
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display, v6 strict RPC, four-locale labels and focused tests; existing ownership, dependency, validation and release gates remain unchanged.'
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 ---
 
 # Development Bootstrap
 
 > Purpose: local setup and the shortest safe work loop for this repo. Repo contract and document ownership live in `AGENTS.md`; minimum proof lives in `docs/agents/repo-validation.md`.
+
+Dependency proposals and ordinary credential-free PR checks follow [dependency maintenance](docs/agents/dependency-maintenance.md); this does not change the local bootstrap or protected release workflow.
 
 ## Use When
 
@@ -79,13 +84,27 @@ Run Umi dev/build/test commands serially in one checkout because they share gene
 
 Edit `config/brands/atlas.json` or `tiangong.json` for localized titles, slogans, footer/legal links, light/dark theme, favicon, static manifest and desktop identity. ATLAS has independent four-locale product copy and a local application-home link; source and legal links retain their factual destinations. Existing `APP_LIGHT_PRIMARY`, `APP_DARK_PRIMARY`, `APP_LIGHT_LOGO`, `APP_DARK_LOGO`, `APP_FAVICON`, `APP_TITLE_<LOCALE>` and `APP_LOGIN_SUBTITLE_<LOCALE>` overrides take precedence over the selected profile. Restart/rebuild after changing build-time settings.
 
-`APP_BRAND=atlas` selects the complete presentation: navy side navigation, ocean-blue light/dark interaction colors, component tokens, split login and task-oriented welcome. TianGong keeps its existing `mix` layout and component defaults. `APP_LAYOUT=side|top|mix` overrides the selected profile's navigation mode. The brand JSON `layout` config also accepts `siderWidth`, `fixedHeader`, `fixSiderbar`, `splitMenus` (mix only), and `contentWidth` (top only). Each theme mode can supply `tokens`, `components` and `layoutTokens` (ProLayout header, sider and pageContainer tokens); the same resolved Ant Design theme is applied at startup and after light/dark switches, including layout-free routes.
+Both brands default to native ProLayout `mix` with `splitMenus`: scopes appear across the desktop header and the active scope's objects occupy the sidebar. Supporting Data is a collapsible menu-only group with the native ProjectOutlined icon; its nested entries retain their original route icons and order (Flow Properties, Unit Groups, Sources, Contacts), and existing routes stay intact. It starts expanded in each data scope and can be manually collapsed. Scope links retain the current available object type, and a nonempty `tid` keeps the existing tgdata/codata-only navigation context. Welcome and Account have no active-scope sidebar. The top menu starts at the main content region boundary and follows native sidebar expansion/collapse; the collapsed logo column shows only the logo. Tools/account stay in the native header; mobile navigation uses the native complete-menu drawer. `APP_LAYOUT=side|top|mix` overrides the profile and enables split menus only for `mix`. Atlas's sidebar account/tool styles remain available with the `side` override.
+
+`APP_BRAND=atlas` selects Ant Design's standard dark top and side menus in both page modes, with component tokens, split login and task-oriented welcome. Navigation stays `#001529` with white title/selected text and translucent white ordinary text; the content area and non-menu overlays still follow the light/dark page setting. The brand JSON `layout` config also accepts `siderWidth`, `fixedHeader`, `fixSiderbar`, `contentWidth` (top only) and native `menuProps`; Atlas selects `menuProps.theme=dark`. Each theme mode can supply `tokens`, `components` and `layoutTokens` (ProLayout header, sider and pageContainer tokens). The resolved Ant Design theme is applied at startup and after light/dark switches, including layout-free routes. Atlas reapplies native Menu popup/submenu tokens below ProLayout's side and header Menu providers, keeping collapsed and overflow navigation dark while other overlays retain the page mode. Existing primary overrides drive the native selected-menu background as well as page interactions; existing logo overrides keep their precedence. Edit per-mode profile tokens for broader customization without adding palette environment variables.
 
 `presentation.login` selects `standard|split`, and `presentation.welcome` selects `overview|workspace`. Optional `presentation.navigationTitle` gives navigation a short label while localized product titles remain available to page consumers. Presentation copy must cover every supported locale. Layout variants only compose the shared auth forms and existing business routes; they do not select permissions or datasets. Atlas workspace omits TianGong's promotional counters instead of claiming them as Atlas statistics. Dataset source labels, TIDAS descriptions and legal/operator identities retain their actual attribution.
 
 Brand settings are build inputs. Build once for each brand before uploading static assets; changing a hosting environment variable after a manual upload does not rewrite the uploaded bundle. For local visual proof, build with `APP_BRAND=<brand> REACT_APP_ENV=qualification pnpm build`, serve that bundle on loopback, then run `E2E_BRAND=<brand> E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:<port> pnpm exec playwright test --config=playwright.branding.config.ts`. This suite uses only the existing semantic backend simulator and is not hosted/release qualification. Ordinary `pnpm start:atlas` retains the configured dev backend for user preview.
 
-`pnpm dist` and `pnpm dist:atlas` use the local packaging adapter with `--publish never`. Brand-specific desktop outputs are named distinctly; ATLAS has its own application identity and icon resources. Release workflows still use the existing canonical version tag and TianGong deployment configuration; this local preview capability does not enable ATLAS publication. A future reviewed release change must bind brand, exact source commit and deployment destination explicitly.
+`pnpm dist` and `pnpm dist:atlas` use the local packaging adapter with `--publish never`. Brand-specific desktop outputs are named distinctly; ATLAS has its own application identity and icon resources. Formal `Build/release` publication builds both TianGong and Atlas separately from the same qualified `release_head`. Atlas web publication targets only `atlas-lca-platform` / `makers-dtpthotshhpt`; desktop publication remains TianGong-only. Local preview/packaging never publishes. Exact Atlas destination checks, production publication receipts and recovery policy are owned by `docs/agents/prepush-gate-policy.md`.
+
+### Atlas release recovery
+
+To backfill only the current release into Atlas, resolve the existing tag to its full commit and confirm it is contained in Main and matches Main's current package version. Then dispatch the reviewed workflow on Main:
+
+```bash
+gh workflow run build.yml --repo tiangong-lca/platform --ref main \
+  -f tag_name=v<version> -f publication_scope=atlas-web \
+  -f expected_release_sha=<exact-40-character-tag-commit>
+```
+
+This recovery runs a fresh full Release Gate on the existing tag, verifies the tag without moving it, and publishes only the Atlas web bundle. It does not republish TianGong or change desktop Draft assets. Missing/mismatched SHA, wrong ref, missing tag, nonancestor source and older-version Atlas backfill fail before publication. New workflow code executes inline while application checkout remains the exact old tag, so recovery never depends on a helper absent from that source. Verify the uploaded Atlas receipts and production `release-manifest.json` against the tag, project, brand and entry-file hash before declaring completion. A failed wait with a recorded deployment ID requires querying that deployment; do not blindly create a replacement.
 
 ## Prerequisites
 
@@ -196,17 +215,17 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 
 The repository has one TypeScript track: the direct `typescript` dependency is exact-pinned to `7.0.2`, and every compiler entry uses that package. There is no TypeScript 6 alias or `tsc6` fallback. Repository-owned source analysis uses `scripts/typescript-native-parser.mjs`; that file and `scripts/typescript-native-parser.d.mts` are the only places allowed to import `typescript/unstable/*`. Run the adapter contract tests after every TypeScript upgrade.
 
-The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.4.1`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced`, its normalized failure envelope, singleton/ordered Process review acceptance, and required Process general-comment validation; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
+The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.5.0`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced`, its normalized failure envelope, singleton/ordered Process review acceptance, and required Process general-comment validation; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
 
 Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
 
-Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v2.0.2 commit SHA, while its inputs pin pnpm `11.24.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
+Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v3.1.1 commit SHA, while its inputs pin pnpm `11.24.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
 
 `pnpm lint` runs Oxlint, Prettier verification, and the native TypeScript 7 web typecheck. Oxlint owns unused and deprecated API correctness; the repo-local `tiangong/no-invalid-this` plugin preserves the legacy strict-context rule that Oxlint does not yet provide natively. Prettier owns formatting only and does not organize imports.
 
 The qualified production bundle remains Umi's current Webpack path followed by the repo-owned TypeScript checks. Do not enable the optional Umi/Mako `forkTSChecker` path until its dependencies are proved compatible with TypeScript 7; the TypeScript 7 package's CommonJS root intentionally does not expose the legacy JavaScript Compiler API that this optional path currently expects.
 
-The UI dependency track is exact-pinned to React/React DOM `19.2.8`, antd `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6`. Umi `4.7.9` supplies the single global ConfigProvider and App; `src/app.tsx` owns initial/dynamic theme synchronization, while `src/contexts/AntdAppContext.tsx` registers its feedback API for non-component callers. Do not restore antd 5 render patches, split ProComponents packages, static `message`/`Modal`/`notification` calls, or legacy component-member APIs. `skipLibCheck: true` remains only because the exact ProComponents prerelease still publishes invalid external declaration references; web source remains strict and must pass `pnpm tsc`.
+The UI dependency track is exact-pinned to React/React DOM `19.3.1`, antd `6.6.6`, icons `6.3.4`, and ProComponents `3.1.14-6`. Umi `4.7.24` supplies the single global ConfigProvider and App; `src/app.tsx` owns initial/dynamic theme synchronization, while `src/contexts/AntdAppContext.tsx` registers its feedback API for non-component callers. Do not restore antd 5 render patches, split ProComponents packages, static `message`/`Modal`/`notification` calls, or legacy component-member APIs. `skipLibCheck: true` remains only because the exact ProComponents prerelease still publishes invalid external declaration references; web source remains strict and must pass `pnpm tsc`.
 
 The reviewed test and packaging majors are Jest / `jest-environment-jsdom` / `@jest/test-sequencer` `30.5.0`, `@testing-library/jest-dom` `7.0.1`, Electron `44.1.0`, and `npm-check-updates` `23.1.0`. Jest 30 proof must preserve the explicit test inventory and slow-first sequencer, Electron publication remains on the four supported 64-bit targets, and the package manifest's canonical GitHub repository metadata must remain available to electron-builder from both normal checkouts and Git worktrees.
 
@@ -214,7 +233,7 @@ The reviewed test and packaging majors are Jest / `jest-environment-jsdom` / `@j
 
 On macOS, the Jest child process disables V8 concurrent recompilation and Maglev after the documented Node 24 `ClearStaleLeftTrimmedPointerVisitor` crash reproduced while those optimization tiers were active. The unit stage also keeps its 25% worker pool with Jest's `512MB` idle-memory recycle boundary, so the mitigation does not turn the complete suite into a serial run.
 
-For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. This is an operator-selected acceptance signal, not an unavoidable release check.
+For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. The bounded ordinary dependency PR job also runs canonical synthetic qualification; its source/resource/artifact boundary lives in [dependency maintenance](docs/agents/dependency-maintenance.md). Browser proof remains separate from release proof.
 
 `release:to-dev --apply` changes only `package.json.version` plus bounded Docpact review metadata and requires `pnpm-lock.yaml` to remain byte-identical. Its generated candidate push runs Docpact plus `release:static-preflight`; it does not run browsers and never writes proof into the branch. The exact resulting Release PR into `dev` runs the reusable non-browser Release Gate—static contracts and the full Jest gate—then emits an external proof bound to both branch bases, candidate head/tree/version, PR, run, attempt, and artifact. The immutable promotion push, main promotion PR, and normal version-changing main publication verify candidate identity and that proof without running browser E2E. A direct main hotfix is explicitly marker-bound to its tracked Issue, current main base, and exact PR head, must preserve package version, and runs one clean-runner static/full gate on that head. Canonical E2E discovery still recursively includes nested spec directories whenever manual qualification is invoked; unknown simulator requests, external origins, and production writes fail that qualification.
 

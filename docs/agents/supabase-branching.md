@@ -21,10 +21,12 @@ checkPaths:
   - docker/**
   - scripts/e2e/**
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-10-11
-lastReviewedCommit: edaf564b
-lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
+  - tests/e2e/dataset-lists/**
+lastReviewedAt: 2026-10-23
+lastReviewedCommit: a5302dbf337c8177844f285e3e21fc0c396f1981
+lastReviewedNote: 'Platform #1328 / PR #1329: reviewed conflict resolution against dev a5302dbf. Retained incoming navigation, review, dependency and qualification contracts plus the v6 latest-current draft reporting dependency and validation scope. Regenerated four-locale artifacts; 31 dashboard tests pass. Final checked-push evidence belongs on the PR.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -90,6 +92,14 @@ Rules:
 - production-backed browser proof classifies only the exact reviewed `list_task_feed` and `list_publications` payloads as read-only data-product commands; the shared function path or a POST method alone never establishes a read-only boundary
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
 
+## Dataset list contract deployment dependencies
+
+Platform #1213 consumes Database #838 and Edge #477 for the unified dataset-list classification contract. Deploy the reviewed owning revisions into the selected non-production environment before integrated list/search validation or frontend rollout. This requirement does not authorize production deployment or change the existing review, promotion, visibility, membership or publication policies.
+
+The app forwards stable classification/elementary codes and paths together with existing source, state, team, dataset type, direction and exact-version scope. Database applies filters before total count and pagination. The new query facade is `query_dataset_catalog`; UUID-reference paging uses `search_dataset_uuid_mentions_page`; mixed display lists use `list_dataset_display_candidates_filtered` and `list_displayed_datasets_filtered`. Existing lexical and Hybrid searches retain their reviewed endpoints while the owning backend accepts the combined classification filter. Model Results instead reads its complete authorized exact ID/version set before app-side matching and native pagination; it never widens that set into a catalog search.
+
+Unavailable or invalid filtered RPC/Edge responses remain explicit failures. Do not recover by dropping classification, fetching an unfiltered page, applying a page-local filter, or broadening direct relation access. Frontend mocked/synthetic proof verifies request and presentation behavior only; backend migration/ACL/filter correctness and deployment identity belong to Database #838 and Edge #477.
+
 ## Common Scenarios
 
 ### Scoped online-backend exception: Next #1008
@@ -128,6 +138,8 @@ They depend on branch-specific Vault secrets on the active Supabase branch:
 - `project_x_key` only for legacy `generate_flow_embedding()` compatibility
 
 Do not hardcode branch URLs or service keys in app code, SQL, or dumped baseline files.
+
+Review final approval with pending opinions requires Database #857 (`review_one_current_approval`): one current assigned approving Comment is required by finalization and batch eligibility. Deploy that migration to the selected backend before qualifying this UI change; rejection remains independent of opinion completion.
 
 ### National carbon draft reporting dependency
 

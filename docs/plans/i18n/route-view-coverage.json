@@ -62,12 +62,13 @@
       {
         "registryId": "data-processing-tab",
         "sourcePaths": ["src/pages/DataProcessing/index.tsx"],
-        "variantIds": ["builds", "preview", "publication"],
+        "variantIds": ["builds", "preview", "exports", "publication"],
         "proof": {
           "kind": "browser",
           "variantAssertionIds": [
             "vv.data-processing.builds",
             "vv.data-processing.preview",
+            "vv.data-processing.exports",
             "vv.data-processing.publication"
           ],
           "supplementalFocusedTestPaths": ["tests/unit/pages/DataProcessing/index.test.tsx"]
@@ -382,7 +383,33 @@
             "tab": "preview"
           }
         },
-        "visibleMessageIds": ["pages.dataProcessing.form.previewPackageId"]
+        "visibleMessageIds": ["pages.dataProcessing.workspace.version"]
+      }
+    },
+    {
+      "assertionId": "vv.data-processing.exports",
+      "registryId": "data-processing-tab",
+      "variantId": "exports",
+      "routeAssertionId": "rv.data-processing.build-preview-publication-tabs",
+      "scenario": "typed-data-processing-tabs",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "exports"
+          }
+        },
+        "expected": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "exports"
+          }
+        },
+        "visibleMessageIds": ["pages.dataProcessing.workspace.selectVersion"]
       }
     },
     {
@@ -480,7 +507,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.section-redirects.codata": {
@@ -496,7 +531,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.section-redirects.mydata": {
@@ -512,7 +555,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.section-redirects.tedata": {
@@ -528,7 +579,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.section-redirects.user": {
@@ -593,7 +652,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.lifecycle-model-lists.codata": {
@@ -609,7 +676,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.lifecycle-model-lists.mydata": {
@@ -626,7 +701,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.lifecycle-model-lists.tedata": {
@@ -642,7 +725,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.models"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.process-analysis.process-analysis": {
@@ -674,7 +765,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.processes"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.process-lists.codata": {
@@ -690,7 +789,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.processes"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.process-lists.mydata": {
@@ -714,7 +821,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.processes"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.process-lists.tedata": {
@@ -730,7 +845,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.processes"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-lists.tgdata": {
@@ -746,7 +869,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.flows"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-lists.codata": {
@@ -762,7 +893,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.flows"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-lists.mydata": {
@@ -778,7 +917,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.flows"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-lists.tedata": {
@@ -794,7 +941,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.flows"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-property-lists.tgdata": {
@@ -810,7 +965,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.flowproperties"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-property-lists.codata": {
@@ -826,7 +989,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.flowproperties"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-property-lists.mydata": {
@@ -842,7 +1013,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.flowproperties"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-property-lists.tedata": {
@@ -858,7 +1037,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.flowproperties"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.unit-group-lists.tgdata": {
@@ -874,7 +1061,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.unitgroups"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.unit-group-lists.codata": {
@@ -890,7 +1085,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.unitgroups"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.unit-group-lists.mydata": {
@@ -906,7 +1109,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.unitgroups"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.unit-group-lists.tedata": {
@@ -922,7 +1133,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.unitgroups"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.source-lists.tgdata": {
@@ -938,7 +1157,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.sources"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.source-lists.codata": {
@@ -954,7 +1181,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.sources"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.source-lists.mydata": {
@@ -970,7 +1205,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.sources"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.source-lists.tedata": {
@@ -986,7 +1229,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.sources"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.contact-lists.tgdata": {
@@ -1002,7 +1253,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tgdata", "menu.tgdata.contacts"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.contact-lists.codata": {
@@ -1018,7 +1277,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.codata", "menu.tgdata.contacts"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.contact-lists.mydata": {
@@ -1034,7 +1301,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.mydata", "menu.tgdata.contacts"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.contact-lists.tedata": {
@@ -1050,7 +1325,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.tedata", "menu.tgdata.contacts"]
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.data-processing.build-preview-publication-tabs": {
@@ -1130,7 +1413,12 @@
     },
     "rv.welcome.overview": {
       "kind": "localized-view",
-      "requiredScenarios": ["route", "modal-state-machine", "responsive-surface-matrix"],
+      "requiredScenarios": [
+        "route",
+        "modal-state-machine",
+        "responsive-surface-matrix",
+        "supabase-session-race"
+      ],
       "session": "authenticated",
       "navigate": {
         "hashPath": "/welcome",
@@ -1300,8 +1588,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.products"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.lifecycle-model-lists.exampledata": {
@@ -1317,8 +1612,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.products"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.process-lists.exampledata": {
@@ -1334,8 +1636,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.processes"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-lists.exampledata": {
@@ -1351,8 +1660,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.flows"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.flow-property-lists.exampledata": {
@@ -1368,8 +1684,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.flowproperties"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.unit-group-lists.exampledata": {
@@ -1385,8 +1708,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.unitgroups"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.source-lists.exampledata": {
@@ -1402,8 +1732,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.sources"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.contact-lists.exampledata": {
@@ -1419,8 +1756,15 @@
       },
       "visible": {
         "kind": "locale-messages",
-        "messageIds": ["menu.exampledata", "menu.tgdata.contacts"],
-        "separator": " / "
+        "messageIds": [
+          "pages.table.title.index",
+          "pages.table.title.name",
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version",
+          "pages.table.title.classification"
+        ]
       }
     },
     "rv.displayed-datasets": {
@@ -1437,11 +1781,12 @@
       "visible": {
         "kind": "locale-messages",
         "messageIds": [
-          "pages.datasetDisplay.title",
+          "pages.table.title.index",
           "pages.table.title.name",
-          "pages.table.title.version",
-          "pages.datasetUuidMention.entityKind",
-          "pages.process.published.table.calculationResult"
+          "pages.process.location",
+          "pages.process.referenceYear",
+          "pages.table.filter.all.datasetType",
+          "pages.table.title.version"
         ]
       }
     },
@@ -1474,12 +1819,25 @@
         "/tedata": "rv.section-redirects.tedata"
       },
       "viewState": "configured-redirect",
-      "pageOwnedMessageIds": ["pages.table.title.index"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open an authenticated data-section root and resolve its exact configured model-list child.",
       "component": "config/routes.ts redirect",
       "accessContext": "authenticated-session-required",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/LifeCycleModels/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/LifeCycleModels/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -1495,7 +1853,7 @@
         "requiredEvidenceScope": "internal-localization",
         "focusedTests": ["tests/unit/i18n/localeDeliveryContracts.test.ts"],
         "plannedBrowserAssertions": [
-          "each authenticated data-section root resolves to its exact model-list child and localized scope/title"
+          "each authenticated data-section root resolves to its exact model-list child with localized six-column headers and classification toolbar control; the anonymous /user redirect retains its Login marker"
         ]
       },
       "unownedStaticContent": 0,
@@ -1653,12 +2011,25 @@
         "/tedata/models": "rv.lifecycle-model-lists.tedata"
       },
       "viewState": "dataset-list-and-drawers",
-      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open the model list directly or with tid/id/version/required/mode URL state and traverse list, empty, loading, view, edit, and validation drawers.",
       "component": "src/pages/LifeCycleModels/index.tsx",
       "accessContext": "authenticated-session-required with existing dataset-scope permissions",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/LifeCycleModels/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/LifeCycleModels/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -1750,13 +2121,12 @@
       },
       "viewState": "displayed-dataset-list",
       "pageOwnedMessageIds": [
-        "pages.datasetDisplay.title",
+        "pages.table.title.index",
         "pages.table.title.name",
-        "pages.table.title.version",
-        "pages.datasetUuidMention.entityKind",
-        "pages.process.published.table.calculationResult",
-        "pages.process.published.climate.error",
-        "pages.process.published.climate.missing"
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version"
       ],
       "trigger": "Open displayed datasets and filter the seven types; review exact-version Process results, missing/zero, failure, refresh and pagination.",
       "component": "src/pages/DisplayedDatasets/index.tsx",
@@ -1765,7 +2135,9 @@
         "sourcePaths": [
           "config/routes.ts",
           "src/pages/DisplayedDatasets/index.tsx",
-          "src/components/DatasetKindFilter/index.tsx"
+          "src/components/DatasetKindFilter/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
         ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
@@ -1775,7 +2147,7 @@
       "targetCoverage": {
         "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
-        "structureAudit": "five-column mixed-type table, exact versions, type filtering and unchanged Process Climate change availability/zero/error semantics",
+        "structureAudit": "six base columns followed by the unchanged Process Climate change result, exact versions, seven-type filtering and conditional classification filtering with unchanged availability/zero/error semantics",
         "missingContent": 0
       },
       "proof": {
@@ -1785,7 +2157,7 @@
           "tests/unit/config/routes.test.ts"
         ],
         "plannedBrowserAssertions": [
-          "displayed dataset title, five headers and seven-type dropdown render in every registry locale"
+          "six localized base headers and the seven-type toolbar selector render in every registry locale; dataset-specific classification filtering retains exact-version Process result behavior"
         ]
       },
       "unownedStaticContent": 0,
@@ -1808,12 +2180,25 @@
         "/tedata/processes": "rv.process-lists.tedata"
       },
       "viewState": "dataset-list-and-drawers",
-      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open the process list directly or with tid/id/version/required/mode URL state and traverse list, exchange, view, edit, validation, and review states.",
       "component": "src/pages/Processes/index.tsx",
       "accessContext": "authenticated-session-required with existing dataset-scope permissions",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/Processes/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/Processes/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -1873,12 +2258,25 @@
         "/tedata/flows": "rv.flow-lists.tedata"
       },
       "viewState": "dataset-list-and-drawers",
-      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open the flow list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
       "component": "src/pages/Flows/index.tsx",
       "accessContext": "authenticated-session-required with existing dataset-scope permissions",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/Flows/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/Flows/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -1935,12 +2333,25 @@
         "/tedata/flowproperties": "rv.flow-property-lists.tedata"
       },
       "viewState": "dataset-list-and-drawers",
-      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open the flow-property list directly or with tid/id/version URL state and traverse list, empty, loading, view, edit, and validation states.",
       "component": "src/pages/Flowproperties/index.tsx",
       "accessContext": "authenticated-session-required with existing dataset-scope permissions",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/Flowproperties/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/Flowproperties/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -1995,12 +2406,25 @@
         "/tedata/unitgroups": "rv.unit-group-lists.tedata"
       },
       "viewState": "dataset-list-and-drawers",
-      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open the unit-group list directly or with tid/id/version URL state and traverse list, empty, loading, view, edit, and validation states.",
       "component": "src/pages/Unitgroups/index.tsx",
       "accessContext": "authenticated-session-required with existing dataset-scope permissions",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/Unitgroups/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/Unitgroups/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -2055,12 +2479,25 @@
         "/tedata/sources": "rv.source-lists.tedata"
       },
       "viewState": "dataset-list-and-drawers",
-      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open the source list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
       "component": "src/pages/Sources/index.tsx",
       "accessContext": "authenticated-session-required with existing dataset-scope permissions",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/Sources/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/Sources/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -2116,12 +2553,25 @@
         "/tedata/contacts": "rv.contact-lists.tedata"
       },
       "viewState": "dataset-list-and-drawers",
-      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "pageOwnedMessageIds": [
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
+        "pages.table.title.classification"
+      ],
       "trigger": "Open the contact list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
       "component": "src/pages/Contacts/index.tsx",
       "accessContext": "authenticated-session-required with existing dataset-scope permissions",
       "copySources": {
-        "sourcePaths": ["config/routes.ts", "src/pages/Contacts/index.tsx"],
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/Contacts/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
+        ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
@@ -2316,7 +2766,12 @@
       },
       "viewState": "display-settings",
       "pageOwnedMessageIds": [
-        "pages.datasetDisplay.settings",
+        "pages.table.title.index",
+        "pages.table.title.name",
+        "pages.process.location",
+        "pages.process.referenceYear",
+        "pages.table.filter.all.datasetType",
+        "pages.table.title.version",
         "pages.datasetDisplay.visibility",
         "pages.datasetDisplay.showSelected",
         "pages.datasetDisplay.hideSelected"
@@ -2328,7 +2783,9 @@
         "sourcePaths": [
           "config/routes.ts",
           "src/pages/DatasetDisplaySettings/index.tsx",
-          "src/components/DatasetKindFilter/index.tsx"
+          "src/components/DatasetKindFilter/index.tsx",
+          "src/components/ResponsiveDataList/index.tsx",
+          "src/components/DatasetClassificationFilter/index.tsx"
         ],
         "localeMessageIds": [],
         "localeMessageIdPrefixes": [],
@@ -2338,7 +2795,7 @@
       "targetCoverage": {
         "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
-        "structureAudit": "first-level manager menu, direct-route denial, type/visibility/search filters and reversible exact-version selection",
+        "structureAudit": "first-level manager menu, unchanged direct-route denial, six base columns followed by visibility, native toolbar type/visibility/search and conditional classification filters, and reversible exact-version selection",
         "missingContent": 0
       },
       "proof": {

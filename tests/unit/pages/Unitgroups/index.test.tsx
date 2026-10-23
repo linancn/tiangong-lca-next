@@ -1,7 +1,7 @@
 // @ts-nocheck
 import UnitgroupsPage from '@/pages/Unitgroups';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
 jest.mock('@/contexts/AntdAppContext', () => ({
   __esModule: true,
@@ -17,6 +17,8 @@ jest.mock('@/components/ToolBarButton', () => ({
     </button>
   ),
 }));
+
+let mockCapturedTableProps: any;
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -284,7 +286,18 @@ jest.mock('antd', () => {
 
   const Search = ({ onSearch, placeholder, disabled }: any) => (
     <div>
-      <input aria-label='search-input' disabled={disabled} placeholder={placeholder} />
+      <input
+        aria-label='search-input'
+        disabled={disabled}
+        placeholder={placeholder}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter')
+            onSearch?.(event.currentTarget.value, event, { source: 'input' });
+        }}
+      />
+      <button type='button' onClick={() => onSearch?.('', undefined, { source: 'clear' })}>
+        clear
+      </button>
       <button type='button' disabled={disabled} onClick={() => onSearch?.('density')}>
         search
       </button>
@@ -366,14 +379,17 @@ jest.mock('@ant-design/pro-components', () => {
     request,
     params = {},
     columns = [],
+    toolbar,
     toolBarRender,
     headerTitle,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params, request, actionRef };
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
-    const pageInfoRef = React.useRef({ pageSize: 10, current: 1 });
+    const pageInfoRef = React.useRef({ pageSize: 50, current: 1, classification: [] });
 
     requestRef.current = request;
     paramsRef.current = params;
@@ -409,7 +425,11 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <section data-testid='pro-table'>
         <div>{toText(headerTitle)}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         {rows.map((row, rowIndex) => (
           <div
             key={String(rowKey ? rowKey(row) : `${row.id}-${rowIndex}`)}
@@ -417,7 +437,9 @@ jest.mock('@ant-design/pro-components', () => {
           >
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id}-${columnIndex}`}>
-                {column.render ? column.render(undefined, row) : row[column.dataIndex]}
+                {column.render
+                  ? column.render(row[column.dataIndex], row, rowIndex)
+                  : row[column.dataIndex]}
               </div>
             ))}
           </div>
@@ -436,6 +458,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('UnitgroupsPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     mockUnitGroupCreateCalls = [];
     mockUnitGroupEditCalls = [];
@@ -513,6 +536,52 @@ describe('UnitgroupsPage', () => {
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
+  it('keeps the Open Data catalog route and classification control without a source toggle', async () => {
+    mockGetRoleByUserId.mockResolvedValue([]);
+    mockGetDataSource.mockReturnValue('tg');
+    mockLocation = { pathname: '/tgdata/unitgroups', search: '' };
+    renderWithProviders(<UnitgroupsPage />);
+    await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
+    expect(mockGetUnitGroupTableAll.mock.calls.at(-1)?.at(-1)).toBe(true);
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^(All data|Enterprise data|Literature data)$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    mockGetRoleByUserId.mockResolvedValue([]);
+    renderWithProviders(<UnitgroupsPage />);
+    await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
     mockGetRoleByUserId.mockResolvedValue([]);
@@ -531,7 +600,7 @@ describe('UnitgroupsPage', () => {
     await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
 
     expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -539,7 +608,7 @@ describe('UnitgroupsPage', () => {
       'all',
     );
     expect(screen.getByRole('button', { name: /search/i })).not.toBeDisabled();
-    expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
+    expect(screen.getByTitle('pages.unitgroup.title.tips')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":true');
@@ -563,7 +632,7 @@ describe('UnitgroupsPage', () => {
 
     await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
     expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -588,7 +657,7 @@ describe('UnitgroupsPage', () => {
       expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled(),
     );
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
-    expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle('pages.unitgroup.title.tips')).not.toBeInTheDocument();
     expect(mockAllVersionsOperationWidths).toContain(144);
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
@@ -599,7 +668,7 @@ describe('UnitgroupsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetUnitGroupTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -611,7 +680,7 @@ describe('UnitgroupsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'density',
@@ -665,7 +734,7 @@ describe('UnitgroupsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockUnitGroupHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'density',
@@ -696,7 +765,7 @@ describe('UnitgroupsPage', () => {
 
     await waitFor(() =>
       expect(mockUnitGroupHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'density',
@@ -707,7 +776,85 @@ describe('UnitgroupsPage', () => {
     );
   });
 
-  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+  it('keeps clear as an edit and applies empty input only on Enter', async () => {
+    renderWithProviders(<UnitgroupsPage />);
+    await waitFor(() => expect(mockCapturedTableProps.actionRef.current).toBeDefined());
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    const reload = mockCapturedTableProps.actionRef.current.reload;
+    const count = reload.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(reload).toHaveBeenCalledTimes(count);
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    await waitFor(() => expect(reload).toHaveBeenCalledTimes(count + 1));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(jest.requireMock('antd').message.warning).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    expect(jest.requireMock('antd').message.warning).toHaveBeenCalled();
+    expect(reload).toHaveBeenCalledTimes(count + 1);
+  });
+
+  it('keeps draft modes staged across paging, sorting, classification, and reload until submission', async () => {
+    renderWithProviders(<UnitgroupsPage />);
+    await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(jest.requireMock('antd').message.warning).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockUnitGroupHybridSearch).not.toHaveBeenCalled();
+    expect(mockGetUnitGroupTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalled());
+    await userEvent.click(smartSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 3, pageSize: 20 },
+        { modifiedAt: 'descend' },
+      );
+      await mockCapturedTableProps.actionRef.current.reload();
+    });
+    expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-2)[0]).toEqual(
+      expect.objectContaining({ current: 3, pageSize: 20 }),
+    );
+    expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('density');
+    expect(mockUnitGroupHybridSearch).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[0].classification).toEqual([
+        { scope: 'classification', code: 'C', path: ['C'] },
+      ]),
+    );
+    expect(mockUnitGroupHybridSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockUnitGroupHybridSearch).toHaveBeenCalled());
+    expect(mockUnitGroupHybridSearch.mock.calls.at(-1)[3]).toBe('density');
+    const appliedCount = mockUnitGroupHybridSearch.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockUnitGroupHybridSearch).toHaveBeenCalledTimes(appliedCount + 1));
+    await userEvent.click(referenceSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        {},
+      );
+    });
+    expect(mockUnitGroupHybridSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockUnitGroupHybridSearch.mock.calls.at(-1)[3]).toBe('density');
+    expect(mockGetUnitGroupTableUuidMentionSearch).not.toHaveBeenCalled();
+  });
+
+  it('uses the main table for reference lookup and retains rows for incomplete UUIDs', async () => {
     const { message } = jest.requireMock('antd');
     mockGetRoleByUserId.mockResolvedValue([
       {
@@ -743,19 +890,25 @@ describe('UnitgroupsPage', () => {
       'pages.search.referenceLookup.placeholder',
     );
 
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
-    await waitFor(() => expect(screen.queryByTestId('unitgroup-view')).not.toBeInTheDocument());
+    expect(screen.getByTestId('unitgroup-view')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
     expect(mockGetUnitGroupTableUuidMentionSearch).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetUnitGroupTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -767,6 +920,35 @@ describe('UnitgroupsPage', () => {
     expect(message.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        { modifiedAt: 'ascend' },
+      );
+    });
+    expect(mockGetUnitGroupTableUuidMentionSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockGetUnitGroupTableUuidMentionSearch.mock.calls.at(-1)[3]).toBe(
+      'd1380000-0000-4000-8000-000000000001',
+    );
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+
+    const appliedReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    const appliedLookupCount = mockGetUnitGroupTableUuidMentionSearch.mock.calls.length;
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    expect(screen.getByText('Referenced unit group')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      appliedReloadCount,
+    );
+    expect(mockGetUnitGroupTableUuidMentionSearch).toHaveBeenCalledTimes(appliedLookupCount);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
 
     const callCountBeforeUncappedLookup = mockGetUnitGroupTableUuidMentionSearch.mock.calls.length;
     mockGetUnitGroupTableUuidMentionSearch.mockResolvedValue({
@@ -781,6 +963,10 @@ describe('UnitgroupsPage', () => {
         callCountBeforeUncappedLookup,
       ),
     );
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).toHaveBeenCalledWith({
+      current: 1,
+    });
   });
 
   it('keeps admin create, import, and edit controls available on mobile', async () => {
@@ -878,7 +1064,7 @@ describe('UnitgroupsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetUnitGroupTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -916,13 +1102,13 @@ describe('UnitgroupsPage', () => {
 
       await waitFor(() =>
         expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
-          { pageSize: 10, current: 1 },
+          { pageSize: 50, current: 1, classification: [] },
           {},
           'en',
           scope,
           '',
           'all',
-          ...(scope === 'tg' ? [{ publicationFilter: 'all', sourceFilter: 'all' }] : []),
+          ...(scope === 'tg' ? [true] : []),
         ),
       );
 
@@ -931,7 +1117,7 @@ describe('UnitgroupsPage', () => {
       expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
       expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
       expect(await screen.findByTestId('unitgroup-view')).toHaveTextContent('view:ug-2');
-      expect(screen.getByText('-')).toBeInTheDocument();
+      expect(screen.getAllByText('—').length).toBeGreaterThan(0);
       expect(screen.getByText(/export:ug-2:2.0.0/i)).toBeInTheDocument();
       expect(
         screen
@@ -939,7 +1125,8 @@ describe('UnitgroupsPage', () => {
           .find((node) => node.textContent?.includes('"actionType":"copy"')),
       ).toHaveTextContent('"actionType":"copy"');
       expect(screen.getByText('versions-disabled:undefined')).toBeInTheDocument();
-      expect(screen.getByTestId('pro-table')).toHaveTextContent('My Data / Unit Groups');
+      expect(screen.getByTestId('pro-table')).not.toHaveTextContent('My Data / Unit Groups');
+      expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
       expect(screen.getByText('super(m3)')).toBeInTheDocument();
       expect(screen.getByText('2.0.0')).toBeInTheDocument();
       expect(screen.getByText('2024-01-02')).toBeInTheDocument();
@@ -952,16 +1139,30 @@ describe('UnitgroupsPage', () => {
       await userEvent.click(screen.getByRole('button', { name: /search/i }));
       await waitFor(() =>
         expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
-          { pageSize: 10, current: 1 },
+          { pageSize: 50, current: 1, classification: [] },
           'en',
           scope,
           'density',
           {},
           'all',
           '',
-          ...(scope === 'tg' ? [{ publicationFilter: 'all', sourceFilter: 'all' }] : []),
+          ...(scope === 'tg' ? [true] : []),
         ),
       );
     },
   );
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

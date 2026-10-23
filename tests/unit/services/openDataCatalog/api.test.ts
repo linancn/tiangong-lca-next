@@ -11,12 +11,10 @@ jest.mock('@/services/supabase', () => ({
 }));
 
 import {
-  addOpenDataHybridFilters,
+  addOpenDataCatalogScope,
   queryMappedOpenDataCatalog,
   queryOpenDataCatalog,
 } from '@/services/openDataCatalog/api';
-
-const filters = { sourceFilter: 'literature' as const, publicationFilter: 'published' as const };
 
 describe('Open Data catalog service', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -25,7 +23,6 @@ describe('Open Data catalog service', () => {
     mockRpc.mockResolvedValue({ data: [], error: null });
     await queryOpenDataCatalog({
       datasetKind: 'process',
-      filters,
       mode: 'lexical',
       queryText: 'steel',
     });
@@ -35,8 +32,8 @@ describe('Open Data catalog service', () => {
       p_query_text: 'steel',
       p_query_terms: null,
       p_filter_condition: {},
-      p_source_filter: 'literature',
-      p_publication_filter: 'published',
+      p_source_filter: 'all',
+      p_publication_filter: 'all',
       p_page_size: 10,
       p_page_current: 1,
       p_sort_by: 'modified_at',
@@ -45,7 +42,6 @@ describe('Open Data catalog service', () => {
 
     await queryOpenDataCatalog({
       datasetKind: 'source',
-      filters: { sourceFilter: 'enterprise' },
       mode: 'list',
     });
     expect(mockRpc).toHaveBeenLastCalledWith(
@@ -62,25 +58,27 @@ describe('Open Data catalog service', () => {
       .mockResolvedValueOnce({ data: null, error: null })
       .mockResolvedValueOnce({ data: null, error: new Error('failed') });
     await expect(
-      queryMappedOpenDataCatalog({ datasetKind: 'contact', filters, mode: 'list' }, mapRows),
+      queryMappedOpenDataCatalog({ datasetKind: 'contact', mode: 'list' }, mapRows),
     ).resolves.toMatchObject({ data: ['one'], success: true, total: 3, capped: false });
     await expect(
-      queryMappedOpenDataCatalog({ datasetKind: 'contact', filters, mode: 'list' }, mapRows),
+      queryMappedOpenDataCatalog({ datasetKind: 'contact', mode: 'list' }, mapRows),
     ).resolves.toMatchObject({ data: [], success: true, total: 0 });
     await expect(
-      queryMappedOpenDataCatalog({ datasetKind: 'contact', filters, mode: 'list' }, mapRows),
+      queryMappedOpenDataCatalog({ datasetKind: 'contact', mode: 'list' }, mapRows),
     ).resolves.toMatchObject({ data: [], success: true, total: 0 });
     await expect(
-      queryMappedOpenDataCatalog({ datasetKind: 'contact', filters, mode: 'list' }, mapRows),
+      queryMappedOpenDataCatalog({ datasetKind: 'contact', mode: 'list' }, mapRows),
     ).resolves.toMatchObject({ data: [], success: false, total: 0 });
     expect(mapRows).toHaveBeenCalledTimes(1);
   });
 
-  it('adds Open Data filters only when requested', () => {
-    expect(addOpenDataHybridFilters({ query: 'steel' })).toEqual({ query: 'steel' });
-    expect(addOpenDataHybridFilters({ query: 'steel' }, { sourceFilter: 'enterprise' })).toEqual({
+  it('adds the fixed Open Data scope only when explicitly requested', () => {
+    const body = { query: 'steel' };
+    expect(addOpenDataCatalogScope(body)).toBe(body);
+    expect(addOpenDataCatalogScope(body, false)).toBe(body);
+    expect(addOpenDataCatalogScope(body, true)).toEqual({
       query: 'steel',
-      source_filter: 'enterprise',
+      source_filter: 'all',
       publication_filter: 'all',
     });
   });

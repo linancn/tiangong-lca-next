@@ -18,6 +18,8 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
+let mockCapturedTableProps: any;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -270,7 +272,17 @@ jest.mock('antd', () => {
 
   const Search = ({ onSearch, placeholder }: any) => (
     <div>
-      <input aria-label='search-input' placeholder={placeholder} />
+      <input
+        aria-label='search-input'
+        placeholder={placeholder}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter')
+            onSearch?.(event.currentTarget.value, event, { source: 'input' });
+        }}
+      />
+      <button type='button' onClick={() => onSearch?.('', undefined, { source: 'clear' })}>
+        clear
+      </button>
       <button type='button' onClick={() => onSearch?.('alice')}>
         search
       </button>
@@ -346,12 +358,16 @@ jest.mock('@ant-design/pro-components', () => {
     request,
     params = {},
     columns = [],
+    toolbar,
     toolBarRender,
     headerTitle,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params, request, actionRef };
     const [rows, setRows] = React.useState<any[]>([]);
     const headerTitleText = toText(headerTitle);
+    const paramsKey = JSON.stringify(params);
     const latestRequestRef = React.useRef(request);
     const latestParamsRef = React.useRef(params);
     latestRequestRef.current = request;
@@ -361,7 +377,7 @@ jest.mock('@ant-design/pro-components', () => {
       () => ({
         reload: jest.fn(async () => {
           const result = await latestRequestRef.current?.(
-            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            { ...latestParamsRef.current, pageSize: 50, current: 1 },
             {},
           );
           setRows(result?.data ?? []);
@@ -378,17 +394,23 @@ jest.mock('@ant-design/pro-components', () => {
         actionRef.current = api;
       }
       void api.reload();
-    }, [actionRef, api, headerTitleText, params.locale]);
+    }, [actionRef, api, headerTitleText, paramsKey]);
 
     return (
       <section data-testid='pro-table'>
         <div>{headerTitleText}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         {rows.map((row: any, rowIndex: number) => (
           <div key={rowKey?.(row) ?? `${row.id}-${rowIndex}`}>
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id}-${columnIndex}`}>
-                {column.render ? column.render(undefined, row) : row[column.dataIndex]}
+                {column.render
+                  ? column.render(row[column.dataIndex], row, rowIndex)
+                  : row[column.dataIndex]}
               </div>
             ))}
           </div>
@@ -407,6 +429,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('ContactsPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     latestReloadMock = null;
     mockLocation = {
@@ -428,6 +451,50 @@ describe('ContactsPage', () => {
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
+  it('keeps the Open Data catalog route and classification control without a source toggle', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockLocation = { pathname: '/tgdata/contacts', search: '' };
+    renderWithProviders(<ContactsPage />);
+    await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalled());
+    expect(mockGetContactTableAll.mock.calls.at(-1)?.at(-1)).toBe(true);
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^(All data|Enterprise data|Literature data)$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<ContactsPage />);
+    await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetContactTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -443,7 +510,7 @@ describe('ContactsPage', () => {
     await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalled());
 
     expect(mockGetContactTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -513,7 +580,7 @@ describe('ContactsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetContactTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -536,7 +603,7 @@ describe('ContactsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'alice',
@@ -555,7 +622,7 @@ describe('ContactsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'alice',
@@ -583,7 +650,7 @@ describe('ContactsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockContactHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'alice',
@@ -613,7 +680,7 @@ describe('ContactsPage', () => {
 
     await waitFor(() =>
       expect(mockContactHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'alice',
@@ -633,7 +700,7 @@ describe('ContactsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetContactTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -697,7 +764,85 @@ describe('ContactsPage', () => {
     consoleLogSpy.mockRestore();
   });
 
-  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+  it('keeps clear as an edit and applies empty input only on Enter', async () => {
+    renderWithProviders(<ContactsPage />);
+    await waitFor(() => expect(mockCapturedTableProps.actionRef.current).toBeDefined());
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    const reload = mockCapturedTableProps.actionRef.current.reload;
+    const count = reload.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(reload).toHaveBeenCalledTimes(count);
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    await waitFor(() => expect(reload).toHaveBeenCalledTimes(count + 1));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(jest.requireMock('antd').message.warning).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    expect(jest.requireMock('antd').message.warning).toHaveBeenCalled();
+    expect(reload).toHaveBeenCalledTimes(count + 1);
+  });
+
+  it('keeps draft modes staged across paging, sorting, classification, and reload until submission', async () => {
+    renderWithProviders(<ContactsPage />);
+    await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalled());
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(jest.requireMock('antd').message.warning).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockContactHybridSearch).not.toHaveBeenCalled();
+    expect(mockGetContactTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetContactTablePgroongaSearch).toHaveBeenCalled());
+    await userEvent.click(smartSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 3, pageSize: 20 },
+        { modifiedAt: 'descend' },
+      );
+      await mockCapturedTableProps.actionRef.current.reload();
+    });
+    expect(mockGetContactTablePgroongaSearch.mock.calls.at(-2)[0]).toEqual(
+      expect.objectContaining({ current: 3, pageSize: 20 }),
+    );
+    expect(mockGetContactTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('alice');
+    expect(mockContactHybridSearch).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetContactTablePgroongaSearch.mock.calls.at(-1)[0].classification).toEqual([
+        { scope: 'classification', code: 'C', path: ['C'] },
+      ]),
+    );
+    expect(mockContactHybridSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockContactHybridSearch).toHaveBeenCalled());
+    expect(mockContactHybridSearch.mock.calls.at(-1)[3]).toBe('alice');
+    const appliedCount = mockContactHybridSearch.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockContactHybridSearch).toHaveBeenCalledTimes(appliedCount + 1));
+    await userEvent.click(referenceSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        {},
+      );
+    });
+    expect(mockContactHybridSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockContactHybridSearch.mock.calls.at(-1)[3]).toBe('alice');
+    expect(mockGetContactTableUuidMentionSearch).not.toHaveBeenCalled();
+  });
+
+  it('uses the main table for reference lookup and retains rows for incomplete UUIDs', async () => {
     const { message } = jest.requireMock('antd');
     const referenceRows = [
       { ...baseContactRow, id: 'contact-ref', shortName: 'Referenced contact' },
@@ -718,19 +863,25 @@ describe('ContactsPage', () => {
       'pages.search.referenceLookup.placeholder',
     );
 
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
-    await waitFor(() => expect(screen.queryByTestId('contact-view')).not.toBeInTheDocument());
+    expect(screen.getByTestId('contact-view')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
     expect(mockGetContactTableUuidMentionSearch).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetContactTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -742,6 +893,35 @@ describe('ContactsPage', () => {
     expect(message.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        { modifiedAt: 'ascend' },
+      );
+    });
+    expect(mockGetContactTableUuidMentionSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockGetContactTableUuidMentionSearch.mock.calls.at(-1)[3]).toBe(
+      'd1380000-0000-4000-8000-000000000001',
+    );
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+
+    const appliedReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    const appliedLookupCount = mockGetContactTableUuidMentionSearch.mock.calls.length;
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    expect(screen.getByText('Referenced contact')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      appliedReloadCount,
+    );
+    expect(mockGetContactTableUuidMentionSearch).toHaveBeenCalledTimes(appliedLookupCount);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
 
     const callCountBeforeUncappedLookup = mockGetContactTableUuidMentionSearch.mock.calls.length;
     mockGetContactTableUuidMentionSearch.mockResolvedValue({
@@ -756,9 +936,13 @@ describe('ContactsPage', () => {
         callCountBeforeUncappedLookup,
       ),
     );
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).toHaveBeenCalledWith({
+      current: 1,
+    });
   });
 
-  it('renders a dash when classification is missing or invalid', async () => {
+  it('renders missing base metadata without a row classification column', async () => {
     mockGetContactTableAll.mockResolvedValue({
       data: [{ ...baseContactRow, classification: 'undefined' }],
       success: true,
@@ -766,6 +950,20 @@ describe('ContactsPage', () => {
 
     renderWithProviders(<ContactsPage />);
 
-    expect(await screen.findByText('-')).toBeInTheDocument();
+    expect((await screen.findAllByText('—')).length).toBeGreaterThan(0);
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

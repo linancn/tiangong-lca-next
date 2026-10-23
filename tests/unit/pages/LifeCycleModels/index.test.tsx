@@ -18,6 +18,8 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
+let mockCapturedTableProps: any;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -249,8 +251,7 @@ jest.mock('antd', () => {
     <div data-tooltip-title={toText(title)}>{children}</div>
   );
 
-  const Checkbox = ({ children, onChange }: any) => {
-    const [checked, setChecked] = React.useState(false);
+  const Checkbox = ({ checked = false, children, onChange }: any) => {
     return (
       <label>
         <input
@@ -259,7 +260,6 @@ jest.mock('antd', () => {
           type='checkbox'
           onChange={() => {
             const next = !checked;
-            setChecked(next);
             onChange?.({ target: { checked: next } });
           }}
         />
@@ -270,7 +270,17 @@ jest.mock('antd', () => {
 
   const Search = ({ onSearch, placeholder }: any) => (
     <div>
-      <input aria-label='search-input' placeholder={placeholder} />
+      <input
+        aria-label='search-input'
+        placeholder={placeholder}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter')
+            onSearch?.(event.currentTarget.value, event, { source: 'input' });
+        }}
+      />
+      <button type='button' onClick={() => onSearch?.('', undefined, { source: 'clear' })}>
+        clear
+      </button>
       <button type='button' onClick={() => onSearch?.('steel')}>
         search
       </button>
@@ -340,13 +350,16 @@ jest.mock('@ant-design/pro-components', () => {
     request,
     params = {},
     columns = [],
+    toolbar,
     toolBarRender,
     headerTitle,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params, request, actionRef };
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
-    const pageInfoRef = React.useRef({ pageSize: 10, current: 1 });
+    const pageInfoRef = React.useRef({ pageSize: 50, current: 1, classification: [] });
     const [rows, setRows] = React.useState<any[]>([]);
 
     requestRef.current = request;
@@ -390,7 +403,11 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <section data-testid='pro-table'>
         <div>{toText(headerTitle)}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         <button type='button' onClick={() => requestWith({ name: 'ascend' })}>
           request-name-sort-asc
         </button>
@@ -437,6 +454,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('LifeCycleModelsPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     latestReloadMock = null;
     mockLocation = {
@@ -477,6 +495,50 @@ describe('LifeCycleModelsPage', () => {
     mockContributeLifeCycleModel.mockResolvedValue({ error: null });
   });
 
+  it('keeps the Open Data catalog route and classification control without a source toggle', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockLocation = { pathname: '/tgdata/lifecyclemodels', search: '' };
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    expect(mockGetLifeCycleModelTableAll.mock.calls.at(-1)?.at(-1)).toBe(true);
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^(All data|Enterprise data|Literature data)$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -499,7 +561,7 @@ describe('LifeCycleModelsPage', () => {
     );
 
     expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -513,7 +575,7 @@ describe('LifeCycleModelsPage', () => {
     );
     expect(screen.getByTestId('row-model-1-1.0.0')).toBeInTheDocument();
     expect(screen.getByText('Lifecycle model 1')).toBeInTheDocument();
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('all-versions')).toHaveLength(2);
     expect(screen.getAllByTestId('lifecycle-create-createVersion')[0]).toHaveTextContent(
       '"newVersion":"02.00.000"',
@@ -559,7 +621,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -571,7 +633,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -585,7 +647,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-name-sort-asc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -599,7 +661,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-name-sort-desc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -613,7 +675,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-classification-sort-desc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -627,7 +689,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-classification-sort-asc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -641,7 +703,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-unknown-sort' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -655,7 +717,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-inactive-sort' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -675,14 +737,43 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
         {},
         '20',
+        undefined,
+        'team-1',
       ),
     );
+  });
+
+  it('preserves Open Data catalog scope, classification and selected institution in tg Hybrid search', async () => {
+    mockLocation = { pathname: '/tgdata/lifecyclemodels', search: '?tid=public-team' };
+    mockGetDataSource.mockReturnValue('tg');
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
+        {
+          pageSize: 50,
+          current: 1,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        },
+        'en',
+        'tg',
+        'steel',
+        {},
+        'all',
+        true,
+        'public-team',
+      ),
+    );
+    expect(mockGetLifeCycleModelTablePgroongaSearch).not.toHaveBeenCalled();
   });
 
   it('contributes rows successfully or with logged errors and executes the delete callback prop', async () => {
@@ -743,13 +834,13 @@ describe('LifeCycleModelsPage', () => {
       );
 
       expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         scope,
         '',
         'all',
-        ...(scope === 'tg' ? [{ publicationFilter: 'all', sourceFilter: 'all' }] : []),
+        ...(scope === 'tg' ? [true] : []),
       );
       expect(screen.queryByRole('heading')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
@@ -858,7 +949,7 @@ describe('LifeCycleModelsPage', () => {
 
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -870,7 +961,132 @@ describe('LifeCycleModelsPage', () => {
     );
   });
 
-  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+  it('stages clearing until Enter and rejects an empty Reference submission without changing the list', async () => {
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledTimes(1));
+    const appliedParams = mockCapturedTableProps.params;
+    const initialListCount = mockGetLifeCycleModelTableAll.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(mockCapturedTableProps.params).toEqual(appliedParams);
+    expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledTimes(initialListCount);
+    expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledTimes(1);
+
+    await userEvent.type(screen.getByRole('textbox', { name: /search-input/i }), '{enter}');
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledTimes(initialListCount + 1),
+    );
+    const emptyParams = mockCapturedTableProps.params;
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    await userEvent.type(screen.getByRole('textbox', { name: /search-input/i }), '{enter}');
+    expect(jest.requireMock('antd').message.warning).toHaveBeenCalledWith(
+      'Enter a complete dataset UUID before running Reference Lookup.',
+    );
+    expect(mockCapturedTableProps.params).toEqual(emptyParams);
+    expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledTimes(initialListCount + 1);
+    expect(mockGetLifeCycleModelTableUuidMentionSearch).not.toHaveBeenCalled();
+  });
+
+  it('keeps the applied AI search after unchecking AI until Search submits normal mode', async () => {
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledTimes(1));
+    const appliedParams = mockCapturedTableProps.params;
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    expect(screen.getByRole('checkbox', { name: /ai recommendation/i })).not.toBeChecked();
+    expect(mockCapturedTableProps.params).toEqual(appliedParams);
+    expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledTimes(1);
+    expect(mockGetLifeCycleModelTablePgroongaSearch).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 3, pageSize: 20 },
+        {},
+      );
+      await mockCapturedTableProps.actionRef.current.reload();
+    });
+    expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledTimes(3);
+    expect(mockLifeCycleModelHybridSearch.mock.calls.at(-2)[0]).toEqual(
+      expect.objectContaining({ current: 3, pageSize: 20 }),
+    );
+    expect(mockLifeCycleModelHybridSearch.mock.calls.at(-1)[3]).toBe('steel');
+    expect(mockGetLifeCycleModelTablePgroongaSearch).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledTimes(1));
+    expect(mockGetLifeCycleModelTablePgroongaSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 1 }),
+    );
+    expect(mockGetLifeCycleModelTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('steel');
+    expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledTimes(3);
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+  });
+
+  it('keeps draft modes staged through paging, sorting, classification, and reload until submission', async () => {
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    const smartSearch = screen.getByRole('checkbox', { name: /ai recommendation/i });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    const initialParams = mockCapturedTableProps.params;
+    const initialListCount = mockGetLifeCycleModelTableAll.mock.calls.length;
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    expect(mockCapturedTableProps.params).toEqual(initialParams);
+    expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledTimes(initialListCount);
+    expect(mockLifeCycleModelHybridSearch).not.toHaveBeenCalled();
+    expect(mockGetLifeCycleModelTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledTimes(1));
+    const normalParams = mockCapturedTableProps.params;
+    await userEvent.click(smartSearch);
+    expect(mockCapturedTableProps.params).toEqual(normalParams);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 3, pageSize: 20 },
+        { modifiedAt: 'descend' },
+      );
+      await mockCapturedTableProps.actionRef.current.reload();
+    });
+    expect(mockGetLifeCycleModelTablePgroongaSearch.mock.calls.at(-2)[0]).toEqual(
+      expect.objectContaining({ current: 3, pageSize: 20 }),
+    );
+    expect(mockGetLifeCycleModelTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('steel');
+    expect(mockLifeCycleModelHybridSearch).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch.mock.calls.at(-1)[0].classification).toEqual([
+        { scope: 'classification', code: 'C', path: ['C'] },
+      ]),
+    );
+    expect(mockLifeCycleModelHybridSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledTimes(1));
+    expect(mockLifeCycleModelHybridSearch.mock.calls.at(-1)[3]).toBe('steel');
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledTimes(2));
+    await userEvent.click(referenceSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        {},
+      );
+    });
+    expect(mockLifeCycleModelHybridSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockLifeCycleModelHybridSearch.mock.calls.at(-1)[3]).toBe('steel');
+    expect(mockGetLifeCycleModelTableUuidMentionSearch).not.toHaveBeenCalled();
+  });
+
+  it('uses the main table for reference lookup and retains rows for incomplete UUIDs', async () => {
     const { message } = jest.requireMock('antd');
     const referenceRows = [{ ...modelRows[0], id: 'model-ref', name: 'Referenced model' }];
     mockGetLifeCycleModelTableUuidMentionSearch.mockResolvedValue({
@@ -889,19 +1105,25 @@ describe('LifeCycleModelsPage', () => {
       'pages.search.referenceLookup.placeholder',
     );
 
+    const unappliedParams = mockCapturedTableProps.params;
+    const initialListCount = mockGetLifeCycleModelTableAll.mock.calls.length;
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
-    await waitFor(() => expect(screen.queryByText('Lifecycle model 1')).not.toBeInTheDocument());
+    expect(screen.getByText('Lifecycle model 1')).toBeInTheDocument();
+    expect(mockCapturedTableProps.params).toEqual(unappliedParams);
+    expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledTimes(initialListCount);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
     expect(mockGetLifeCycleModelTableUuidMentionSearch).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -913,6 +1135,31 @@ describe('LifeCycleModelsPage', () => {
     expect(message.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        { modifiedAt: 'ascend' },
+      );
+    });
+    expect(mockGetLifeCycleModelTableUuidMentionSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockGetLifeCycleModelTableUuidMentionSearch.mock.calls.at(-1)[3]).toBe(
+      'd1380000-0000-4000-8000-000000000001',
+    );
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    const appliedParams = mockCapturedTableProps.params;
+    const appliedLookupCount = mockGetLifeCycleModelTableUuidMentionSearch.mock.calls.length;
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    expect(screen.getAllByText('Referenced model').length).toBeGreaterThan(0);
+    expect(mockCapturedTableProps.params).toEqual(appliedParams);
+    expect(mockGetLifeCycleModelTableUuidMentionSearch).toHaveBeenCalledTimes(appliedLookupCount);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
 
     const callCountBeforeUncappedLookup =
       mockGetLifeCycleModelTableUuidMentionSearch.mock.calls.length;
@@ -928,5 +1175,20 @@ describe('LifeCycleModelsPage', () => {
         callCountBeforeUncappedLookup,
       ),
     );
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

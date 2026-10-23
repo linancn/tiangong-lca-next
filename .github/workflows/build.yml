@@ -11,6 +11,18 @@ on:
         description: Existing v* tag to release with the current workflow definition.
         required: true
         type: string
+      publication_scope:
+        description: Full release, or only the current release's Atlas web backfill.
+        required: true
+        default: full
+        type: choice
+        options:
+          - full
+          - atlas-web
+      expected_release_sha:
+        description: Exact existing tag commit; required for Atlas-only backfill.
+        required: false
+        type: string
   push:
     branches:
       - main
@@ -35,6 +47,7 @@ jobs:
       release_head: ${{ steps.release.outputs.release_head }}
       should_release: ${{ steps.release.outputs.should_release }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      publication_scope: ${{ steps.release.outputs.publication_scope }}
       gate_mode: ${{ steps.proof.outputs.gate_mode || 'full' }}
       gate_reason: ${{ steps.proof.outputs.gate_reason || 'proof_reuse_not_requested' }}
       proof_run_id: ${{ steps.proof.outputs.proof_run_id }}
@@ -49,7 +62,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.19.0
 
@@ -58,6 +71,8 @@ jobs:
         env:
           PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
           REQUESTED_TAG_NAME: ${{ github.event.inputs.tag_name || '' }}
+          REQUESTED_PUBLICATION_SCOPE: ${{ github.event.inputs.publication_scope || 'full' }}
+          EXPECTED_RELEASE_SHA: ${{ github.event.inputs.expected_release_sha || '' }}
         run: |
           set -euo pipefail
 
@@ -70,18 +85,39 @@ jobs:
             exit 0
           fi
 
+          publication_scope="${REQUESTED_PUBLICATION_SCOPE:-full}"
+          case "${publication_scope}" in
+            full) ;;
+            atlas-web)
+              if [ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ] || [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+                echo "::error::Atlas-only backfill requires workflow_dispatch on main."
+                exit 1
+              fi
+              if [[ ! "${EXPECTED_RELEASE_SHA:-}" =~ ^[0-9a-f]{40}$ ]]; then
+                echo "::error::Atlas-only backfill requires an exact expected release SHA."
+                exit 1
+              fi
+              ;;
+            *) echo "::error::Unknown publication scope."; exit 1 ;;
+          esac
+          echo "publication_scope=${publication_scope}" >> "$GITHUB_OUTPUT"
+
           read_package_version() {
             git show "${1}:package.json" | node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); console.log(pkg.version);"
           }
 
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+              echo "::error::Release recovery must use the reviewed workflow on main."
+              exit 1
+            fi
             tag_name="${REQUESTED_TAG_NAME}"
-            if [ -z "${tag_name}" ] || [[ "${tag_name}" != v* ]]; then
+            if [[ ! "${tag_name}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               echo "::error::workflow_dispatch tag_name must be an existing v* tag."
               exit 1
             fi
 
-            if ! release_head="$(git rev-list -n 1 "${tag_name}" 2>/dev/null)"; then
+            if ! release_head="$(git rev-list -n 1 "refs/tags/${tag_name}" 2>/dev/null)"; then
               echo "::error::Release tag ${tag_name} does not exist."
               exit 1
             fi
@@ -90,6 +126,15 @@ jobs:
             expected_tag="v${package_version}"
             if [ "${tag_name}" != "${expected_tag}" ]; then
               echo "::error::Release tag ${tag_name} does not match package.json version ${package_version} at ${release_head}."
+              exit 1
+            fi
+
+            if [ -n "${EXPECTED_RELEASE_SHA:-}" ] && [ "${release_head}" != "${EXPECTED_RELEASE_SHA}" ]; then
+              echo "::error::The existing tag does not match the expected release SHA."
+              exit 1
+            fi
+            if [ "${publication_scope}" = "atlas-web" ] && [ "${package_version}" != "$(read_package_version origin/main)" ]; then
+              echo "::error::Atlas-only backfill must target the current Main package version."
               exit 1
             fi
 
@@ -138,6 +183,10 @@ jobs:
           fi
 
           if ! git merge-base --is-ancestor "${release_head}" origin/main; then
+            if [ "${publication_scope}" = "atlas-web" ]; then
+              echo "::error::Atlas backfill source is not contained in current Main."
+              exit 1
+            fi
             echo "should_release=false" >> "$GITHUB_OUTPUT"
             echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
             echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
@@ -287,7 +336,7 @@ jobs:
       - release-qualified
       - release-tag
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.outputs.publication_scope == 'full' && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.release.outputs.release_id }}
@@ -361,9 +410,10 @@ jobs:
       - release-qualified
       - release-tag
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.outputs.publication_scope == 'full' && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ubuntu-latest
     env:
+      APP_BRAND: tiangong
       EDGEONE_OUTPUT_DIR: dist-edgeone
       EDGEONE_PROJECT_NAME: tiangong-lca-platform
       EDGEONE_CLI_VERSION: 1.4.6
@@ -377,7 +427,7 @@ jobs:
           ref: ${{ needs.release-context.outputs.release_head }}
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
         with:
           version: 11.24.0
           runtime: node@24.19.0
@@ -439,6 +489,189 @@ jobs:
             sleep "$sleep_seconds"
           done
 
+  atlas-web-deploy:
+    name: Build and Deploy Atlas Web App
+    needs:
+      - release-context
+      - release-qualified
+      - release-tag
+    if: >-
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      APP_BRAND: atlas
+      EDGEONE_OUTPUT_DIR: dist-edgeone
+      EDGEONE_CLI_VERSION: 1.4.6
+      EDGEONE_VITEST_VERSION: 3.2.4
+      EDGEONE_VITE_NODE_VERSION: 3.2.4
+      ATLAS_PROJECT_ID: makers-dtpthotshhpt
+      ATLAS_PROJECT_NAME: atlas-lca-platform
+      RELEASE_HEAD: ${{ needs.release-context.outputs.release_head }}
+      TAG_NAME: ${{ needs.release-context.outputs.tag_name }}
+
+    steps:
+      - name: Check out exact qualified Atlas source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-context.outputs.release_head }}
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+        with:
+          version: 11.24.0
+          runtime: node@24.19.0
+          cache: true
+          install: false
+
+      - name: Initialize Atlas publication paths
+        run: |
+          {
+            printf 'ATLAS_SDK_DIR=%s/atlas-sdk\n' "$RUNNER_TEMP"
+            printf 'ATLAS_PROOF_DIR=%s/atlas-publication\n' "$RUNNER_TEMP"
+            printf 'ATLAS_ARCHIVE_PATH=%s/atlas-release.zip\n' "$RUNNER_TEMP"
+          } >> "$GITHUB_ENV"
+
+      - name: Install isolated exact-ID deployment SDK
+        run: |
+          mkdir -p "$ATLAS_SDK_DIR" "$ATLAS_PROOF_DIR"
+          pnpm --dir "$ATLAS_SDK_DIR" add --ignore-scripts --save-exact @edgeone/makers-sdk@0.1.0
+
+      - name: Verify exact Atlas destination
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { createRequire } from 'node:module';
+          import { pathToFileURL } from 'node:url';
+          const require = createRequire(path.join(process.env.ATLAS_SDK_DIR, 'package.json'));
+          const { Makers } = await import(pathToFileURL(require.resolve('@edgeone/makers-sdk')).href);
+          const projectId = 'makers-dtpthotshhpt';
+          const projectName = 'atlas-lca-platform';
+          if (process.env.ATLAS_PROJECT_ID !== projectId || process.env.ATLAS_PROJECT_NAME !== projectName || !process.env.EDGEONE_API_TOKEN) throw new Error('Atlas destination or credential is missing/mismatched');
+          const makers = new Makers({ token: process.env.EDGEONE_API_TOKEN });
+          const project = await makers.projects.get({ projectId });
+          if (project.projectId !== projectId || project.name !== projectName) throw new Error('Atlas project identity mismatch');
+          fs.writeFileSync(path.join(process.env.ATLAS_PROOF_DIR, 'destination.json'), JSON.stringify({ projectId, projectName, region: makers.region, sdkVersion: '0.1.0' }, null, 2) + '\n');
+          console.log(`Verified Atlas project ${projectId} (${projectName})`);
+          NODE
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build exact Atlas source
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_HEAD"
+          test "v$(node -p 'require("./package.json").version')" = "$TAG_NAME"
+          pnpm build
+
+      - name: Record Atlas build provenance
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          import path from 'node:path';
+          const manifest = JSON.parse(fs.readFileSync('dist/manifest.json', 'utf8'));
+          if (process.env.APP_BRAND !== 'atlas' || manifest.name !== 'ATLAS') throw new Error('Built artifact is not Atlas');
+          const html = fs.readFileSync('dist/index.html', 'utf8');
+          const entries = [...html.matchAll(/src=["']\/?(umi\.[a-zA-Z0-9]+\.js)["']/g)].map(match => match[1]);
+          if (entries.length !== 1) throw new Error('Expected exactly one built application entry');
+          const entry = entries[0];
+          const entrySha256 = crypto.createHash('sha256').update(fs.readFileSync(path.join('dist', entry))).digest('hex');
+          const receipt = { schema: 1, brand: 'atlas', sourceCommit: process.env.RELEASE_HEAD, tag: process.env.TAG_NAME, projectId: 'makers-dtpthotshhpt', projectName: 'atlas-lca-platform', entry, entrySha256, workflowCommit: process.env.GITHUB_SHA, workflowRun: process.env.GITHUB_RUN_ID, workflowAttempt: process.env.GITHUB_RUN_ATTEMPT };
+          const text = JSON.stringify(receipt, null, 2) + '\n';
+          fs.writeFileSync('dist/release-manifest.json', text);
+          fs.writeFileSync(path.join(process.env.ATLAS_PROOF_DIR, 'build.json'), text);
+          NODE
+
+      - name: Prepare verified Atlas routing bundle
+        run: |
+          set -euo pipefail
+          pnpm edgeone:bundle:stage
+          (
+            cd "$EDGEONE_OUTPUT_DIR"
+            pnpm dlx \
+              --package "edgeone@${EDGEONE_CLI_VERSION}" \
+              --package "vitest@${EDGEONE_VITEST_VERSION}" \
+              --package "vite-node@${EDGEONE_VITE_NODE_VERSION}" \
+              edgeone pages generate-routes
+          )
+          pnpm edgeone:bundle:correct
+          pnpm edgeone:bundle:check
+
+      - name: Archive exact Atlas bundle including hidden routes
+        run: |
+          python3 <<'PY'
+          import hashlib, json, os, pathlib, zipfile
+          bundle = pathlib.Path(os.environ['EDGEONE_OUTPUT_DIR']).absolute()
+          archive = pathlib.Path(os.environ['ATLAS_ARCHIVE_PATH'])
+          assert not bundle.is_symlink()
+          files = []
+          for file in sorted(bundle.rglob('*')):
+              assert not file.is_symlink(), f'Symlink in deploy bundle: {file}'
+              if file.is_file(): files.append(file)
+          required = ['.edgeone/routes.json', '.edgeone/assets/index.html', '.edgeone/assets/manifest.json', '.edgeone/assets/release-manifest.json', 'edgeone.json']
+          assert all((bundle / name).is_file() for name in required)
+          with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as output:
+              for file in files: output.write(file, file.relative_to(bundle.parent).as_posix())
+          with zipfile.ZipFile(archive) as output:
+              assert len(output.namelist()) == len(files)
+              for file in files: assert output.read(file.relative_to(bundle.parent).as_posix()) == file.read_bytes()
+          receipt = {'sha256': hashlib.sha256(archive.read_bytes()).hexdigest(), 'files': len(files), 'layout': 'dist-edgeone/.edgeone', 'routesSha256': hashlib.sha256((bundle / '.edgeone/routes.json').read_bytes()).hexdigest()}
+          (pathlib.Path(os.environ['ATLAS_PROOF_DIR']) / 'archive.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          PY
+
+      - name: Deploy and verify exact Atlas project
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import crypto from 'node:crypto';
+          import { createRequire } from 'node:module';
+          import { pathToFileURL } from 'node:url';
+          const require = createRequire(path.join(process.env.ATLAS_SDK_DIR, 'package.json'));
+          const { Makers } = await import(pathToFileURL(require.resolve('@edgeone/makers-sdk')).href);
+          const projectId = 'makers-dtpthotshhpt';
+          const projectName = 'atlas-lca-platform';
+          const proofDir = process.env.ATLAS_PROOF_DIR;
+          const read = file => JSON.parse(fs.readFileSync(path.join(proofDir, file), 'utf8'));
+          const build = read('build.json');
+          const archive = read('archive.json');
+          if (process.env.APP_BRAND !== 'atlas' || process.env.ATLAS_PROJECT_ID !== projectId || process.env.ATLAS_PROJECT_NAME !== projectName || build.brand !== 'atlas' || build.projectId !== projectId || build.projectName !== projectName || build.sourceCommit !== process.env.RELEASE_HEAD || build.tag !== process.env.TAG_NAME) throw new Error('Atlas publication identity mismatch');
+          if (crypto.createHash('sha256').update(fs.readFileSync(process.env.ATLAS_ARCHIVE_PATH)).digest('hex') !== archive.sha256) throw new Error('Atlas archive changed after verification');
+          if (!process.env.EDGEONE_API_TOKEN) throw new Error('Atlas deployment credential is missing');
+          const makers = new Makers({ token: process.env.EDGEONE_API_TOKEN });
+          const project = await makers.projects.get({ projectId });
+          if (project.projectId !== projectId || project.name !== projectName) throw new Error('Atlas project identity changed');
+          const created = await makers.deployments.deploy({ projectId, artifact: { archive: process.env.ATLAS_ARCHIVE_PATH }, env: 'Production', wait: false });
+          if (!created.deploymentId || created.projectId !== projectId || created.env !== 'Production') throw new Error('Atlas deployment creation identity mismatch');
+          const receipt = { ...build, archiveSha256: archive.sha256, sdkVersion: '0.1.0', region: makers.region, deploymentId: created.deploymentId, env: created.env, status: 'Pending' };
+          const receiptPath = path.join(proofDir, 'deployment.json');
+          fs.writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
+          console.log(`Created Atlas deployment ${created.deploymentId}; waiting without retrying creation`);
+          const completed = await makers.deployments.wait({ projectId, deploymentId: created.deploymentId, timeout: 900, pollInterval: 5 });
+          if (completed.deploymentId !== created.deploymentId || completed.projectId !== projectId || completed.env !== 'Production') throw new Error('Atlas completed deployment identity mismatch');
+          receipt.status = completed.status;
+          fs.writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
+          if (completed.status !== 'Success') throw new Error(`Atlas deployment ended with ${completed.status}`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n### Atlas publication\n- tag: ${build.tag}\n- source: ${build.sourceCommit}\n- project: ${projectId}\n- deployment: ${created.deploymentId}\n- status: Success\n- archive SHA256: ${archive.sha256}\n`);
+          NODE
+
+      - name: Preserve Atlas publication receipts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: atlas-publication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/atlas-publication/*.json
+          if-no-files-found: warn
+          retention-days: 30
+
   release:
     needs:
       - release-context
@@ -446,7 +679,7 @@ jobs:
       - release-draft
       - release-tag
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-draft.result == 'success' && needs.release-tag.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.outputs.publication_scope == 'full' && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-draft.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -468,7 +701,7 @@ jobs:
           ref: ${{ needs.release-context.outputs.release_head }}
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
         with:
           version: 11.24.0
           runtime: node@24.19.0
@@ -493,7 +726,7 @@ jobs:
       - release-draft
       - release
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-draft.result == 'success' && needs.release.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.outputs.publication_scope == 'full' && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-draft.result == 'success' && needs.release.result == 'success' }}
     runs-on: ubuntu-latest
 
     steps:

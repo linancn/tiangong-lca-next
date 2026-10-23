@@ -26,6 +26,16 @@
       "file": "src/pages/Welcome.tsx",
       "name": "guideMessage",
       "prefix": "pages.welcome.carbonFootprintGuide"
+    },
+    {
+      "file": "src/pages/DataProcessing/ResultSetDirectory.tsx",
+      "name": "t",
+      "defaultArgumentIndex": 1
+    },
+    {
+      "file": "src/pages/DataProcessing/resultSetWorkflow.ts",
+      "name": "translate",
+      "defaultArgumentIndex": 1
     }
   ],
   "families": {
@@ -783,7 +793,7 @@
       "api": "formatMessage",
       "count": 1,
       "file": "src/pages/DisplayedDatasets/index.tsx",
-      "expression": "datasetKindMessage(record.datasetKind)",
+      "expression": "datasetKindMessage(row.datasetKind)",
       "family": "datasetDisplayKinds"
     },
     {
@@ -799,6 +809,13 @@
       "file": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
       "expression": "getAllocationRepairMessageId(item.issue)",
       "family": "lifecycleModelAllocationRepair"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/DataProcessing/ResultSetDirectory.tsx",
+      "expression": "id",
+      "family": "dataProcessing"
     }
   ]
 }

@@ -66,7 +66,8 @@
         "colorBgContainer": "#FFFFFF",
         "colorText": "#183247",
         "colorTextSecondary": "#536777",
-        "colorBorderSecondary": "#DDE4E8"
+        "colorBorderSecondary": "#DDE4E8",
+        "colorBgElevated": "#FFFFFF"
       },
       "components": {
         "Button": {
@@ -81,30 +82,37 @@
         },
         "Tabs": {
           "titleFontSize": 14
+        },
+        "Menu": {
+          "darkPopupBg": "#001529",
+          "darkSubMenuItemBg": "#000c17"
         }
       },
       "layoutTokens": {
         "sider": {
-          "colorMenuBackground": "#06162A",
-          "colorBgMenuItemCollapsedElevated": "#102B43",
-          "colorTextMenuTitle": "#F5F3EC",
-          "colorTextMenu": "#BACADA",
-          "colorTextMenuSecondary": "#BACADA",
+          "colorMenuBackground": "#001529",
+          "colorBgMenuItemCollapsedElevated": "#001529",
+          "colorTextMenuTitle": "#FFFFFF",
+          "colorTextMenu": "rgba(255, 255, 255, 0.65)",
+          "colorTextMenuSecondary": "rgba(255, 255, 255, 0.65)",
           "colorTextSubMenuSelected": "#FFFFFF",
           "colorTextMenuSelected": "#FFFFFF",
           "colorTextMenuItemHover": "#FFFFFF",
           "colorTextMenuActive": "#FFFFFF",
-          "colorBgMenuItemSelected": "#234969",
-          "colorBgMenuItemHover": "#15334D",
-          "colorBgMenuItemActive": "#234969",
-          "colorMenuItemDivider": "#294052",
-          "colorBgCollapsedButton": "#16334D",
-          "colorTextCollapsedButton": "#BACADA",
+          "colorMenuItemDivider": "rgba(255, 255, 255, 0.12)",
+          "colorBgCollapsedButton": "#002140",
+          "colorTextCollapsedButton": "#FFFFFF",
           "colorTextCollapsedButtonHover": "#FFFFFF",
           "menuHeight": 44
         },
         "header": {
-          "heightLayoutHeader": 64
+          "heightLayoutHeader": 64,
+          "colorBgHeader": "#001529",
+          "colorHeaderTitle": "#FFFFFF",
+          "colorTextMenu": "rgba(255, 255, 255, 0.65)",
+          "colorTextMenuSelected": "#FFFFFF",
+          "colorTextMenuActive": "#FFFFFF",
+          "colorTextRightActionsItem": "rgba(255, 255, 255, 0.85)"
         },
         "pageContainer": {
           "paddingInlinePageContainerContent": 28,
@@ -124,7 +132,8 @@
         "colorBgContainer": "#102337",
         "colorText": "#ECF1F4",
         "colorTextSecondary": "#ADBCC9",
-        "colorBorderSecondary": "#2B4256"
+        "colorBorderSecondary": "#2B4256",
+        "colorBgElevated": "#102B43"
       },
       "components": {
         "Button": {
@@ -139,30 +148,37 @@
         },
         "Tabs": {
           "titleFontSize": 14
+        },
+        "Menu": {
+          "darkPopupBg": "#001529",
+          "darkSubMenuItemBg": "#000c17"
         }
       },
       "layoutTokens": {
         "sider": {
-          "colorMenuBackground": "#06162A",
-          "colorBgMenuItemCollapsedElevated": "#102B43",
-          "colorTextMenuTitle": "#F5F3EC",
-          "colorTextMenu": "#BACADA",
-          "colorTextMenuSecondary": "#BACADA",
+          "colorMenuBackground": "#001529",
+          "colorBgMenuItemCollapsedElevated": "#001529",
+          "colorTextMenuTitle": "#FFFFFF",
+          "colorTextMenu": "rgba(255, 255, 255, 0.65)",
+          "colorTextMenuSecondary": "rgba(255, 255, 255, 0.65)",
           "colorTextSubMenuSelected": "#FFFFFF",
           "colorTextMenuSelected": "#FFFFFF",
           "colorTextMenuItemHover": "#FFFFFF",
           "colorTextMenuActive": "#FFFFFF",
-          "colorBgMenuItemSelected": "#234969",
-          "colorBgMenuItemHover": "#15334D",
-          "colorBgMenuItemActive": "#234969",
-          "colorMenuItemDivider": "#294052",
-          "colorBgCollapsedButton": "#16334D",
-          "colorTextCollapsedButton": "#BACADA",
+          "colorMenuItemDivider": "rgba(255, 255, 255, 0.12)",
+          "colorBgCollapsedButton": "#002140",
+          "colorTextCollapsedButton": "#FFFFFF",
           "colorTextCollapsedButtonHover": "#FFFFFF",
           "menuHeight": 44
         },
         "header": {
-          "heightLayoutHeader": 64
+          "heightLayoutHeader": 64,
+          "colorBgHeader": "#001529",
+          "colorHeaderTitle": "#FFFFFF",
+          "colorTextMenu": "rgba(255, 255, 255, 0.65)",
+          "colorTextMenuSelected": "#FFFFFF",
+          "colorTextMenuActive": "#FFFFFF",
+          "colorTextRightActionsItem": "rgba(255, 255, 255, 0.85)"
         },
         "pageContainer": {
           "paddingInlinePageContainerContent": 28,
@@ -190,12 +206,15 @@
     "downloadPrefix": "atlas-lca"
   },
   "layout": {
-    "layout": "side",
+    "layout": "mix",
     "siderWidth": 256,
     "fixedHeader": true,
     "fixSiderbar": true,
-    "splitMenus": false,
-    "contentWidth": "Fluid"
+    "splitMenus": true,
+    "contentWidth": "Fluid",
+    "menuProps": {
+      "theme": "dark"
+    }
   },
   "presentation": {
     "login": "split",

@@ -1,13 +1,7 @@
 import { supabase } from '@/services/supabase';
-import { type OpenDataCatalogFilters, type OpenDataDatasetKind } from './types';
+import { type OpenDataDatasetKind } from './types';
 
-export {
-  DEFAULT_OPEN_DATA_FILTERS,
-  type OpenDataCatalogFilters,
-  type OpenDataDatasetKind,
-  type OpenDataPublicationFilter,
-  type OpenDataSourceFilter,
-} from './types';
+export { type OpenDataDatasetKind } from './types';
 
 export type OpenDataCatalogRow = {
   id: string;
@@ -24,7 +18,6 @@ export type OpenDataCatalogRow = {
 type QueryOpenDataCatalogOptions = {
   datasetKind: OpenDataDatasetKind;
   filterCondition?: unknown;
-  filters: OpenDataCatalogFilters;
   mode: 'list' | 'lexical' | 'uuid';
   pageCurrent?: number;
   pageSize?: number;
@@ -50,8 +43,8 @@ export async function queryOpenDataCatalog(options: QueryOpenDataCatalogOptions)
     p_query_text: options.queryText ?? '',
     p_query_terms: options.queryTerms ?? null,
     p_filter_condition: options.filterCondition ?? {},
-    p_source_filter: options.filters.sourceFilter,
-    p_publication_filter: options.filters.publicationFilter ?? 'all',
+    p_source_filter: 'all',
+    p_publication_filter: 'all',
     p_page_size: options.pageSize ?? 10,
     p_page_current: options.pageCurrent ?? 1,
     p_sort_by: options.sortBy ?? 'modified_at',
@@ -78,16 +71,18 @@ export async function queryMappedOpenDataCatalog<ResultRow>(
   };
 }
 
-export function addOpenDataHybridFilters(
+// The backend selects catalog search by these fields' presence. Keep that route explicit
+// while requesting every source and publication state; there is no user-selectable filter.
+export function addOpenDataCatalogScope(
   body: Record<string, unknown>,
-  filters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
-  if (!filters) {
+  if (!useOpenDataCatalog) {
     return body;
   }
   return {
     ...body,
-    source_filter: filters.sourceFilter,
-    publication_filter: filters.publicationFilter ?? 'all',
+    source_filter: 'all',
+    publication_filter: 'all',
   };
 }

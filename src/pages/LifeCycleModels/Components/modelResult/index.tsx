@@ -1,3 +1,16 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import {
+  ResponsiveDataListViewport,
+  dataListTooltipContent,
+  dataListPagination,
+  getDataListScrollX,
+  dataListMetadataText,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
+import { processtypeOfDataSetOptions } from '@/pages/Processes/Components/optiondata';
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
 import {
@@ -10,10 +23,18 @@ import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import { CloseOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Drawer, Tooltip } from 'antd';
+import { Button, Drawer, Input, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
+
+type ModelResultTableParams = ContentLanguageAwareTableParams & {
+  classification: DatasetClassificationFilterValue[];
+  keyword: string;
+  modelId: string;
+  modelVersion: string;
+  submodels?: Props['submodels'];
+};
 
 type Props = {
   submodels: Array<{
@@ -42,6 +63,17 @@ const ModelResult: FC<Props> = ({
   actionType,
   showPreviousResultNotice = false,
 }) => {
+  const intl = useIntl();
+  const [mainClassification, setMainClassification] = useState<DatasetClassificationFilterValue[]>(
+    [],
+  );
+  const [subClassification, setSubClassification] = useState<DatasetClassificationFilterValue[]>(
+    [],
+  );
+  const [mainKeyword, setMainKeyword] = useState('');
+  const [subKeyword, setSubKeyword] = useState('');
+  const [appliedMainKeyword, setAppliedMainKeyword] = useState('');
+  const [appliedSubKeyword, setAppliedSubKeyword] = useState('');
   const contentLanguageParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
   const mainProductRequestEpochRef = useRef(0);
@@ -70,11 +102,42 @@ const ModelResult: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={dataListTooltipContent(row.name, row.generalComment)}
+          >
             {row.name}
           </Tooltip>,
         ];
       },
+    },
+    {
+      title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
+      dataIndex: 'location',
+      search: false,
+      render: (_, row) => dataListMetadataText(row.location),
+    },
+    {
+      title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
+      dataIndex: 'referenceYear',
+      search: false,
+      render: (_, row) => dataListMetadataText(row.referenceYear),
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.table.filter.all.datasetType'
+          defaultMessage='Type of data set'
+        />
+      ),
+      dataIndex: 'typeOfDataSet',
+      search: false,
+      render: (_, row) =>
+        dataListMetadataText(
+          processtypeOfDataSetOptions.find((option) => option.value === row.typeOfDataSet)?.label ??
+            row.typeOfDataSet,
+        ),
     },
     {
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
@@ -169,11 +232,49 @@ const ModelResult: FC<Props> = ({
             />
           </div>
         ) : null}
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+        <ProTable<ProcessTable, ModelResultTableParams>
+          {...responsiveDataListTableProps}
+          scroll={{ x: getDataListScrollX(columns) }}
+          rowKey={(row) => `${row.id}:${row.version ?? modelVersion}`}
           search={false}
-          params={contentLanguageParams}
-          pagination={false}
+          params={{
+            ...contentLanguageParams,
+            modelId,
+            modelVersion,
+            classification: mainClassification,
+            keyword: appliedMainKeyword,
+          }}
+          pagination={{ ...dataListPagination, hideOnSinglePage: true }}
           headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.mainProduct' />}
+          toolbar={getDataListToolbar({
+            search: (
+              <Input.Search
+                style={{ width: '100%' }}
+                value={mainKeyword}
+                allowClear
+                enterButton
+                placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                onChange={(event) => setMainKeyword(event.target.value)}
+                onSearch={(value) => {
+                  mainProductRequestEpochRef.current += 1;
+                  setAppliedMainKeyword(value);
+                  mainProcuctTableRef.current?.setPageInfo?.({ current: 1 });
+                }}
+              />
+            ),
+            filter: (
+              <DatasetClassificationFilter
+                datasetKind='process'
+                lang={lang}
+                value={mainClassification}
+                onChange={(value) => {
+                  mainProductRequestEpochRef.current += 1;
+                  setMainClassification(value);
+                  mainProcuctTableRef.current?.setPageInfo?.({ current: 1 });
+                }}
+              />
+            ),
+          })}
           actionRef={mainProcuctTableRef}
           request={async (params) => {
             return guardLocaleMaterializedTableRequest(
@@ -182,34 +283,81 @@ const ModelResult: FC<Props> = ({
               mainProductRequestEpochRef,
               () =>
                 getProcessesByIdAndVersion(
-                  [{ id: modelId, version: modelVersion }],
+                  [{ id: params.modelId, version: params.modelVersion }],
                   params.contentLanguage,
+                  { classification: params.classification, keyword: params.keyword },
                 ),
             );
           }}
-          columns={columns}
+          columns={orderDataListColumns(columns)}
         />
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          search={false}
-          params={contentLanguageParams}
-          pagination={false}
-          headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.subProduct' />}
-          actionRef={subProcuctTableRef}
-          request={async (params) => {
-            const subProducts = submodels.filter((e) => e.id !== modelId);
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              subProductRequestEpochRef,
-              () =>
-                getProcessesByIdAndVersion(
-                  subProducts.map((e) => ({ id: e.id, version: e.version })),
-                  params.contentLanguage,
+        <ResponsiveDataListViewport columns={columns}>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ModelResultTableParams>
+              {...responsiveDataListTableProps}
+              scroll={scroll}
+              rowKey={(row) => `${row.id}:${row.version ?? modelVersion}`}
+              search={false}
+              params={{
+                ...contentLanguageParams,
+                modelId,
+                modelVersion,
+                submodels,
+                classification: subClassification,
+                keyword: appliedSubKeyword,
+              }}
+              pagination={{ ...dataListPagination, hideOnSinglePage: true }}
+              headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.subProduct' />}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Input.Search
+                    style={{ width: '100%' }}
+                    value={subKeyword}
+                    allowClear
+                    enterButton
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    onChange={(event) => setSubKeyword(event.target.value)}
+                    onSearch={(value) => {
+                      subProductRequestEpochRef.current += 1;
+                      setAppliedSubKeyword(value);
+                      subProcuctTableRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
                 ),
-            );
-          }}
-          columns={columns}
-        />
+                filter: (
+                  <DatasetClassificationFilter
+                    datasetKind='process'
+                    lang={lang}
+                    value={subClassification}
+                    onChange={(value) => {
+                      subProductRequestEpochRef.current += 1;
+                      setSubClassification(value);
+                      subProcuctTableRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
+                ),
+              })}
+              actionRef={subProcuctTableRef}
+              request={async (params) => {
+                const subProducts = (params.submodels ?? []).filter(
+                  (entry) => entry.id !== params.modelId,
+                );
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  subProductRequestEpochRef,
+                  () =>
+                    getProcessesByIdAndVersion(
+                      subProducts.map((e) => ({ id: e.id, version: e.version })),
+                      params.contentLanguage,
+                      { classification: params.classification, keyword: params.keyword },
+                    ),
+                );
+              }}
+              columns={orderDataListColumns(columns)}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </Drawer>
     </>
   );

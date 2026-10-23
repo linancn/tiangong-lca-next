@@ -238,6 +238,7 @@ export const createProComponentsMock = () => {
     optionsRender,
     pagination,
     toolBarRender,
+    toolbar: toolbarConfig,
     headerTitle,
     dataSource,
     onDataSourceChange,
@@ -246,7 +247,7 @@ export const createProComponentsMock = () => {
     const renderedRows = dataSource ?? rows;
     const paramsRef = React.useRef<any>({
       current: pagination?.current ?? 1,
-      pageSize: pagination?.pageSize ?? 10,
+      pageSize: pagination?.pageSize ?? pagination?.defaultPageSize ?? 10,
     });
     const requestRef = React.useRef<any>(request);
     const sortRef = React.useRef<
@@ -366,7 +367,11 @@ export const createProComponentsMock = () => {
       <div data-testid='pro-table'>
         <div data-testid='pro-table-header'>{resolvedHeader}</div>
         <div data-testid='pro-table-options'>{renderToolbar(renderedOptions)}</div>
-        <div data-testid='pro-table-toolbar'>{renderToolbar(toolbar)}</div>
+        <div data-testid='pro-table-toolbar'>
+          {toolbarConfig?.search}
+          {toolbarConfig?.filter}
+          {renderToolbar(toolbar)}
+        </div>
         {renderedRows.length === 0 ? (
           <div data-testid='pro-table-empty'>No Data</div>
         ) : (

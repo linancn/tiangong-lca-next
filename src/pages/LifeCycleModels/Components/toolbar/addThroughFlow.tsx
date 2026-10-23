@@ -1,6 +1,20 @@
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import {
+  ResponsiveDataListViewport,
+  dataListMetadataText,
+  dataListTooltipContent,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import FlowsView from '@/pages/Flows/Components/view';
+import { flowTypeOptions } from '@/pages/Flows/Components/optiondata';
 import {
   flow_hybrid_search,
   getFlowTableAll,
@@ -16,7 +30,7 @@ import {
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Checkbox, Col, Drawer, Input, Row, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Drawer, Input, Space, Tooltip } from 'antd';
 import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -38,12 +52,14 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<'tg' | 'my'>('tg');
-  const [openAI, setOpenAI] = useState<boolean>(false);
+  const tgSearch = useSubmittedDatasetSearch();
+  const mySearch = useSubmittedDatasetSearch();
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>(undefined);
   const myActionRefSelect = useRef<ActionType>(undefined);
 
   const intl = useIntl();
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const contentLanguageParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
   const inputRequestEpochRef = useRef(0);
@@ -53,6 +69,15 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
     contentLanguageParams.contentLanguage,
     [inputRequestEpochRef, outputRequestEpochRef],
   );
+  const onClassificationChange = (value: DatasetClassificationFilterValue[]) => {
+    inputRequestEpochRef.current += 1;
+    outputRequestEpochRef.current += 1;
+    setClassification(value);
+    setSelectedRowKeys([]);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+  };
+
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -97,6 +122,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   };
 
   const onTabChange = async (key: string) => {
+    setSelectedRowKeys([]);
     await setActiveTabKey(key as 'tg' | 'my');
     if (key === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -108,20 +134,20 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
-    await setTgKeyWord(value);
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    inputRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  // const onTgSearch: SearchProps['onSearch'] = async (value) => {
-  //   setTableLoading(true);
-  //   setDataSource(await flow_hybrid_search(value, {}, lang));
-  //   setTableLoading(false);
-  // };
-
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
-    await setMyKeyWord(value);
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    outputRequestEpochRef.current += 1;
+    setSelectedRowKeys([]);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
@@ -152,7 +178,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.synonyms}>
+        <Tooltip key={0} placement='topLeft' title={dataListTooltipContent(row.name, row.synonyms)}>
           {row.name}
         </Tooltip>,
       ],
@@ -162,6 +188,11 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       dataIndex: 'flowType',
       sorter: false,
       search: false,
+      render: (_, row) =>
+        dataListMetadataText(
+          flowTypeOptions.find((option) => option.value === row.flowType)?.label ??
+            (row.flowType || '—'),
+        ),
     },
     {
       title: (
@@ -228,141 +259,185 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
       <>
-        <Card>
-          <Row align={'middle'}>
-            <Col flex='auto' style={{ marginRight: '10px' }}>
-              <Search
-                name={'tg'}
-                size={'large'}
-                placeholder={
-                  openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-                }
-                value={tgKeyWord}
-                onChange={handleTgKeyWordChange}
-                onSearch={onTgSearch}
-                enterButton
-              />
-            </Col>
-            <Col flex='100px'>
-              <Checkbox
-                onChange={(e) => {
-                  setOpenAI(e.target.checked);
-                }}
-              >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-              </Checkbox>
-            </Col>
-          </Row>
-        </Card>
-        <ProTable<FlowTable, ContentLanguageAwareTableParams>
-          actionRef={tgActionRefSelect}
-          params={contentLanguageParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          // dataSource={dataSource}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              inputRequestEpochRef,
-              async () => {
-                if (tgKeyWord.length > 0) {
-                  if (openAI) {
-                    return flow_hybrid_search(requestParams, contentLanguage, 'tg', tgKeyWord, {});
-                  }
-                  return getFlowTablePgroongaSearch(
-                    requestParams,
-                    contentLanguage,
-                    'tg',
-                    tgKeyWord,
-                    {},
-                  );
-                }
-                return getFlowTableAll(requestParams, sort, contentLanguage, 'tg', []);
-              },
-            );
-          }}
-          columns={FlowsColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport columns={FlowsColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'tg'}
+                    placeholder={
+                      tgSearch.draftMode === 'smart'
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
+                    }
+                    value={tgKeyWord}
+                    onChange={handleTgKeyWordChange}
+                    onSearch={onTgSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <Checkbox
+                      checked={tgSearch.draftMode === 'smart'}
+                      onChange={(e) => {
+                        tgSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.openAI'
+                        defaultMessage='AI Recommendation'
+                      />
+                    </Checkbox>
+                    <DatasetClassificationFilter
+                      datasetKind='flow'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              actionRef={tgActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              // dataSource={dataSource}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  inputRequestEpochRef,
+                  async () => {
+                    const search = tgSearch.submittedRef.current;
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
+                        return flow_hybrid_search(
+                          requestParams,
+                          contentLanguage,
+                          'tg',
+                          search.keyword,
+                          {},
+                        );
+                      }
+                      return getFlowTablePgroongaSearch(
+                        requestParams,
+                        contentLanguage,
+                        'tg',
+                        search.keyword,
+                        {},
+                      );
+                    }
+                    return getFlowTableAll(requestParams, sort, contentLanguage, 'tg', []);
+                  },
+                );
+              }}
+              columns={orderDataListColumns(FlowsColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     my: (
       <>
-        <Card>
-          <Search
-            name={'my'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={myKeyWord}
-            onChange={handleMyKeyWordChange}
-            onSearch={onMySearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<FlowTable, ContentLanguageAwareTableParams>
-          actionRef={myActionRefSelect}
-          params={contentLanguageParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              outputRequestEpochRef,
-              async () => {
-                if (myKeyWord.length > 0) {
-                  return getFlowTablePgroongaSearch(
-                    requestParams,
-                    contentLanguage,
-                    'my',
-                    myKeyWord,
-                    {},
-                  );
-                }
-                return getFlowTableAll(requestParams, sort, contentLanguage, 'my', []);
-              },
-            );
-          }}
-          columns={FlowsColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport columns={FlowsColumns}>
+          {({ scroll }) => (
+            <ProTable<FlowTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'my'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={myKeyWord}
+                    onChange={handleMyKeyWordChange}
+                    onSearch={onMySearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='flow'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              actionRef={myActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  outputRequestEpochRef,
+                  async () => {
+                    const search = mySearch.submittedRef.current;
+                    if (search.keyword.length > 0) {
+                      return getFlowTablePgroongaSearch(
+                        requestParams,
+                        contentLanguage,
+                        'my',
+                        search.keyword,
+                        {},
+                      );
+                    }
+                    return getFlowTableAll(requestParams, sort, contentLanguage, 'my', []);
+                  },
+                );
+              }}
+              columns={orderDataListColumns(FlowsColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
   };
@@ -431,6 +506,8 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
         <Card
           style={{ width: '100%' }}
           tabList={tabList}
+          tabProps={dataListTabProps}
+          styles={{ body: { padding: 0 } }}
           activeTabKey={activeTabKey}
           onTabChange={onTabChange}
         >

@@ -163,6 +163,9 @@ export default function LcaCalculationEvidenceNotice({
     );
   }, [intl.locale]);
 
+  // Uncharacterized pairs describe method coverage, not a result defect.
+  if (resolved.status === 'incomplete_coverage') return null;
+
   const details = matrix ? (
     <Space orientation='vertical' size='small' style={{ width: '100%' }}>
       <Descriptions
@@ -306,6 +309,7 @@ export default function LcaCalculationEvidenceNotice({
             )}
           </Button>
         ) : matrix.uncharacterized_evidence &&
+          matrix.uncharacterized_evidence.artifact_format !== 'lcia-coverage-replay-snapshot:v1' &&
           isTrustedLciaGapArtifactUrl(matrix.uncharacterized_evidence.artifact_url) ? (
           <Button
             href={matrix.uncharacterized_evidence.artifact_url}

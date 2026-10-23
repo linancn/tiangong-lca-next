@@ -38,8 +38,28 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     } = require('../../../config/defaultSettings');
 
     expect(settings.layout).toBe('mix');
+    expect(settings.splitMenus).toBe(true);
     expect(settings.title).toBe(defaultAppTitle);
     expect(defaultLoginSubtitle).toBe("World's Largest Open LCA Data Platform");
+  });
+
+  it('keeps Atlas navigation dark while the initial global theme remains light', () => {
+    process.env.APP_BRAND = 'atlas';
+    const settings = require('../../../config/defaultSettings').default;
+    expect(settings).toMatchObject({
+      layout: 'mix',
+      splitMenus: true,
+      navTheme: 'light',
+      menuProps: { theme: 'dark' },
+      token: { sider: { colorMenuBackground: '#001529' } },
+    });
+  });
+
+  it('keeps TianGong native menu selection unchanged', () => {
+    const settings = require('../../../config/defaultSettings').default;
+    expect(settings.navTheme).toBe('light');
+    expect(settings.menuProps).toBeUndefined();
+    expect(settings.token).toEqual({});
   });
 
   it('reads APP_LAYOUT from env when value is supported', () => {
@@ -48,6 +68,7 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     const settings = require('../../../config/defaultSettings').default;
 
     expect(settings.layout).toBe('top');
+    expect(settings.splitMenus).toBe(false);
   });
 
   it('falls back to default layout when APP_LAYOUT is unsupported', () => {
@@ -56,6 +77,7 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     const settings = require('../../../config/defaultSettings').default;
 
     expect(settings.layout).toBe('mix');
+    expect(settings.splitMenus).toBe(true);
   });
 
   it('resolves localized app title env values by locale', () => {

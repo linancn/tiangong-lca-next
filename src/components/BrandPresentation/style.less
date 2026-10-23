@@ -179,7 +179,7 @@
     background: var(--ant-color-primary-bg);
   }
   &:focus-visible {
-    outline: 2px solid var(--ant-color-primary);
+    outline: 2px solid var(--ant-color-primary-text-hover);
     outline-offset: 4px;
   }
 }
@@ -279,12 +279,20 @@
 // ProLayout's side mode places actions in the sider, not the top header.
 // Keep all existing tools reachable when the configured navigation changes.
 .atlas-app-shell .ant-pro-sider {
+  // Both page modes use native dark navigation. Controls share its dark surface.
+  --atlas-control-hover-bg: rgba(255, 255, 255, 0.12);
+  --atlas-control-active-bg: rgba(255, 255, 255, 0.18);
   .ant-pro-sider-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
     padding-block: 12px 4px;
-    border-top: 1px solid rgba(186, 202, 218, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  // The controls own their hover surface; avoid stacking two translucent layers.
+  .ant-pro-sider-actions-list-item:hover,
+  .ant-pro-sider-actions-avatar:hover {
+    background: transparent;
   }
   .ant-pro-sider-actions-list {
     display: grid;
@@ -310,6 +318,8 @@
       width: 100%;
       min-height: 40px;
       min-width: 0;
+      color: inherit;
+      border-radius: var(--ant-border-radius);
     }
     .anticon {
       // HeaderActionIcon sets inline opacity for light headers.
@@ -358,5 +368,54 @@
     .tg-global-header-avatar-name-text {
       display: none;
     }
+  }
+}
+
+.atlas-app-shell {
+  // Native mixed layout owns desktop header actions and the mobile drawer.
+  .ant-pro-global-header-header-actions-item {
+    .ant-badge {
+      color: inherit;
+    }
+  }
+  .ant-pro-global-header-header-actions-item .anticon {
+    opacity: 1 !important;
+  }
+  .ant-pro-global-header-header-actions-item:hover,
+  .ant-pro-global-header-header-actions-avatar:hover {
+    background: transparent;
+  }
+  .ant-pro-sider-actions-list [role='button'],
+  .ant-pro-sider-actions-list button,
+  .ant-pro-global-header-header-actions-item [role='button'],
+  .ant-pro-global-header-header-actions-item button,
+  .tg-global-header-avatar-trigger,
+  .tg-pro-layout-mobile-menu-action {
+    &:hover {
+      background: var(--atlas-control-hover-bg, var(--ant-color-bg-text-hover));
+    }
+    &:active {
+      background: var(--atlas-control-active-bg, var(--ant-color-bg-text-active));
+    }
+    &:focus-visible {
+      outline: 2px solid var(--ant-color-primary-text-hover);
+      outline-offset: -2px;
+    }
+  }
+  [data-tg-pro-layout-collapse-trigger]:focus-visible {
+    outline: 2px solid var(--ant-color-primary-text-hover);
+    outline-offset: 2px;
+  }
+}
+
+// Keep account text and shared controls on the native dark header token surface.
+// Their dropdown contents remain outside this boundary and follow the page theme.
+.atlas-app-shell .ant-pro-top-nav-header,
+.atlas-app-shell .ant-pro-global-header {
+  --atlas-control-hover-bg: rgba(255, 255, 255, 0.12);
+  --atlas-control-active-bg: rgba(255, 255, 255, 0.18);
+  .tg-global-header-avatar-trigger,
+  .tg-global-header-avatar-name {
+    color: inherit !important;
   }
 }

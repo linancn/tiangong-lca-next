@@ -172,6 +172,8 @@ jest.mock('../../config/defaultSettings', () => ({
   default: {
     navTheme: 'light',
     colorPrimary: '#1677ff',
+    layout: 'mix',
+    splitMenus: true,
   },
   defaultAppTitle: 'Tiangong LCA',
   getLocalizedAppTitle: (...args: any[]) => mockGetLocalizedAppTitle(...args),
@@ -210,7 +212,11 @@ jest.mock('@/contexts/AntdThemeSync', () => ({
 
 jest.mock('@umijs/max', () => ({
   __esModule: true,
-  Link: ({ to, children }: any) => <a href={to}>{children}</a>,
+  Link: ({ to, children, ...props }: any) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
   getIntl: () => mockGetIntl(),
   history: mockHistory,
 }));
@@ -221,6 +227,7 @@ jest.mock('@ant-design/icons', () => ({
   DatabaseOutlined: () => <span data-testid='database-icon'>database-icon</span>,
   LinkOutlined: () => <span data-testid='link-icon'>link-icon</span>,
   MenuOutlined: () => <span data-testid='menu-icon'>menu-icon</span>,
+  ProjectOutlined: () => <span data-testid='read-icon'>read-icon</span>,
 }));
 
 jest.mock('antd', () => ({
@@ -269,32 +276,6 @@ describe('app runtime config', () => {
     expect(mockHistory.replace).toHaveBeenCalledWith('/user/login/password_reset');
   });
 
-  it('replaces the ProLayout collapse div with one semantic button', () => {
-    const { renderAccessibleCollapsedButton } = require('@/components/AccessibleCollapsedButton');
-    const onClick = jest.fn();
-    expect(renderAccessibleCollapsedButton('Missing collapse', null)).toBeNull();
-
-    const upstreamView = render(
-      renderAccessibleCollapsedButton(
-        'Navigation Mode',
-        <div className='upstream-collapse' onClick={onClick}>
-          menu
-        </div>,
-      ),
-    );
-
-    const trigger = screen.getByRole('button', { name: 'Navigation Mode' });
-    expect(trigger).toHaveClass('upstream-collapse', 'tg-pro-layout-collapse-trigger');
-    fireEvent.click(trigger);
-    expect(onClick).toHaveBeenCalledTimes(1);
-
-    upstreamView.unmount();
-    render(renderAccessibleCollapsedButton('Navigation Mode without class', <div>menu</div>));
-    expect(screen.getByRole('button', { name: 'Navigation Mode without class' })).toHaveClass(
-      'tg-pro-layout-collapse-trigger',
-    );
-  });
-
   beforeEach(() => {
     mockBrand = 'tiangong';
     jest.resetModules();
@@ -338,6 +319,40 @@ describe('app runtime config', () => {
         Divider: { colorSplit: '#abcdef', orientationMargin: 0 },
       },
       token: { borderRadius: 12, colorPrimary: '#5C246A' },
+    });
+    expect(result.message.styles({ props: {} })).toEqual({
+      listContent: { pointerEvents: 'none' },
+    });
+  });
+
+  it('keeps message content interactive and preserves unrelated feedback configuration', () => {
+    const { antd } = require('@/app');
+    const notification = { styles: { listContent: { pointerEvents: 'auto' } } };
+    const appConfig = { message: { duration: 5 }, notification: { duration: 8 } };
+    const incomingStyles = {
+      listContent: { gap: 9, pointerEvents: 'auto' },
+      root: { pointerEvents: 'auto', color: 'red' },
+    };
+    const objectResult = antd({
+      appConfig,
+      notification,
+      message: { className: 'existing-message', styles: incomingStyles },
+    });
+    expect(objectResult.message.className).toBe('existing-message');
+    expect(objectResult.message.styles({ props: {} })).toEqual({
+      ...incomingStyles,
+      listContent: { gap: 9, pointerEvents: 'none' },
+    });
+    expect(objectResult.appConfig).toBe(appConfig);
+    expect(objectResult.notification).toBe(notification);
+
+    const styleCallback = jest.fn(() => incomingStyles);
+    const functionResult = antd({ appConfig: {}, message: { styles: styleCallback } });
+    const info = { props: { content: 'notice' } };
+    expect(functionResult.message.styles(info)).toEqual(objectResult.message.styles(info));
+    expect(styleCallback).toHaveBeenCalledWith(info);
+    expect(antd({ appConfig: {}, message: {} }).message.styles(info)).toEqual({
+      listContent: { pointerEvents: 'none' },
     });
   });
 
@@ -422,7 +437,7 @@ describe('app runtime config', () => {
     expect(screen.queryByTestId('protected-child')).not.toBeInTheDocument();
     expect(runtimeLayout.actionsRender?.()).toEqual([]);
     expect(runtimeLayout.avatarProps).toBeUndefined();
-    expect(runtimeLayout.footerRender).toBeUndefined();
+    expect(runtimeLayout.footerRender).toBe(false);
     expect(runtimeLayout.menuDataRender?.([{ path: '/tgdata' }])).toEqual([]);
   });
 
@@ -763,6 +778,196 @@ describe('app runtime config', () => {
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
   });
 
+  it.each([
+    { brand: 'atlas', isDarkMode: false },
+    { brand: 'atlas', isDarkMode: true },
+    { brand: 'tiangong', isDarkMode: false },
+    { brand: 'tiangong', isDarkMode: true },
+  ])('retains the native menu and each brand theme boundary: %p', ({ brand, isDarkMode }) => {
+    mockBrand = brand;
+    const { layout } = require('@/app');
+    const { Fragment } = require('react');
+    const { BrandMenuTheme } = require('@/contexts/BrandMenuTheme');
+    const nativeMenu = <div>Native menu</div>;
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { name: 'Alice' },
+        isDarkMode,
+        settings: { navTheme: isDarkMode ? 'realDark' : 'light', menuProps: { theme: 'dark' } },
+      },
+      setInitialState: jest.fn(),
+    });
+    const wrappedMenu = runtimeLayout.menuContentRender({}, nativeMenu);
+
+    expect(wrappedMenu.type).toBe(brand === 'atlas' ? BrandMenuTheme : Fragment);
+    expect(wrappedMenu.key).toBe('full-menu');
+    expect(wrappedMenu.props.isDarkMode).toBe(brand === 'atlas' ? isDarkMode : undefined);
+    expect(wrappedMenu.props.children).toBe(nativeMenu);
+    expect(runtimeLayout.navTheme).toBe(isDarkMode ? 'realDark' : 'light');
+    expect(runtimeLayout.menuProps).toEqual({ theme: 'dark' });
+  });
+
+  it.each(['atlas', 'tiangong'])(
+    'resets native submenu state only when the desktop data scope changes for %s',
+    (brand) => {
+      mockBrand = brand;
+      const { layout } = require('@/app');
+      const React = require('react');
+      class NativeMenuProbe extends React.Component {
+        state = { open: false };
+        render() {
+          return (
+            <button onClick={() => this.setState({ open: !this.state.open })} type='button'>
+              {this.state.open ? 'Native submenu open' : 'Native submenu closed'}
+            </button>
+          );
+        }
+      }
+      const runtimeLayout = layout({ initialState: {}, setInitialState: jest.fn() });
+      const nativeMenu = <NativeMenuProbe />;
+      const props = { layout: 'mix', splitMenus: true, isMobile: false };
+      const menu = (scope, path) =>
+        runtimeLayout.menuContentRender(
+          {
+            ...props,
+            location: { pathname: `/${scope}/${path}` },
+            menuData: [{ key: `/${scope}/models` }, { key: `/${scope}/processes` }],
+          },
+          nativeMenu,
+        );
+      const { rerender } = render(menu('tgdata', 'models'));
+      fireEvent.click(screen.getByRole('button', { name: 'Native submenu closed' }));
+      rerender(menu('tgdata', 'processes'));
+      expect(screen.getByRole('button', { name: 'Native submenu open' })).toBeInTheDocument();
+      rerender(menu('codata', 'models'));
+      expect(screen.getByRole('button', { name: 'Native submenu closed' })).toBeInTheDocument();
+    },
+  );
+
+  it.each([
+    {
+      props: {
+        layout: 'mix',
+        splitMenus: true,
+        isMobile: false,
+        menuData: [{ key: '/tgdata/models' }],
+      },
+      key: '/tgdata/models',
+    },
+    { props: { layout: 'mix', splitMenus: true, isMobile: false }, key: 'empty-data-scope' },
+    {
+      props: { layout: 'mix', splitMenus: true, isMobile: false, menuData: [] },
+      key: 'empty-data-scope',
+    },
+    {
+      props: { layout: 'mix', splitMenus: true, isMobile: false, menuData: [{}] },
+      key: 'empty-data-scope',
+    },
+    {
+      props: { layout: 'mix', splitMenus: true, isMobile: true, menuData: [{ key: '/tgdata' }] },
+      key: 'full-menu',
+    },
+    { props: { layout: 'mix', splitMenus: false, isMobile: false }, key: 'full-menu' },
+    { props: { layout: 'side', splitMenus: true, isMobile: false }, key: 'full-menu' },
+    { props: { layout: 'top', splitMenus: true, isMobile: false }, key: 'full-menu' },
+  ])(
+    'keeps full/mobile menu identity stable and handles an empty split scope: %p',
+    ({ props, key }) => {
+      const { layout } = require('@/app');
+      const runtimeLayout = layout({ initialState: {}, setInitialState: jest.fn() });
+      const nativeMenu = <div>Native menu</div>;
+      const wrappedMenu = runtimeLayout.menuContentRender(props, nativeMenu);
+
+      expect(wrappedMenu.key).toBe(key);
+      expect(wrappedMenu.props.children).toBe(nativeMenu);
+    },
+  );
+
+  it.each([undefined, {}, { settings: {} }, { settings: { menu: {} } }])(
+    'opens native supporting submenus by default when prior menu settings are absent: %p',
+    (initialState) => {
+      const { layout } = require('@/app');
+      const runtimeLayout = layout({ initialState, setInitialState: jest.fn() });
+
+      expect(runtimeLayout.menu).toMatchObject({ defaultOpenAll: true, autoClose: false });
+    },
+  );
+
+  it('keeps existing native menu settings while opening supporting data and retaining open scopes', () => {
+    const { layout } = require('@/app');
+    const request = jest.fn();
+    const params = { language: 'en-US' };
+    const menu = { locale: false, request, params, defaultOpenAll: false, autoClose: true };
+    const runtimeLayout = layout({
+      initialState: { settings: { menu } },
+      setInitialState: jest.fn(),
+    });
+
+    expect(runtimeLayout.menu).toEqual({ ...menu, defaultOpenAll: true, autoClose: false });
+    expect(runtimeLayout.menu.request).toBe(request);
+    expect(runtimeLayout.menu.params).toBe(params);
+    expect(menu).toMatchObject({ defaultOpenAll: false, autoClose: true });
+  });
+
+  it.each([false, true])(
+    'preserves the native Atlas header provider and menu while applying menu tokens in dark mode %s',
+    (isDarkMode) => {
+      mockBrand = 'atlas';
+      const { layout } = require('@/app');
+      const { ConfigProvider } = require('antd');
+      const { BrandMenuTheme } = require('@/contexts/BrandMenuTheme');
+      const { brandProfile } = require('../../config/brandProfile');
+      const nativeMenu = <nav aria-label='Native data scopes'>Native scope menu</nav>;
+      const nativeTheme = {
+        token: { colorBgElevated: 'native-header-surface' },
+        components: { Menu: { popupBg: 'native-popup-surface' } },
+      };
+      const nativeProvider = <ConfigProvider theme={nativeTheme}>{nativeMenu}</ConfigProvider>;
+      const runtimeLayout = layout({
+        initialState: { currentUser: { name: 'Alice' }, isDarkMode, settings: {} },
+        setInitialState: jest.fn(),
+      });
+
+      const wrappedHeader = runtimeLayout.headerContentRender({}, nativeProvider);
+      expect(wrappedHeader.type).toBe(ConfigProvider);
+      expect(wrappedHeader.props.theme).toBe(nativeTheme);
+      const brandBoundary = wrappedHeader.props.children;
+      expect(brandBoundary.type).toBe(BrandMenuTheme);
+      expect(brandBoundary.props.isDarkMode).toBe(isDarkMode);
+      expect(brandBoundary.props.children).toBe(nativeMenu);
+      const menuProvider = BrandMenuTheme(brandBoundary.props);
+      expect(menuProvider.props.theme).toEqual({
+        components: { Menu: brandProfile.theme[isDarkMode ? 'dark' : 'light'].components.Menu },
+      });
+      render(wrappedHeader);
+      expect(screen.getAllByRole('navigation', { name: 'Native data scopes' })).toHaveLength(1);
+
+      mockBrand = 'tiangong';
+      expect(
+        layout({ initialState: {}, setInitialState: jest.fn() }).headerContentRender,
+      ).toBeUndefined();
+    },
+  );
+
+  it.each([
+    { settings: { layout: 'mix', splitMenus: true }, splitMenus: true },
+    { settings: { layout: 'mix', splitMenus: false }, splitMenus: false },
+    { settings: { layout: 'mix' }, splitMenus: true },
+    { settings: { layout: 'side', splitMenus: true }, splitMenus: false },
+    { settings: { layout: 'top', splitMenus: true }, splitMenus: false },
+    { settings: { splitMenus: false }, splitMenus: false },
+    { settings: {}, splitMenus: true },
+    { settings: undefined, splitMenus: true },
+  ])('enables split menus only for an enabled mixed layout: %p', ({ settings, splitMenus }) => {
+    const { layout } = require('@/app');
+    const runtimeLayout = layout({
+      initialState: { currentUser: { name: 'Alice' }, settings },
+      setInitialState: jest.fn(),
+    });
+
+    expect(runtimeLayout.splitMenus).toBe(splitMenus);
+  });
+
   it('layout redirects on page change, transforms menu data, and wraps menu items with links', () => {
     const { layout } = require('@/app');
     const setInitialState = jest.fn();
@@ -832,12 +1037,7 @@ describe('app runtime config', () => {
           path: '/tgdata',
         },
       ]),
-    ).toEqual([
-      {
-        path: '/tgdata',
-        children: undefined,
-      },
-    ]);
+    ).toEqual([{ path: '/tgdata' }]);
 
     expect(
       runtimeLayout.menuDataRender?.([
@@ -850,19 +1050,197 @@ describe('app runtime config', () => {
 
     mockHistory.location.search = '';
     const originalMenu = [{ path: '/mydata', children: [{ path: '/mydata/contacts' }] }];
-    expect(authenticatedRuntimeLayout.menuDataRender?.(originalMenu)).toEqual(originalMenu);
+    const [personalMenu] = authenticatedRuntimeLayout.menuDataRender?.(originalMenu);
+    expect(personalMenu.path).toBe('/mydata');
+    expect(personalMenu.children[0]).toMatchObject({
+      key: 'data-navigation:mydata:supporting',
+      children: [{ path: '/mydata/contacts' }],
+    });
+    expect(personalMenu.children[0]).not.toHaveProperty('path');
+    expect(originalMenu[0].children).toEqual([{ path: '/mydata/contacts' }]);
 
+    const nativeMenuItem = <span>Native team menu item</span>;
     const renderedMenuItem = authenticatedRuntimeLayout.menuItemRender?.(
       { path: '/team', icon: <span>icon</span>, name: 'Team' },
-      <span>fallback</span>,
+      nativeMenuItem,
     );
 
     expect(renderedMenuItem.props.to).toBe('/team');
-    expect(renderedMenuItem.props.children[1].props.children).toBe('Team');
+    expect(renderedMenuItem.props.children).toBe(nativeMenuItem);
     expect(
       authenticatedRuntimeLayout.menuItemRender?.({ isUrl: true }, <span>fallback</span>)?.props
         .children,
     ).toBe('fallback');
+  });
+
+  it.each(['tgdata', 'codata', 'mydata', 'tedata'])(
+    'switches to the same dataset object in %s using the full menu behind header copies',
+    (destination) => {
+      const { layout } = require('@/app');
+      mockHistory.location.pathname = '/mydata/sources';
+      mockHistory.location.search = '?id=old-record&version=1&mode=edit';
+      const runtimeLayout = layout({
+        initialState: { currentUser: { name: 'Alice' }, settings: {} },
+        setInitialState: jest.fn(),
+      });
+      const input = ['tgdata', 'codata', 'mydata', 'tedata'].map((scope) => ({
+        key: `/${scope}`,
+        path: `/${scope}`,
+        children: ['models', 'processes', 'flows', 'sources'].map((kind) => ({
+          path: `/${scope}/${kind}`,
+        })),
+      }));
+      runtimeLayout.menuDataRender(input);
+      const nativeScope = <span>Native scope label and icon</span>;
+      const link = runtimeLayout.menuItemRender({ path: `/${destination}` }, nativeScope);
+
+      expect(link.props.to).toBe(`/${destination}/sources`);
+      expect(link.props.children).toBe(nativeScope);
+      expect(mockHistory.push).not.toHaveBeenCalled();
+      expect(mockHistory.replace).not.toHaveBeenCalled();
+      expect(mockHistory.location.search).toBe('?id=old-record&version=1&mode=edit');
+    },
+  );
+
+  it.each([false, true])(
+    'closes native mobile navigation only for a mobile menu link (isMobile=%s)',
+    (isMobile) => {
+      const { layout } = require('@/app');
+      const onClick = jest.fn();
+      const runtimeLayout = layout({
+        initialState: { currentUser: { name: 'Alice' }, settings: {} },
+        setInitialState: jest.fn(),
+      });
+      const link = runtimeLayout.menuItemRender(
+        { path: '/tgdata/processes', isMobile, onClick },
+        <span>Native process label</span>,
+      );
+      render(link);
+      fireEvent.click(screen.getByRole('link', { name: 'Native process label' }));
+
+      expect(onClick).toHaveBeenCalledTimes(isMobile ? 1 : 0);
+    },
+  );
+
+  it('preserves nested supporting links and restricts scope switches to open/commercial data with tid', () => {
+    const { layout } = require('@/app');
+    mockHistory.location.pathname = '/tgdata/contacts';
+    mockHistory.location.search = '?tid=team%2B1&id=record&mode=view';
+    const runtimeLayout = layout({
+      initialState: { currentUser: { name: 'Alice' }, settings: {} },
+      setInitialState: jest.fn(),
+    });
+    const input = ['tgdata', 'codata', 'mydata', 'tedata'].map((scope) => ({
+      key: `/${scope}`,
+      path: `/${scope}`,
+      children: [
+        'models',
+        'processes',
+        'flows',
+        'flowproperties',
+        'unitgroups',
+        'sources',
+        'contacts',
+      ].map((kind) => ({ path: `/${scope}/${kind}` })),
+    }));
+    const menu = runtimeLayout.menuDataRender([...input, { path: '/data-processing' }]);
+
+    expect(menu.map((item) => item.path)).toEqual(['/tgdata', '/codata']);
+    for (const scope of menu) {
+      const supporting = scope.children.find((child) => child.key?.endsWith(':supporting'));
+      expect(supporting).not.toHaveProperty('path');
+      expect(supporting.children.map((child) => child.path)).toEqual(
+        ['flowproperties', 'unitgroups', 'sources', 'contacts'].map(
+          (kind) => `${scope.path}/${kind}?tid=team%2B1`,
+        ),
+      );
+    }
+    expect(
+      runtimeLayout.menuItemRender({ path: '/codata' }, <span>Commercial</span>).props.to,
+    ).toBe('/codata/contacts?tid=team%2B1');
+    expect(input[0].children[0].path).toBe('/tgdata/models');
+  });
+
+  it('retains hidden routes and nondata destinations while grouping only native data menus', () => {
+    const { layout } = require('@/app');
+    mockHistory.location.pathname = '/mydata/processes/analysis';
+    const runtimeLayout = layout({
+      initialState: { currentUser: { name: 'Alice' }, settings: {} },
+      setInitialState: jest.fn(),
+    });
+    const hiddenExample = { path: '/exampledata', hideInMenu: true };
+    const analysis = { path: '/mydata/processes/analysis', hideInMenu: true };
+    const managerMenu = { path: '/data-processing', access: 'canDataProductManager' };
+    const menu = runtimeLayout.menuDataRender([
+      { path: '/mydata', children: [{ path: '/mydata/processes' }, analysis] },
+      { path: '/codata', children: [{ path: '/codata/models' }, { path: '/codata/processes' }] },
+      hiddenExample,
+      managerMenu,
+    ]);
+
+    expect(menu[0].children).toContain(analysis);
+    expect(menu).toContain(hiddenExample);
+    expect(menu).toContain(managerMenu);
+    expect(
+      runtimeLayout.menuItemRender({ path: '/codata' }, <span>Commercial</span>).props.to,
+    ).toBe('/codata/processes');
+    const nativeGroup = <span>Supporting Data</span>;
+    expect(runtimeLayout.menuItemRender({ key: 'supporting' }, nativeGroup)).toBe(nativeGroup);
+    expect(
+      runtimeLayout.menuItemRender({ path: '/account?tab=connected-apps' }, <span>Account</span>)
+        .props.to,
+    ).toBe('/account?tab=connected-apps');
+  });
+
+  it.each([
+    { currentUser: null, systemStatus: { schemaVersion: 1, phase: 'normal' } },
+    {
+      currentUser: { name: 'Alice', access: 'admin' },
+      systemStatus: { schemaVersion: 1, phase: 'maintenance' },
+    },
+    {
+      currentUser: { name: 'Alice', access: 'data_product_manager' },
+      systemStatus: { schemaVersion: 1, phase: 'verifying' },
+    },
+  ])(
+    'does not expose transformed scopes while authentication or maintenance blocks navigation: %p',
+    (state) => {
+      const { layout } = require('@/app');
+      mockHistory.location.search = '?tid=team-1';
+      const runtimeLayout = layout({
+        initialState: { ...state, settings: {} },
+        setInitialState: jest.fn(),
+      });
+
+      expect(
+        runtimeLayout.menuDataRender([
+          { path: '/tgdata', children: [{ path: '/tgdata/contacts' }] },
+          { path: '/codata', children: [{ path: '/codata/models' }] },
+        ]),
+      ).toEqual([]);
+      expect(runtimeLayout.avatarProps).toBeUndefined();
+      expect(runtimeLayout.actionsRender().map((action) => action.type)).toEqual(
+        state.systemStatus.phase === 'normal' ? ['dark-mode', 'select-lang', 'question-link'] : [],
+      );
+    },
+  );
+
+  it.each([
+    ['admin', ['Data Dashboard']],
+    ['data_product_manager', ['Data Processing']],
+    [undefined, []],
+    ['member', []],
+  ])('keeps exact role shortcut availability for %s', (access, expectedTitles) => {
+    const { layout } = require('@/app');
+    const runtimeLayout = layout({
+      initialState: { currentUser: { access, name: 'Alice' }, settings: {} },
+      setInitialState: jest.fn(),
+    });
+    const shortcuts = runtimeLayout
+      .actionsRender()
+      .filter((action) => ['NationalCarbonDashboard', 'DataProcessing'].includes(action.key));
+
+    expect(shortcuts.map((action) => action.props.title)).toEqual(expectedTitles);
   });
 
   it('limits anonymous login header actions and hides the private avatar and menu', () => {
@@ -955,7 +1333,7 @@ describe('app runtime config', () => {
     expect(avatarTrigger.type).toBe('button');
     expect(avatarTrigger.props.type).toBe('button');
     expect(avatarTrigger.props['aria-haspopup']).toBe('menu');
-    expect(runtimeLayout.footerRender?.().type()).toEqual(<div data-testid='footer'>Footer</div>);
+    expect(runtimeLayout.footerRender).toBe(false);
     expect(runtimeLayout.bgLayoutImgList).toBeUndefined();
     render(runtimeLayout.unAccessible);
     expect(screen.getByTestId('access-denied')).toHaveTextContent('Localized access denied');
@@ -1032,9 +1410,9 @@ describe('app runtime config', () => {
         <div className='runtime-collapse'>runtime menu</div>,
       ),
     );
-    expect(screen.getByRole('button', { name: 'Navigation Mode' })).toHaveClass(
-      'runtime-collapse',
-      'tg-pro-layout-collapse-trigger',
+    expect(screen.getByRole('button', { name: 'Navigation Mode' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
     );
   });
 

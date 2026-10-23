@@ -90,7 +90,7 @@ describe('responsive surface evidence contract', () => {
     expect(source).not.toMatch(/searchParams[.]get[(][^)]*[)][.]includes/gu);
   });
 
-  it('waits for the fullscreen loader before locale short-circuiting or opening the menu', () => {
+  it('waits for the fullscreen loader and verifies locale-menu closure without dismissing other surfaces', () => {
     const source = readFileSync(path.resolve(process.cwd(), 'tests/e2e/i18n/contracts.ts'), 'utf8');
     const helperStart = source.indexOf('export async function selectAppLocaleThroughUi(');
     const helperEnd = source.indexOf('\n}\n\nexport function sha256', helperStart);
@@ -109,17 +109,14 @@ describe('responsive surface evidence contract', () => {
     const targetMenuFilter = helperSource.indexOf('.filter({ has: targetIcon })');
     const scopedMenuItem = helperSource.indexOf("activeMenu.getByRole('menuitem')");
     const keyboardActivation = helperSource.indexOf("await target.press('Enter')");
-    const firstEscape = helperSource.indexOf("await page.keyboard.press('Escape')");
-    const atomicVisibleMenuCheck = helperSource.indexOf(
-      'document.querySelectorAll<HTMLElement>(\'[role="menu"]\')',
+    const localeWriteWait = helperSource.indexOf('await page.waitForFunction(');
+    const scopedTriggerToggle = helperSource.indexOf('await trigger.evaluate(', localeWriteWait);
+    const nativeOpenCheck = helperSource.indexOf(
+      "localeTrigger.classList.contains('ant-dropdown-open')",
+      scopedTriggerToggle,
     );
-    const atomicTriggerToggle = helperSource.indexOf(
-      "document.querySelector<HTMLElement>('.tg-global-language-selector')?.click()",
-    );
-    const secondEscape = helperSource.indexOf(
-      "await page.keyboard.press('Escape')",
-      firstEscape + 1,
-    );
+    const scopedTriggerClick = helperSource.indexOf('localeTrigger.click()', nativeOpenCheck);
+    const scopedMenuClosedWait = helperSource.indexOf('    activeMenu,\n    0,');
     expect(spinnerWait).toBeGreaterThan(-1);
     expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait);
     expect(programmaticTriggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
@@ -128,10 +125,15 @@ describe('responsive surface evidence contract', () => {
     expect(targetMenuFilter).toBeGreaterThan(activeMenuScope);
     expect(scopedMenuItem).toBeGreaterThan(activeMenuScope);
     expect(keyboardActivation).toBeGreaterThan(scopedMenuItem);
-    expect(firstEscape).toBeGreaterThan(keyboardActivation);
-    expect(atomicVisibleMenuCheck).toBeGreaterThan(firstEscape);
-    expect(atomicTriggerToggle).toBeGreaterThan(atomicVisibleMenuCheck);
-    expect(secondEscape).toBeGreaterThan(atomicTriggerToggle);
+    expect(localeWriteWait).toBeGreaterThan(keyboardActivation);
+    expect(scopedTriggerToggle).toBeGreaterThan(localeWriteWait);
+    expect(nativeOpenCheck).toBeGreaterThan(scopedTriggerToggle);
+    expect(scopedTriggerClick).toBeGreaterThan(nativeOpenCheck);
+    expect(scopedMenuClosedWait).toBeGreaterThan(scopedTriggerClick);
+    expect(helperSource).not.toContain('if ((await activeMenu.count())');
+    expect(helperSource).not.toContain('page.keyboard.press(');
+    expect(helperSource).not.toContain('document.querySelectorAll');
+    expect(helperSource).not.toContain('document.querySelector<HTMLElement>');
     expect(helperSource).not.toContain('trigger.click({ force:');
     expect(helperSource).not.toContain('await target.click(');
   });
