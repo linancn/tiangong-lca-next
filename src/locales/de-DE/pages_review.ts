@@ -38,6 +38,7 @@ export default {
   'pages.review.assignment.current': 'Aktuelle Prüfer',
   'pages.review.assignment.cannotRevokeSubmitted': 'Ein Prüfer mit eingereichter Stellungnahme kann nicht entfernt werden.',
   'pages.review.approve.disabled.noReviewers': 'Vor der Freigabe muss mindestens ein Prüfer zugewiesen sein.',
+  'pages.review.approve.disabled.approvalRequired': 'Vor der endgültigen Freigabe muss mindestens ein zugewiesener Prüfer zugestimmt haben.',
   'pages.review.approve.disabled.pendingOpinions': '{count} Stellungnahmen stehen noch aus.',
   'pages.review.approve.disabled.allRejected': 'Alle Prüfer haben diese Aufgabe abgelehnt; eine Freigabe ist nicht möglich.',
   'pages.review.approve.disabled.opinionsUnavailable': 'Die Stellungnahmen konnten nicht geprüft werden. Bitte aktualisieren und erneut versuchen.',

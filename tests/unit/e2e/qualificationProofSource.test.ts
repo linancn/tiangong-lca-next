@@ -23,6 +23,20 @@ const contract = loadQualificationClosureContract(process.cwd());
 const currentReport = Buffer.from(
   JSON.stringify({
     ...JSON.parse(observedReport.toString('utf8')),
+    canonicalBrowsers: contract.canonicalBrowsers,
+    harnessBrowsers: contract.harnessBrowsers,
+    browsers: Object.fromEntries(
+      contract.browsers.map((browser) => [
+        browser,
+        {
+          executed:
+            contract.canonicalBrowsers[browser].executed +
+            contract.harnessBrowsers[browser].executed,
+          skipped:
+            contract.canonicalBrowsers[browser].skipped + contract.harnessBrowsers[browser].skipped,
+        },
+      ]),
+    ),
     assertionIds: [...contract.assertionIds],
     assertionBrowsers: Object.fromEntries(
       contract.assertionIds.map((id) => [
@@ -72,7 +86,7 @@ function artifacts(raw: Buffer = currentReport) {
         {
           id: 'environment.playwright-discovery',
           status: 'passed',
-          summary: { fullListedTests: 84, listedTests: 96 },
+          summary: { fullListedTests: 87, listedTests: 99 },
         },
       ],
     }),

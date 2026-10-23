@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repositoryRoot = path.resolve(__dirname, '../../..');
-const pinnedPnpmSetup = 'uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2';
+const pinnedPnpmSetup = 'uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1';
 const expectedPnpmVersion = '11.24.0';
 
 function read(relativePath: string): string {
@@ -95,12 +95,12 @@ describe('pnpm package-manager contract', () => {
     expect(workspace).toMatch(/es5-ext:\s+false/u);
     expect(workspace).toMatch(/'@parcel\/watcher':\s+false/u);
     expect(workspace).toMatch(/unrs-resolver:\s+false/u);
-    expect(workspace).toContain("'@umijs/max>antd': 6.6.2");
+    expect(workspace).toContain("'@umijs/max>antd': 6.6.6");
     expect(workspace).toContain("'@umijs/plugins>@ant-design/pro-components': 3.1.14-6");
-    expect(workspace).toContain("'@umijs/preset-umi>react': 19.2.8");
-    expect(workspace).toContain("'@umijs/preset-umi>react-dom': 19.2.8");
-    expect(workspace).toContain("'@umijs/server>react': 19.2.8");
-    expect(workspace).toContain("'@umijs/server>react-dom': 19.2.8");
+    expect(workspace).toContain("'@umijs/preset-umi>react': 19.3.1");
+    expect(workspace).toContain("'@umijs/preset-umi>react-dom': 19.3.1");
+    expect(workspace).toContain("'@umijs/server>react': 19.3.1");
+    expect(workspace).toContain("'@umijs/server>react-dom': 19.3.1");
     expect(workspace).not.toMatch(
       /set this to true or false|shamefullyHoist|dangerouslyAllowAllBuilds/u,
     );
@@ -114,14 +114,14 @@ describe('pnpm package-manager contract', () => {
     expect(packageJson.dependencies).toMatchObject({
       '@ant-design/icons': '6.3.4',
       '@ant-design/pro-components': '3.1.14-6',
-      antd: '6.6.2',
-      react: '19.2.8',
-      'react-dom': '19.2.8',
+      antd: '6.6.6',
+      react: '19.3.1',
+      'react-dom': '19.3.1',
     });
     expect(packageJson.devDependencies).toMatchObject({
-      '@types/react': '19.2.18',
-      '@types/react-dom': '19.2.5',
-      '@umijs/max': '4.7.9',
+      '@types/react': '19.3.0',
+      '@types/react-dom': '19.3.0',
+      '@umijs/max': '4.7.24',
       '@umijs/max-plugin-openapi': '2.0.3',
       '@umijs/request-record': '1.1.4',
     });

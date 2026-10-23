@@ -10,6 +10,18 @@ const workflow = fs.readFileSync(
   'utf8',
 );
 
+const FORBIDDEN_COMPATIBILITY_OPERATIONS =
+  /permissions:|secrets\.|GITHUB_TOKEN|GH_TOKEN|pnpm install|pnpm prepush:gate|deploy|release:to-dev|release:promote/u;
+
+function workflowJob(source: string, name: string): string {
+  const header = `\n  ${name}:\n`;
+  const start = source.indexOf(header);
+  if (start < 0) throw new Error(`Workflow job is missing: ${name}`);
+  const bodyStart = start + header.length;
+  const next = source.slice(bodyStart).search(/^  [A-Za-z0-9_-]+:[ \t]*$/mu);
+  return source.slice(start + 1, next < 0 ? undefined : bodyStart + next).trimEnd();
+}
+
 describe('ordinary dependency workflow validation ownership', () => {
   const cases = [
     ['Dev bot dependency', 'dev', 'dependabot/npm_and_yarn/ui', '', true, 'pull_request'],
@@ -64,6 +76,73 @@ describe('ordinary dependency workflow validation ownership', () => {
         { timeout: 100 },
       );
       expect(actual).toBe(expected);
+    },
+  );
+
+  it.each(cases)(
+    '%s selects the same owner for the compatibility probe',
+    (_name, base, head, body, expected, event) => {
+      const probe = workflowJob(workflow, 'action-compatibility');
+      const expression = probe.match(/\n    if: >-\n([\s\S]*?)\n    runs-on:/u)?.[1];
+      if (!expression) throw new Error('Compatibility job selection expression is missing.');
+      expect(
+        vm.runInNewContext(
+          expression,
+          {
+            github: {
+              event_name: event,
+              event: { pull_request: { base: { ref: base }, head: { ref: head }, body } },
+            },
+            contains: (value: string, part: string) =>
+              value.toLowerCase().includes(part.toLowerCase()),
+            startsWith: (value: string, part: string) =>
+              value.toLowerCase().startsWith(part.toLowerCase()),
+          },
+          { timeout: 100 },
+        ),
+      ).toBe(expected);
+    },
+  );
+
+  it('exercises the selected tools and archive upload without adding release authority', () => {
+    const probe = workflowJob(workflow, 'action-compatibility');
+    expect(probe).toContain(
+      'uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0',
+    );
+    expect(probe).toContain('uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1');
+    expect(probe).toContain(
+      'uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2',
+    );
+    expect(probe.indexOf('--stage setup-node')).toBeLessThan(probe.indexOf('uses: pnpm/setup@'));
+    expect(probe).toContain('install: false');
+    expect(probe).toContain('cache: false');
+    expect(probe).toContain('archive: true');
+    expect(probe).toContain('if-no-files-found: error');
+    expect(probe).toContain('--stage artifact-upload');
+    expect(probe).not.toMatch(FORBIDDEN_COMPATIBILITY_OPERATIONS);
+    expect(workflow).toContain('permissions:\n  contents: read');
+  });
+
+  it('does not attribute a separate browser install to the compatibility probe', () => {
+    const probe = workflowJob(workflow, 'action-compatibility');
+    const browser = workflowJob(workflow, 'semantic-qualification');
+    expect(browser).toContain('pnpm install --frozen-lockfile');
+    expect(probe).not.toContain('pnpm install');
+    expect(probe).not.toContain('semantic-qualification:');
+    expect(probe).toContain('--stage artifact-upload');
+    expect(() => workflowJob(workflow, 'missing-job')).toThrow('Workflow job is missing');
+  });
+
+  it.each(['pnpm install', 'pnpm prepush:gate', 'GH_TOKEN=synthetic', 'release:to-dev'])(
+    'still rejects %s when it is actually inside the compatibility job',
+    (forbidden) => {
+      const controlled = workflow.replace(
+        '      - name: Check out exact compatibility candidate\n',
+        `      - name: Forbidden compatibility control\n        run: ${forbidden}\n      - name: Check out exact compatibility candidate\n`,
+      );
+      const probe = workflowJob(controlled, 'action-compatibility');
+      expect(probe).toContain(`run: ${forbidden}`);
+      expect(() => expect(probe).not.toMatch(FORBIDDEN_COMPATIBILITY_OPERATIONS)).toThrow();
     },
   );
 

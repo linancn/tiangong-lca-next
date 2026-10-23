@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: f8294fd8ee58c80cdb10968ab1751be781a5794d
-lastReviewedNote: 'Platform #1304: reviewed the two security leaf/peer closures on accepted Main 0.0.141 at f8294fd8. All newer preview, locale and test work, product version, environment, runtime, graph and release controls are preserved outside proxy-addr 2.0.8 and Moment 2.31.0. Prior 894d6076 CI qualifies only that source; this composition requires new checked-push and hosted qualification. No assertions, thresholds, branch policy or production authority change.'
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: f82e55ede3729f6781192c325a958a0003ff3d27
+lastReviewedNote: 'Platform #1319: reviewed matching single, expanded-Reference and batch one-approval controls, four-locale messages and focused regressions. Exact-dev frozen installation and all 127 focused tests pass after network recovery. Team/profile authorization, rejection, selection and gate ownership remain unchanged; final checked-push qualification is recorded on the PR.'
 ---
 
 # Testing Troubleshooting

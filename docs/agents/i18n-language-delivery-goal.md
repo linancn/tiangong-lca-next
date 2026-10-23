@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-10-16
-lastReviewedCommit: b7b9f14f33badb2ddc05ee50899c99f7117ec7e0
-lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: 474e0da1e876af360948af494cb47c6621a6995c
+lastReviewedNote: 'Platform #1316: reviewed Message-only semantic hit-through and advancing session-fixture wall time at474e0da. Incoming message styles and native notice/Notification behavior remain; original ownership/generation/stale-dispatch assertions and99-case browser inventory are unchanged. Paired component and isolated actual-App Chromium proof pass, with meaningful interception/fixed-Date negatives. Independent code and full governed-document reviews found no remaining issue after removing the new private-DOM CSS assertion. Original665 hosted browser failures remain failed; successor full ordinary push and hosted qualification are pending. Dependency, coverage, release and production policies are unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -623,7 +623,7 @@ locale inventory 和 route-view inventory 必须交叉校验：前者证明标�
 
 独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 是可选的手动 hermetic qualification 边界：
 
-- 日常 PR、普通 `dev` push、release PR、promote PR 和 publication 都不自动触发或要求浏览器 E2E；仅 `workflow_dispatch` 由 operator 选择仍开放的业务 PR 分支或 exact SHA；
+- 除 `dependency-maintenance.md` 所述受限依赖 PR job 外，日常 PR、普通 `dev` push、release PR、promote PR 和 publication 都不自动触发或要求浏览器 E2E；仅 `workflow_dispatch` 由 operator 选择仍开放的业务 PR 分支或 exact SHA；
 - 该 workflow 一律不接收生产凭据、不写生产数据，每次真实执行预构建候选与固定 closed simulator 的 content-addressed hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；
 - 应在 `release:to-dev` 前、业务 PR 仍可修改时按风险选择运行；失败直接在同一 PR 修复并重跑。它是人工选择的验收信号，不属于 release proof。
 
@@ -815,7 +815,7 @@ browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环�
 - 在有效会话下，对 Welcome overview 与 carbon-footprint guide 验证标题、正文、动作、步骤/schema、modal、媒体 loading/error/fallback、语言切换及带 query 刷新；
 - 对 route-view matrix 发现的其他静态页面执行同级 focused browser proof，不能只验证示例 URL；浏览器矩阵从 registry 遍历全部 active locale，而不是只测本次目标语言；
 - 以 `pnpm test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 58 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
-- 日常 PR/`dev` push 不自动触发 semantic browser E2E；按风险在业务 PR 仍开放时通过 `workflow_dispatch` 对其分支或 exact SHA 运行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；该证明不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `pnpm start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
+- 除 `dependency-maintenance.md` 所述受限依赖 PR job 外，日常 PR/`dev` push 不自动触发 semantic browser E2E；按风险在业务 PR 仍开放时通过 `workflow_dispatch` 对其分支或 exact SHA 运行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；该证明不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `pnpm start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；
 - semantic evidence 必须绑定 route contract、contract-declared assertion-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
@@ -864,7 +864,7 @@ pnpm push:retry
 1. 按依赖顺序为三个 owner Issues 创建/更新 feature PR 到当前 routine target（观察模型通常是 `dev`），每个 PR 关闭对应 Issue；必要的来源研究和 inventory 可以并行，但最终 E2E 依赖平台与资源 PR。
 2. PR 分别说明语言平台、参考资源、页面/E2E 的边界，并共同覆盖目标 locale、全语言能力矩阵、context contract、自动质量模型、已有语言修订、runtime/fallback、验证和回滚。
 3. CI、自动化 review 或已有 code review feedback 发现问题时在同一分支自主修复；只重跑受影响 proof，tracked HEAD 变化后按阶段 H 处理。不得主动建立额外 human PR approval gate；如果未来 branch protection 强制人工批准且无法绕过，应作为外部治理阻塞报告，不能弱化保护规则。
-   - semantic E2E remote policy：PR、`dev` push 不自动运行浏览器矩阵；在业务 PR 仍开放时按风险通过 `workflow_dispatch` 手动运行始终无生产凭据且不写数据的 hermetic qualification；release SHA 不强制调用；完整 production-backend 已登录闭包只使用明确授权的本地 operator session，不能把用户凭据或生产写权限放入任何 semantic E2E GitHub job。
+   - semantic E2E remote policy：除受限依赖 PR job 外，PR、`dev` push 不自动运行浏览器矩阵；在业务 PR 仍开放时按风险通过 `workflow_dispatch` 手动运行始终无生产凭据且不写数据的 hermetic qualification；release SHA 不强制调用；完整 production-backend 已登录闭包只使用明确授权的本地 operator session，不能把用户凭据或生产写权限放入任何 semantic E2E GitHub job。
 4. 三个 PR required checks 通过后，在最终页面/E2E 业务 PR 仍开放时手动运行 hermetic browser qualification；若失败就在该 PR 修复并重跑。通过后按依赖顺序自主合并到 `dev`，不请求翻译或合并确认。
 5. 执行 dev smoke；匿名态覆盖登录流程和受保护入口跳登录，已登录态完整覆盖 route-view matrix，特别是 `/welcome` 与 `/welcome?view=carbon-footprint`；若角色走同一 selector 代码路径，只做代表性 smoke。
 6. 枚举完整 `dev...main` commits/paths/batch members，确认版本/tag/release 唯一。
@@ -1078,7 +1078,7 @@ pnpm push:retry
 - [ ] `pnpm test:e2e:i18n` 使用 `@playwright/test` `1.62.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `pnpm start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
 - [ ] 58 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
-- [ ] 日常 PR/普通 `dev` push 不自动触发浏览器矩阵；按风险在仍开放的业务 PR 上通过 `workflow_dispatch` 手动运行无凭据、无生产写的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；exact dev Release PR 只运行非浏览器 static/full gate，main-target PR 与正常 post-merge main 仅验证 release proof；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
+- [ ] 除 `dependency-maintenance.md` 所述受限依赖 PR job 外，日常 PR/普通 `dev` push 不自动触发浏览器矩阵；按风险在仍开放的业务 PR 上通过 `workflow_dispatch` 手动运行无凭据、无生产写的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；exact dev Release PR 只运行非浏览器 static/full gate，main-target PR 与正常 post-merge main 仅验证 release proof；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
 - [ ] 只创建 UUID-scoped `codex-e2e` 数据；create 前已写 intent ledger，delete 前已验证 production row UUID、authenticated owner 及五个 multilingual fields × 全 registry authoring languages exact markers，精确删除后 `created=cleaned`、`leaked=0`；没有 screenshot/trace/video/auth artifact。
 - [ ] tracked evidence 的 schema、ID/locale/browser closure 和 cleanup counts 通过常规结构校验；显式 production readiness 对当前 backend/route/source/test bindings 全部 fail-closed 校验通过。
 
@@ -1158,7 +1158,7 @@ pnpm push:retry
 - 哪些语言事实属于 UI locale registry、content-language registry 和 reference-resource Manifest？
 - 如何阻止下一种语言再次引入固定 union、下拉数组、文件 map、缓存列表和语言特判？
 - 为什么新增 registry locale 会自动扩大 Playwright 期望集合并使旧 semantic evidence 失效？
-- 为什么日常 PR/`dev` push 不自动运行 semantic browser E2E，而是在业务 PR 仍开放时按风险通过 `workflow_dispatch` 手动运行无凭据、无写入、预构建候选的 hermetic qualification；为什么 release stages 不消费该证明，同时 authenticated closure 必须留在明确授权的本地 operator session，并使用 authenticated mode、两个 production-write guards 与独立 evidence opt-in？
+- 为什么除 `dependency-maintenance.md` 所述受限依赖 PR job 外，日常 PR/`dev` push 不自动运行 semantic browser E2E，而是在业务 PR 仍开放时按风险通过 `workflow_dispatch` 手动运行无凭据、无写入、预构建候选的 hermetic qualification；为什么 release stages 不消费该证明，同时 authenticated closure 必须留在明确授权的本地 operator session，并使用 authenticated mode、两个 production-write guards 与独立 evidence opt-in？
 - 58 个 assertion ID、Chromium 全矩阵、三浏览器关键场景和 digest/ledger closure 如何共同防止 prose-only 或伪造浏览器证据？
 - 为什么生产测试数据只能是 UUID-scoped `codex-e2e` tuple，必须 create 前写 intent、delete 前验证 UUID/owner/五字段全语言 markers，并且最终 `created=cleaned`、`leaked=0`？
 - `SelectLang reload={false}` 如何让 same-document locale refresh 与旧请求 race 成为可验证合同，而不是由整页 reload 掩盖？

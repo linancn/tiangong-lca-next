@@ -19,9 +19,9 @@ const completeReport = () => ({
     contract.assertionIds.map((id) => [id, [...contract.browsers]]),
   ),
   browsers: {
-    chromium: { executed: 32, skipped: 0 },
-    firefox: { executed: 17, skipped: 15 },
-    webkit: { executed: 17, skipped: 15 },
+    chromium: { executed: 33, skipped: 0 },
+    firefox: { executed: 18, skipped: 15 },
+    webkit: { executed: 18, skipped: 15 },
   },
   canonicalBrowsers: JSON.parse(JSON.stringify(contract.canonicalBrowsers)),
   harnessBrowsers: JSON.parse(JSON.stringify(contract.harnessBrowsers)),
@@ -35,11 +35,11 @@ describe('semantic qualification closure', () => {
     expect(contract.assertionIds).toHaveLength(60);
     expect(contract.coverage).toEqual({
       contractAssertionCount: 60,
-      discoveredCases: 84,
-      executedCases: 54,
+      discoveredCases: 87,
+      executedCases: 57,
       harnessControlCases: 12,
       liveAssertionCount: 60,
-      qualificationDiscoveredCases: 96,
+      qualificationDiscoveredCases: 99,
       skippedCases: 30,
     });
     // --list imports declarations only: no global setup, server, browser or backend operation.

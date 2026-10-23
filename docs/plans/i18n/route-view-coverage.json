@@ -1413,7 +1413,12 @@
     },
     "rv.welcome.overview": {
       "kind": "localized-view",
-      "requiredScenarios": ["route", "modal-state-machine", "responsive-surface-matrix"],
+      "requiredScenarios": [
+        "route",
+        "modal-state-machine",
+        "responsive-surface-matrix",
+        "supabase-session-race"
+      ],
       "session": "authenticated",
       "navigate": {
         "hashPath": "/welcome",

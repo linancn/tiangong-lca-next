@@ -24,14 +24,16 @@ describe('Publication workflow gates', () => {
     const workflow = read('.github/workflows/build.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
     expect(releaseGate).toContain(
-      'uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2',
+      'uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1',
     );
     expect(releaseGate).toContain('run: pnpm install --frozen-lockfile');
     expect(releaseGate).toContain('run: pnpm lcia-cache:verify');
     expect(releaseGate).toContain('run: pnpm release:static-preflight');
     expect(releaseGate).toContain('run: pnpm prepush:gate');
     expect(releaseGate).toContain("TIANGONG_AGENT_MODE: '1'");
-    expect(releaseGate).toContain('uses: actions/upload-artifact@v6');
+    expect(releaseGate).toContain(
+      'uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2',
+    );
     expect(releaseGate).toContain('path: .local/test-logs/**');
     expect(releaseGate.indexOf('pnpm lcia-cache:verify')).toBeLessThan(
       releaseGate.indexOf('pnpm release:static-preflight'),

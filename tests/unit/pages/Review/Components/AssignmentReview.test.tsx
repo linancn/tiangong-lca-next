@@ -554,12 +554,13 @@ describe('AssignmentReview', () => {
     );
   });
 
-  it('disables admin approval only when every current reviewer rejected', async () => {
+  it('requires one approving opinion without waiting for every reviewer', async () => {
     mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
       success: true,
       data: [
         {
           id: 'all-rejected',
+          approveOpinionCount: 0,
           reviewKind: 'root',
           targetTable: 'processes',
           reviewerCount: 2,
@@ -569,9 +570,10 @@ describe('AssignmentReview', () => {
         },
         {
           id: 'mixed-opinions',
+          approveOpinionCount: 1,
           reviewKind: 'root',
           targetTable: 'processes',
-          reviewerCount: 2,
+          reviewerCount: 3,
           completedReviewerCount: 2,
           rejectOpinionCount: 1,
           json: { data: { id: 'process-2', version: '1.0.0' } },
@@ -595,7 +597,7 @@ describe('AssignmentReview', () => {
         .querySelector('[data-testid="simple-review-actions"]'),
     ).toHaveAttribute(
       'data-approve-disabled-reason',
-      'All reviewers rejected this task; approval is unavailable.',
+      'At least one assigned reviewer must approve before final approval.',
     );
     expect(
       screen
@@ -621,7 +623,9 @@ describe('AssignmentReview', () => {
       error: null,
     });
     mockGetReviewBatchEligibility.mockResolvedValueOnce({
-      data: [{ review_id: 'rejected-reference', reject_opinion_count: 1 }],
+      data: [
+        { review_id: 'rejected-reference', approve_opinion_count: 0, reject_opinion_count: 1 },
+      ],
       error: null,
     });
 
@@ -640,7 +644,45 @@ describe('AssignmentReview', () => {
     );
     expect(reference.querySelector('[data-testid="simple-review-actions"]')).toHaveAttribute(
       'data-approve-disabled-reason',
-      'All reviewers rejected this task; approval is unavailable.',
+      'At least one assigned reviewer must approve before final approval.',
+    );
+  });
+
+  it('allows an expanded Reference after one approval while another opinion is pending', async () => {
+    mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
+      data: [
+        {
+          reference_review_id: 'partial-reference',
+          target_table: 'flows',
+          data_id: 'flow-partial',
+          data_version: '1.0.0',
+          data_name: {},
+          state_code: 1,
+          reviewer_count: 2,
+          completed_reviewer_count: 1,
+        },
+      ],
+      error: null,
+    });
+    mockGetReviewBatchEligibility.mockResolvedValueOnce({
+      data: [{ review_id: 'partial-reference', approve_opinion_count: 1, reject_opinion_count: 0 }],
+      error: null,
+    });
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='in-progress'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-review-1' }));
+    const reference = await screen.findByTestId('subrow-partial-reference');
+    expect(mockGetReviewBatchEligibility).toHaveBeenCalledWith(
+      ['partial-reference'],
+      'admin-approve',
+    );
+    expect(reference.querySelector('[data-testid="simple-review-actions"]')).not.toHaveAttribute(
+      'data-approve-disabled-reason',
     );
   });
 
