@@ -298,7 +298,7 @@
   bottom: 310px;
   left: 24px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
   gap: 20px;
 }
 
@@ -692,11 +692,12 @@
 .organizationTableHeader,
 .organizationTableRow {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 70px repeat(2, 128px);
+  grid-template-columns: 48px minmax(0, 1fr) repeat(4, 112px);
   align-items: center;
 }
 
 .organizationTableHeader {
+  overflow-wrap: anywhere;
   height: 50px;
   color: #aec4da;
   font-size: 14px;

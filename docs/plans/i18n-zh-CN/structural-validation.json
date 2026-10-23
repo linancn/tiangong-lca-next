@@ -3,8 +3,8 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "8f73fe0ec094b23ce9b68ea26eba42a0b7084b7767f3a0ef2bce67906dd1066f",
-    "validatedMessageCount": 3546,
+    "auditedInputDigest": "5b736d7f34cd9e9afca651de9d9423b380a2a80a33e27ce85574209588f1c1d7",
+    "validatedMessageCount": 3547,
     "validatedModules": [
       "$entry",
       "component",
@@ -41,10 +41,10 @@
     ],
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-    "catalogDigest": "84a61a6416c6bdb366ac40e9ddb9ef55fa8d25726df180124300f13a5b6063df",
-    "dossierDigest": "d98fe897ff9a6844c7d8320790b4172ebd6947c1e0d239b719969a4222ffeaaf",
+    "catalogDigest": "8dbba994df46f6f2c3941ed4a7870296a3f8b3360a49007b5f6a6f59183f0384",
+    "dossierDigest": "90828885f1dd32b06c4f762a0f8a251bd7029ffc0553dde8c9c3a361c813f141",
     "typedContentDossierDigest": "cea189a77b03f66042197c8383d684813c09e3a0356684d325e62eaf73af4c99",
-    "routeEvidenceDigest": "800b2a5eff8066f6090b7a9b771793d8ffb8c6315f33cc78f69dc7c6f36d9105",
+    "routeEvidenceDigest": "383c66bcf64de149e17e67e9b032a2472a0f2904a52174330fd5a217d5ef6f2a",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -94,11 +94,11 @@
       ],
       "executionEvidence": {
         "executor": "scripts/i18n/locale-delivery.mjs#executeStructuralValidationLane",
-        "messageCount": 3546,
-        "messageDigest": "a4fc9e0d5fbcf40570e5068b502a91d0b8b42732da1e1fdee118795aa47e2c21",
+        "messageCount": 3547,
+        "messageDigest": "981829891eb3200f64568283b75edeed5cbea3b290e297c711cef36e774892e9",
         "highRiskMessageCount": 1662,
         "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-        "dossierDigest": "d98fe897ff9a6844c7d8320790b4172ebd6947c1e0d239b719969a4222ffeaaf",
+        "dossierDigest": "90828885f1dd32b06c4f762a0f8a251bd7029ffc0553dde8c9c3a361c813f141",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "be6ce43e7baa6acd3a53ebc0c6e1509f34df62e312d4ad77ae9f499a4725d6ed"
+  "validationDigest": "7dda4426ec3203bb0c622ba85ffe77e6bd247e5923d40c234f9d837faa4e939b"
 }

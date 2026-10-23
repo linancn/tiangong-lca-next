@@ -128,3 +128,7 @@ They depend on branch-specific Vault secrets on the active Supabase branch:
 - `project_x_key` only for legacy `generate_flow_embedding()` compatibility
 
 Do not hardcode branch URLs or service keys in app code, SQL, or dumped baseline files.
+
+### National carbon draft reporting dependency
+
+The organization screen requires Database #860's `api.qry_national_carbon_organization_contributions_v6(integer)` and v6 snapshot with `draftDatasetCount`. Apply and verify that migration in the matching environment before publishing Platform #1328. The original RPC remains v5 for old strict clients; the new frontend does not fall back to a missing draft metric.

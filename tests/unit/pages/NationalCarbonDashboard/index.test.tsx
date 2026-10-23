@@ -23,6 +23,7 @@ const makeOrganizationStatistics = (publishedDatasetCount: number) => ({
       publishedDatasetCount,
       assignedReviewerDatasetCount: 1,
       unassignedReviewerDatasetCount: 1,
+      draftDatasetCount: 4,
     },
   ],
 });
@@ -34,7 +35,7 @@ const dailyActivityDays = Array.from({ length: 366 }, (_, index) => {
 });
 
 const organizationContributionSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v5',
+  schemaVersion: 'national_carbon_organization_contribution_v6',
   datasetScope: 'process',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
@@ -65,14 +66,8 @@ const mockFormatMessage = (
   { defaultMessage, id }: { defaultMessage?: string; id: string },
   values?: Record<string, unknown>,
 ) => {
-  const homeMessages =
-    mockLocale === 'zh-CN'
-      ? jest.requireActual('@/locales/zh-CN/pages_home').default
-      : jest.requireActual('@/locales/fr-FR/pages_home').default;
-  const pageMessages =
-    mockLocale === 'zh-CN'
-      ? jest.requireActual('@/locales/zh-CN/pages').default
-      : jest.requireActual('@/locales/fr-FR/pages').default;
+  const homeMessages = jest.requireActual(`@/locales/${mockLocale}/pages_home`).default;
+  const pageMessages = jest.requireActual(`@/locales/${mockLocale}/pages`).default;
   const template = homeMessages[id] ?? pageMessages[id] ?? defaultMessage ?? id;
   return Object.entries(values ?? {}).reduce(
     (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
@@ -246,6 +241,7 @@ describe('NationalCarbonDashboard access guard', () => {
       organizationKey: `unit-${index}`,
       organizationName: `Unit ${index + 1}`,
       publishedDatasetCount: index > 9 ? 0 : 3,
+      draftDatasetCount: index,
     }));
     mockGetOrganizationContributionSnapshot.mockResolvedValueOnce({
       ...organizationContributionSnapshot,
@@ -257,6 +253,8 @@ describe('NationalCarbonDashboard access guard', () => {
     expect(within(table).queryByText('Unit 11')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTitle('2'));
     expect(within(table).getByText('Unit 11')).toBeInTheDocument();
+    const row = within(table).getByText('Unit 11').closest<HTMLElement>('[role="row"]')!;
+    expect(within(row).getAllByRole('cell')[5]).toHaveTextContent('10');
     expect(within(table).queryByText('Unit 1')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTitle('3'));
     expect(within(table).getByText('Unit 23')).toBeInTheDocument();
@@ -275,10 +273,41 @@ describe('NationalCarbonDashboard access guard', () => {
     expect(screen.getByText('单位数据填报情况')).toBeInTheDocument();
     expect(screen.getByText('已分配审核员')).toBeInTheDocument();
     expect(screen.getByText('待分配审核员')).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((cell) => cell.textContent),
+    ).toEqual(['排名', '单位', '已发布', '已分配审核员', '待分配审核员', '填报中']);
+    const row = within(table).getAllByRole('row')[1];
+    expect(within(row).getAllByRole('cell')[5]).toHaveTextContent('4');
     expect(screen.queryByText('待审核数据')).not.toBeInTheDocument();
     expect(screen.queryByText('贡献者')).not.toBeInTheDocument();
     expect(screen.queryByText('占比')).not.toBeInTheDocument();
     expect(screen.queryByText('最近贡献')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['en-US', 'Drafts'],
+    ['de-DE', 'In Bearbeitung'],
+    ['fr-FR', 'En cours de saisie'],
+  ])('renders the draft column and zero count in %s', async (locale, label) => {
+    mockLocale = locale;
+    mockInitialState = { currentUser: { access: 'admin' } };
+    window.location.hash =
+      '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
+    mockGetOrganizationContributionSnapshot.mockResolvedValueOnce({
+      ...organizationContributionSnapshot,
+      organizations: [
+        { ...organizationContributionSnapshot.organizations[0], draftDatasetCount: 0 },
+      ],
+    });
+    render(<NationalCarbonDashboardPage />);
+    const table = await screen.findByRole('table');
+    expect(within(table).getAllByRole('columnheader')[5]).toHaveTextContent(label);
+    expect(within(within(table).getAllByRole('row')[1]).getAllByRole('cell')[5]).toHaveTextContent(
+      '0',
+    );
   });
 
   it('renders the enhanced empty state in both contribution panels', async () => {

@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: focused component tests, lint, build, and the unchanged managed pre-push gate remain the required validation path.'
+lastReviewedAt: 2026-10-23
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Platform #1328: reviewed latest-current state-0 draft display, v6 strict RPC, four-locale labels and focused tests; existing ownership, dependency, validation and release gates remain unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -239,3 +239,7 @@ Allocation-repair regressions cover both missing non-reference allocation and an
 ## Brand presentation proof
 
 For changes to brand tokens, copy or layout presets, run focused brand-profile/default-settings/message tests, theme-sync tests and the affected Login/Welcome suites; run typecheck/lint and both brand builds. The `tests/e2e/branding/brand-presentation.spec.ts` browser smoke suite, selected with `playwright.branding.config.ts` outside the release qualification inventory, is explicitly selected with `E2E_BRAND` and only executes with `E2E_QUALIFICATION=true` against the existing semantic simulator. It exercises both brands separately, all four login locales, light/dark toggles, narrow-screen control access and overflow, then shared login, welcome, dataset navigation and the Atlas guide. Screenshots contain deterministic fixture UI only. Test login credentials are never sent to a real backend. Local smoke proof does not replace final release gates or hosted deployment evidence.
+
+## National carbon organization draft reporting
+
+For Platform #1328, run the dashboard service/page suites against the required v6 contract, including invalid or missing draft fields, localized sixth-column placement, zero values, and ten-row client pagination without extra RPCs. Browser proof uses the qualification build and intercepted synthetic snapshots, checking six-column alignment, long localized labels and rank continuity. Database #860 must be available in the selected environment before frontend publication; database counting and ordering proof stays in its SQL suite.

@@ -64,12 +64,13 @@ const organizationContributionRankingSchema = z
     publishedDatasetCount: nonnegativeInteger,
     assignedReviewerDatasetCount: nonnegativeInteger,
     unassignedReviewerDatasetCount: nonnegativeInteger,
+    draftDatasetCount: nonnegativeInteger,
   })
   .strict();
 
 export const organizationContributionSnapshotSchema = z
   .object({
-    schemaVersion: z.literal('national_carbon_organization_contribution_v5'),
+    schemaVersion: z.literal('national_carbon_organization_contribution_v6'),
     datasetScope: z.literal('process'),
     attributionMode: z.literal('current_user_profile'),
     generatedAt: z.iso.datetime({ offset: true }),
@@ -176,7 +177,7 @@ async function requestOrganizationContributionSnapshot(
 ): Promise<OrganizationContributionSnapshot> {
   const { data, error } = await supabase
     .schema('api')
-    .rpc('qry_national_carbon_organization_contributions', { p_limit: limit });
+    .rpc('qry_national_carbon_organization_contributions_v6', { p_limit: limit });
 
   if (error) {
     throw new OrganizationContributionError(getDatabaseErrorCode(error), error);
